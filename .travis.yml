@@ -1,0 +1,9 @@
+language: node_js
+
+services:
+  - mongodb
+
+notifications:
+  irc: "irc.mysociety.org#popit"
+  use_notice: true
+  skip_join: true
