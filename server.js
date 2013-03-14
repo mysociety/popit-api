@@ -1,6 +1,7 @@
 "use strict";
 
-var serverApp  = require('./server-app')
+var express    = require('express'),
+    serverApp  = require('./server-app');
 
 serverApp.use(express.logger('dev'));
 
