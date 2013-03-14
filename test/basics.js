@@ -8,9 +8,9 @@ request = request(serverApp);
 describe("API basics", function () {
   describe("non-api app pages", function () {
 
-    it("should 404 on index and not '/api' paths", function (done) {
+    it("should 404 on index", function (done) {
       request
-        .get("/books/0340831499")
+        .get("/")
         .expect(404)
         .end(done);
     });
