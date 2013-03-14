@@ -1,0 +1,23 @@
+{
+  "node": true,
+  "es5":  true,
+
+  "camelcase": true,
+  "curly":     true,
+  "indent":    2,
+  "newcap":    true,
+  "regexp":    true,
+  "strict":    true,
+  "trailing":  true,
+  "undef":     true,
+  "unused":    true,
+
+  "predef": [
+    "describe",
+    "it",
+    "before",
+    "beforeEach",
+    "after",
+    "afterEach"
+  ]
+}
