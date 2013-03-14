@@ -1,3 +1,5 @@
+"use strict";
+
 var express = require('express');
 
 var app = module.exports = express();
@@ -15,7 +17,7 @@ app.param('collection', function (req, res, next, collection) {
     persons: true
   };
 
-  if ( ! allowedCollections[collection] ) {
+  if (! allowedCollections[collection]) {
     res
       .status(404)
       .jsonp({

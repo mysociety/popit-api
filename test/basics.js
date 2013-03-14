@@ -23,7 +23,7 @@ describe("API basics", function () {
     });
 
   });
-  
+
   describe("API app basics", function () {
 
     it("should 200 on '/api'", function (done) {

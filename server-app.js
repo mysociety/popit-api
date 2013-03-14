@@ -1,7 +1,7 @@
 "use strict";
 
 var express = require('express'),
-    apiApp  = require('./')
+    apiApp  = require('./');
 
 var app = module.exports = express();
 
@@ -10,7 +10,7 @@ app.use(express.errorHandler());
 app.use(express.favicon());
 
 // Use vhost to route to the correct app
-app.use( '/api', apiApp );
+app.use('/api', apiApp);
 
 // Handle everything else as a 404
 app.use(function (req, res) {
