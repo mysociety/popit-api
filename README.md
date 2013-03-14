@@ -1,5 +1,7 @@
 # PopIt API
 
+[![Build Status](https://travis-ci.org/mysociety/popit-api.png?branch=master)](https://travis-ci.org/mysociety/popit-api)
+
 The API specific part of the [PopIt](http://popit.mysociety.org/) project.
 Provides read and write access to the data and manages where it is stored. Will
 be [Popolo](http://popoloproject.com/) compliant.
