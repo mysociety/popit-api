@@ -1,0 +1,19 @@
+{
+  "name": "popit-api",
+  "version": "0.0.0",
+  "description": "API part of PopIt which lets you store details of people, organisations and positions",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mysociety/popit-api.git"
+  },
+  "keywords": [
+    "API"
+  ],
+  "author": "",
+  "license": "AGPL",
+  "readmeFilename": "README.md"
+}
