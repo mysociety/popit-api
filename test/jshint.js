@@ -4,7 +4,8 @@ var JSHINT = require("jshint").JSHINT,
     assert = require("assert"),
     glob   = require("glob"),
     path   = require("path"),
-    fs     = require("fs");
+    fs     = require("fs"),
+    _      = require('underscore');
 
 
 var projectDir = path.normalize(path.join(__dirname, '..'));
@@ -28,8 +29,18 @@ describe("Run jsHint on", function () {
     it(file, function () {
       var content = fs.readFileSync(path.join(projectDir, file)).toString();
 
+      // Split the content into lines and replace whitespace only lines with
+      // empty strings so that this test behaviour mimics that of the command
+      // line tool.
+      var lines = _.map(
+        content.split(/[\n\r]/),
+        function (line) {
+          return (/^\s+$/).test(line) ? '' : line;
+        }
+      );
+      
       var success = JSHINT(
-        content,
+        lines,
         jshintConfig
       );
 
