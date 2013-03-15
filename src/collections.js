@@ -10,6 +10,6 @@
 
 module.exports = {
   persons: {
-    popoloSchemaUrl: 'http://popoloproject.com/schemas/person.json',
+    popoloSchemaUrl: 'http://popoloproject.com/schemas/person.json#',
   },
 };

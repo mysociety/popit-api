@@ -35,12 +35,27 @@ app.get('/:collection', function (req, res) {
 app.post('/:collection', function (req, res) {
   
   var collectionName = req.params.collection;
+  // var body = res.body;
   
-  // insert validation and writing to database here
-  var id = "0123456789abcdef01234567";
 
-  res
-    .status(201)
-    .location([collectionName, id].join('/'))
-    .send();
+  // var errors = validate( collectionName, body);
+  var errors = [];
+  // console.log(errors);
+  
+  if (errors.length === 0) {
+    // insert validation and writing to database here
+    var id = "0123456789abcdef01234567";
+  
+    res
+      .status(201)
+      .location([collectionName, id].join('/'))
+      .send();
+  } else {
+    res
+      .status(400)
+      .send({errors: errors});
+    
+  }
 });
+
+

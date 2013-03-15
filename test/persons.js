@@ -31,6 +31,16 @@ describe("Persons collection", function () {
         .end(done);
     });
 
+    // it("should error when not valid", function (done) {
+    //   request
+    //     .post("/api/persons")
+    //     .send({ name: '', meme: "Harlem Shake" })
+    //     .expect(400)
+    //     .expect("Content-Type", "text/javascript; charset=utf-8")
+    //     .expect({errors: 'foo'})
+    //     .end(done);
+    // });
+
   });
 
 });

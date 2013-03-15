@@ -3,7 +3,8 @@
 var _ = require('underscore');
 
 var shortNamedSchemas = {
-  "draft-04-schema":            require('./draft-04/schema.json'),
+  "draft-03-schema":            require('./drafts/03-schema.json'),
+  "draft-04-schema":            require('./drafts/04-schema.json'),
   "address":                    require('./popolo/address.json'),
   "membership":                 require('./popolo/membership.json'),
   "organization":               require('./popolo/organization.json'),
@@ -12,14 +13,17 @@ var shortNamedSchemas = {
   "post":                       require('./popolo/post.json'),
 };
 
+
 var urlSchemas = {};
-_.values( shortNamedSchemas, function (schema) {
+_.each( shortNamedSchemas, function (schema) {
   urlSchemas[schema.id] = schema;
-})
+});
 
 
 module.exports = _.extend(
   {},
-  shortNamedSchemas,
+  // shortNamedSchemas,
   urlSchemas
 );
+
+_.each(module.exports, function (val, key) { console.log(key); } );
