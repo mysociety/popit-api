@@ -46,8 +46,9 @@ describe("Run jsHint on", function () {
 
       var errorMessage = "";
       if (!success) {
-        // console.log(JSHINT.errors[0]);
-        errorMessage = "line " + JSHINT.errors[0].line + ": " + JSHINT.errors[0].raw;
+        var error = JSHINT.data().errors[0];
+        // console.log(error);
+        errorMessage = "line " + error.line + ": " + error.reason;
       }
 
       assert.ok(success, errorMessage);
