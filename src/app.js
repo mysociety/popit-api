@@ -1,6 +1,7 @@
 "use strict";
 
-var express = require('express');
+var express     = require('express'),
+    collections = require('./collections');
 
 var app = module.exports = express();
 
@@ -13,11 +14,8 @@ app.get('/', function (req, res) {
   Check that the collection is in the allowed list.
 */
 app.param('collection', function (req, res, next, collection) {
-  var allowedCollections = {
-    persons: true
-  };
 
-  if (! allowedCollections[collection]) {
+  if (! collections[collection]) {
     res
       .status(404)
       .jsonp({
