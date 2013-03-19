@@ -19,9 +19,10 @@ describe("Persons collection", function () {
 
   });
 
-  describe("post to  collection", function () {
+  describe("post to collection", function () {
 
     it("should create entry and redirect when valid", function (done) {
+      // FIXME - data is not currently being saved. Need to check tha it will be.
       request
         .post("/api/persons")
         .send({ name: "Joe Bloggs" })
@@ -31,15 +32,29 @@ describe("Persons collection", function () {
         .end(done);
     });
 
-    // it("should error when not valid", function (done) {
-    //   request
-    //     .post("/api/persons")
-    //     .send({ name: '', meme: "Harlem Shake" })
-    //     .expect(400)
-    //     .expect("Content-Type", "text/javascript; charset=utf-8")
-    //     .expect({errors: 'foo'})
-    //     .end(done);
-    // });
+    it("should error when not valid", function (done) {
+      request
+        .post("/api/persons")
+        .send({ name: 123, meme: "Harlem Shake" }) // name should be string
+        .expect(400)
+        .expect("Content-Type", "application/json; charset=utf-8")
+        .expect({
+          errors: [ "Error 'Instance is not a required type' with 'http://popoloproject.com/schemas/person.json#/properties/name'." ]
+        })
+        .end(done);
+    });
+
+    it("should error when not valid", function (done) {
+      request
+        .post("/api/persons")
+        .send({ meme: "Harlem Shake" }) // no name
+        .expect(400)
+        .expect("Content-Type", "application/json; charset=utf-8")
+        .expect({
+          errors: [ "Error 'Property is required' with 'http://popoloproject.com/schemas/person.json#/properties/name'." ]
+        })
+        .end(done);
+    });
 
   });
 

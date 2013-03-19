@@ -1,7 +1,10 @@
 "use strict";
 
-var express     = require('express'),
-    collections = require('./collections');
+var util        = require('util'),
+    express     = require('express'),
+    collections = require('./collections'),
+    validate    = require('./validate'),
+    _           = require('underscore');
 
 var app = module.exports = express();
 
@@ -32,30 +35,43 @@ app.get('/:collection', function (req, res) {
   res.send("FIXME");
 });
 
-app.post('/:collection', function (req, res) {
-  
-  var collectionName = req.params.collection;
-  // var body = res.body;
-  
+app.post('/:collection', function (req, res, next) {
 
-  // var errors = validate( collectionName, body);
-  var errors = [];
-  // console.log(errors);
-  
-  if (errors.length === 0) {
-    // insert validation and writing to database here
-    var id = "0123456789abcdef01234567";
-  
-    res
-      .status(201)
-      .location([collectionName, id].join('/'))
-      .send();
-  } else {
-    res
-      .status(400)
-      .send({errors: errors});
-    
+  var collectionName = req.params.collection;
+  var body = req.body;
+
+  // If there is no id create one
+  if (!body.id) {
+    body.id = 'FIXME - replace with mongo object id';
   }
+
+  validate(collectionName, body, function (err, errors) {
+
+    if (err) { return next(err); }
+
+    if (errors.length === 0) {
+      // insert validation and writing to database here
+      var id = "0123456789abcdef01234567";
+
+      res
+        .status(201)
+        .location([collectionName, id].join('/'))
+        .send();
+    } else {
+
+      var details = _.map(errors, function (error) {
+        return util.format(
+          "Error '%s' with '%s'.",
+          error.message,
+          error.schemaUri
+        );
+      });
+      res
+        .status(400)
+        .send({errors: details});
+
+    }
+  });
 });
 
 
