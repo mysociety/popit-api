@@ -35,30 +35,26 @@ app.get('/:collection', function (req, res) {
   res.send("FIXME");
 });
 
-app.post('/:collection', function (req, res, next) {
+
+function validateBody (req, res, next) {
 
   var collectionName = req.params.collection;
   var body = req.body;
-
+  
   // If there is no id create one
   if (!body.id) {
-    body.id = 'FIXME - replace with mongo object id';
+    //FIXME - replace with mongo object id
+    body.id = '123456789012345678901234';
   }
 
   validate(collectionName, body, function (err, errors) {
 
-    if (err) { return next(err); }
-
-    if (errors.length === 0) {
-      // insert validation and writing to database here
-      var id = "0123456789abcdef01234567";
-
-      res
-        .status(201)
-        .location([collectionName, id].join('/'))
-        .send();
+    if (err) {
+      return next(err);
+    } else if (errors.length === 0) {
+      return next(null);
     } else {
-
+    
       var details = _.map(errors, function (error) {
         return util.format(
           "Error '%s' with '%s'.",
@@ -66,12 +62,27 @@ app.post('/:collection', function (req, res, next) {
           error.schemaUri
         );
       });
+      
       res
         .status(400)
         .send({errors: details});
-
     }
   });
+}
+
+
+app.post('/:collection', validateBody, function (req, res) {
+
+  var collectionName = req.params.collection;
+  var body = req.body;
+  var id   = body.id;
+
+  // FIXME - save the document here
+
+  res
+    .status(201)
+    .location([collectionName, id].join('/'))
+    .send();
 });
 
 
