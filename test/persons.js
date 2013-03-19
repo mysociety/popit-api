@@ -21,8 +21,8 @@ describe("Persons collection", function () {
 
   describe("post to collection", function () {
 
-    it("should create entry and redirect when valid", function (done) {
-      // FIXME - data is not currently being saved. Need to check tha it will be.
+    it("should create entry and return Location when valid", function (done) {
+      // FIXME - data is not currently being saved. Need to check that it will be.
       request
         .post("/api/persons")
         .send({ name: "Joe Bloggs" })
@@ -32,7 +32,7 @@ describe("Persons collection", function () {
         .end(done);
     });
 
-    it("should error when not valid", function (done) {
+    it("should error when not valid (bad name)", function (done) {
       request
         .post("/api/persons")
         .send({ name: 123, meme: "Harlem Shake" }) // name should be string
@@ -44,7 +44,7 @@ describe("Persons collection", function () {
         .end(done);
     });
 
-    it("should error when not valid", function (done) {
+    it("should error when not valid (missing name)", function (done) {
       request
         .post("/api/persons")
         .send({ meme: "Harlem Shake" }) // no name
