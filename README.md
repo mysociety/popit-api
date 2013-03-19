@@ -14,7 +14,7 @@ Can be used as a standalone server, or embedded in a
 
 This is alpha code and subject to frequent and backwards incompatible change.
 Feel free to experiment but do not use in production until this message is
-remove.
+removed.
 
 The exact implementation of the [Popolo](http://popoloproject.com/) standard
 used here may not be fully up to date, or may contain discrepencies to the
