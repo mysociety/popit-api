@@ -6,7 +6,7 @@ var _             = require('underscore'),
     assert        = require('assert');
 
 
-var JSV           = require("jsv").JSV;
+var JSV           = require("JSV").JSV;
 
 
 
