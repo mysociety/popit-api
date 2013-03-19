@@ -1,6 +1,6 @@
 "use strict";
 
-var //_             = require('underscore'),
+var _             = require('underscore'),
     schemas       = require('./schemas'),
     collections   = require('./collections'),
     assert        = require('assert');
@@ -10,21 +10,40 @@ var JSV           = require("jsv").JSV;
 
 
 
-module.exports = function (collectionName, data, callback) {
+var env = JSV.createEnvironment();
+
+// Add all the needed schemas
+_.each(schemas, function (schema) {
+  if ( /popolo/.test(schema.id) ){
+    env.createSchema(schema, true, schema.id);
+  }
+});
+
+// env.createSchema(schemas['http://popoloproject.com/schemas/person.json#'], null, 'http://popoloproject.com/schemas/person.json#');
+// env.createSchema(schemas['http://popoloproject.com/schemas/other_name#'], null, 'http://popoloproject.com/schemas/other_name.json#');
+
+
+
+module.exports = function (name, data, callback) {
   
-  var env = JSV.createEnvironment();
+  var collection, schemaUrl, schema;
+  
+  if (/https?:\/\//.test(name)) {
+    schemaUrl = name;
+  } else {
+    collection = collections[name];
+    assert(collection, "Could not load collection for '" + name + "'");
+    schemaUrl = collection.popoloSchemaUrl;
+    assert(schemaUrl, "Could not get url from collection '" + name + "'");
+  }
 
-  var collection = collections[collectionName];
-  assert(collection, "Could not load collection for '" + collectionName + "'");
-  var schemaUrl = collection.popoloSchemaUrl;
-  assert(schemaUrl, "Could not get url from collection'" + collectionName + "'");
+  schema = schemas[schemaUrl];
+  assert(schema, "Could not get schema for '" + schemaUrl + "'");
 
-  var schema = schemas[schemaUrl];
+  // var schema = schemas[schemaUrl];
   var report = env.validate(data, schema);
 
-  if (report.errors.length === 0) {
-      //JSON is valid against the schema
-  }
+  // console.log( report.errors);
   
   callback(null, report.errors );
 

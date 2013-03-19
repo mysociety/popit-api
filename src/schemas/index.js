@@ -1,10 +1,14 @@
 "use strict";
 
-var _ = require('underscore');
+var _      = require('underscore'),
+    assert = require('assert');
 
-var shortNamedSchemas = {
+var draftSchemas = {
   "draft-03-schema":            require('./drafts/03-schema.json'),
   "draft-04-schema":            require('./drafts/04-schema.json'),
+};
+
+var popoloSchemas = {
   "address":                    require('./popolo/address.json'),
   "membership":                 require('./popolo/membership.json'),
   "organization":               require('./popolo/organization.json'),
@@ -13,17 +17,15 @@ var shortNamedSchemas = {
   "post":                       require('./popolo/post.json'),
 };
 
+var allSchemas = _.extend({}, draftSchemas, popoloSchemas);
 
 var urlSchemas = {};
-_.each( shortNamedSchemas, function (schema) {
+_.each( allSchemas, function (schema) {
   urlSchemas[schema.id] = schema;
 });
 
 
-module.exports = _.extend(
-  {},
-  // shortNamedSchemas,
-  urlSchemas
-);
 
-_.each(module.exports, function (val, key) { console.log(key); } );
+
+
+module.exports = urlSchemas;
