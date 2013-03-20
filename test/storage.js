@@ -13,13 +13,21 @@ describe("Storage", function () {
     storage.init(done);
   });
 
-  describe("store and retrieve", function () {
+  describe("store, retrieve and delete", function () {
 
     before(function (done) {
       storage.empty(done);
     });
 
     var sampleData = { id: 'test', foo: 'bar' };
+
+    it("check not in collection", function (done) {
+      storage.retrieve('samples', sampleData.id, function (err, doc) {
+        assert.ifError(err);
+        assert(!doc);
+        done();
+      });
+    });
 
     it("store some data", function (done) {
       storage.store('samples', sampleData, function (err, doc) {
@@ -32,7 +40,7 @@ describe("Storage", function () {
     it("retrieve it", function (done) {
       storage.retrieve('samples', sampleData.id, function (err, doc) {
         assert.ifError(err);
-        assert(doc);
+        assert(doc, "found the document");
         assert.deepEqual( doc, sampleData );
         done();
       });

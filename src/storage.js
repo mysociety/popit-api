@@ -3,7 +3,9 @@
 "use strict";
 
 var mongo  = require('mongodb'),
-    assert = require('assert');
+    assert = require('assert'),
+    _      = require('underscore'),
+    async  = require('async');
  
 var server = new mongo.Server('localhost', 27017, {auto_reconnect: true});
 
@@ -20,7 +22,6 @@ var Storage = function (databaseName) {
   Get ready to do stuff. Connect to the database.
 */
 Storage.prototype.init = function (cb) {
-  console.log('init');
   var storage = this;
 
   // db already set up, store it and move on
@@ -45,8 +46,20 @@ Storage.prototype.init = function (cb) {
   Empty the database of all data. Not something you'd want to do in production :)
 */
 Storage.prototype.empty = function (cb) {
-  console.log('empty');
-  cb();
+  var storage = this;
+
+  storage.db.collections(function(err, collections) {
+    var names = _.chain(collections)
+      .pluck('collectionName')
+      .reject(function (name) { return (/^system\./).test(name); })
+      .value();
+
+    async.each(
+      names,
+      function (name, done) { storage.db.dropCollection(name, done); },
+      cb
+    );
+  });
 };
 
 
@@ -54,14 +67,16 @@ Storage.prototype.empty = function (cb) {
   Store a document in the database.
 */
 Storage.prototype.store = function (collectionName, doc, cb) {
-  console.log('store');
 
   if (!doc.id) {
     return cb(new Error("Can't store document without an id"));
   }
 
+  var docToStore = _.extend({}, doc, {_id: doc.id});
+
   var collection = this.db.collection(collectionName);
-  collection.update({_id: doc.id}, doc, {upsert: true}, function (err) {
+  collection.update({_id: doc.id}, docToStore, {upsert: true}, function (err, result) {
+    assert(result);
     cb(err, doc);
   });
 };
@@ -70,10 +85,9 @@ Storage.prototype.store = function (collectionName, doc, cb) {
   Retrieve a document from the database.
 */
 Storage.prototype.retrieve = function (collectionName, id, cb) {
-  console.log('retrieve');
   var collection = this.db.collection(collectionName);
   collection.findOne({_id: id}, function (err, doc) {
-    if (!err) {
+    if (doc) {
       doc.id = doc._id;
       delete doc._id;
     }
