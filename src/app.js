@@ -162,3 +162,10 @@ app.put('/:collection/:id', validateBody, function (req, res, next) {
 
 });
 
+
+/*
+  Anything else we should 400 for as it is probably an unsupported method.
+*/
+app.all('*', function (req, res) {
+  res.status(400).jsonp({error: "unsupported method"});
+});

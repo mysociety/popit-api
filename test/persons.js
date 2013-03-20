@@ -226,4 +226,31 @@ describe("Persons collection", function () {
     
   });
 
+
+  describe("unsupported verbs and actions", function () {
+
+    it("POST collection/id", function (done) {
+      request
+        .post("/api/persons/does-not-exist")
+        .send({name: "Foo"})
+        .expect(400)
+        .end(done);
+    });
+
+    it("DELETE collection", function (done) {
+      request
+        .del("/api/persons")
+        .expect(400)
+        .end(done);
+    });
+
+    it("PUT collection", function (done) {
+      request
+        .put("/api/persons")
+        .send([{id: "test", name: "Foo"}])
+        .expect(400)
+        .end(done);
+    });
+
+  });
 });
