@@ -131,4 +131,36 @@ describe("Persons collection", function () {
 
   });
 
+  describe("DELETE", function () {
+    it("create, test, delete, test", function (done) {
+      async.series([
+        function(callback){
+          request
+            .post("/api/persons")
+            .send({ id: 'test', name: "Joe Bloggs" })
+            .end(callback);
+        },
+        function(callback){
+          request
+            .get('/api/persons/test')
+            .expect({ id: 'test', name: "Joe Bloggs" })
+            .end(callback);
+        },
+        function(callback){
+          request
+            .del("/api/persons/test")
+            .expect(204)
+            .end(callback);
+        },
+        function(callback){
+          request
+            .get('/api/persons/test')
+            .expect(404)
+            .end(callback);
+        },
+      ], done);
+    });
+    
+  });
+
 });

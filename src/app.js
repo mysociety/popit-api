@@ -71,6 +71,21 @@ app.get('/:collection/:id', function (req, res, next) {
   });
 });
 
+app.del('/:collection/:id', function (req, res, next) {
+  var collectionName = req.params.collection;
+  var id             = req.params.id;
+
+  req.storage.delete( collectionName, id, function (err) {
+    if (err) {
+      next(err);
+    } else {
+      res
+        .status(204)
+        .send('');
+    }
+  });
+});
+
 
 function validateBody (req, res, next) {
 
