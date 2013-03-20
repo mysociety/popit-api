@@ -1,6 +1,7 @@
 "use strict";
 
 var Storage = require("../src/storage"),
+    config  = require("../src/config"),
     assert  = require('assert');
 
 
@@ -16,7 +17,7 @@ describe("Storage", function () {
   });
 
   before(function () {
-    storage = new Storage('test-popit-db');
+    storage = new Storage(config['popit-api'].database.name);
   });
     
   describe('connections', function () {

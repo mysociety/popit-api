@@ -4,7 +4,8 @@ var util        = require('util'),
     express     = require('express'),
     collections = require('./collections'),
     validate    = require('./validate'),
-    Storage     = require('./storage'),
+    config      = require('../src/config'),
+    Storage     = require('../src/storage'),
     _           = require('underscore');
 
 var app = module.exports = express();
@@ -14,7 +15,7 @@ app.use(express.bodyParser());
 function determineStorage (req, res, next) {
   Storage.connectToDatabase(function (err) {
     if (!err) {
-      req.storage = new Storage( 'FIXME-change-this');
+      req.storage = new Storage(config['popit-api'].database.name);
     }
     next(err);
   });

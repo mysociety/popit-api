@@ -11,6 +11,9 @@ var CONFIG = require('config');
 CONFIG.setModuleDefaults(
   "popit-api",
   {
+    database: {
+      name: 'test-popit-api-db',
+    },
   }
 );
 
