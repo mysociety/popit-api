@@ -54,6 +54,15 @@ describe("Storage", function () {
         done();
       });
     });
+    
+    it("list empty collection", function (done) {
+      storage.list('samples', function (err, docs) {
+        assert.ifError(err);
+        assert(docs);
+        assert.deepEqual( docs, [] );
+        done();
+      });
+    });
   
     it("store some data", function (done) {
       storage.store('samples', sampleData, function (err, doc) {
@@ -72,6 +81,15 @@ describe("Storage", function () {
       });
     });
   
+    it("list it", function (done) {
+      storage.list('samples', function (err, docs) {
+        assert.ifError(err);
+        assert(docs, "found the document");
+        assert.deepEqual( docs, [sampleData] );
+        done();
+      });
+    });
+
     it("delete it", function (done) {
       storage.delete('samples', sampleData.id, function (err) {
         assert.ifError(err);

@@ -92,6 +92,24 @@ Storage.prototype.retrieve = function (collectionName, id, cb) {
 };
 
 /*
+  List documents in the database.
+*/
+Storage.prototype.list = function (collectionName, cb) {
+  var collection = this.db.collection(collectionName);
+  var cursor = collection.find({});
+  
+  cursor.toArray(function (err, docs) {
+
+    _.each(docs, function (doc) {
+      doc.id = doc._id;
+      delete doc._id;
+    });
+
+    cb(err, docs);
+  });
+};
+
+/*
   Delete a document from the database.
 */
 Storage.prototype.delete = function (collectionName, id, cb) {
