@@ -38,6 +38,15 @@ describe("Storage", function () {
       });
     });
     
+    it("can't store without an id", function (done) {
+      storage.store('samples', {foo: 'bar'}, function (err, doc) {
+        assert(err);
+        assert(!doc);
+        assert.equal(err.message, "Can't store document without an id");
+        done();
+      });
+    });
+
   });
   
   describe("empty", function () {

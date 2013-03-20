@@ -55,6 +55,11 @@ Storage.prototype.empty = function (cb) {
 */
 Storage.prototype.store = function (collectionName, doc, cb) {
   console.log('store');
+
+  if (!doc.id) {
+    return cb(new Error("Can't store document without an id"));
+  }
+
   var collection = this.db.collection(collectionName);
   collection.update({_id: doc.id}, doc, {upsert: true}, function (err) {
     cb(err, doc);
