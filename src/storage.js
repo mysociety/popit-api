@@ -32,6 +32,11 @@ Storage.connectToDatabase = function (cb) {
   }
 };
 
+Storage.generateID = function () {
+  var objectId = new mongo.ObjectID();
+  return objectId.toHexString();
+};
+
 
 /*
   Empty the database of all data. Not something you'd want to do in production :)

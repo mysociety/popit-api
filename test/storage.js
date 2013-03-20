@@ -19,10 +19,22 @@ describe("Storage", function () {
     storage = new Storage('test-popit-db');
   });
     
-  it("connecting a second time does not error", function (done) {
-    Storage.connectToDatabase(function(err) {
-      assert.ifError(err);
-      done();
+  describe('connections', function () {
+    it("connecting a second time does not error", function (done) {
+      Storage.connectToDatabase(function(err) {
+        assert.ifError(err);
+        done();
+      });
+    });
+  });
+  
+  describe('helpers', function () {
+    it("generateID", function () {
+      var id1 = Storage.generateID();
+      var id2 = Storage.generateID();
+      assert(id1);
+      assert((/[a-f0-9]{24}/).test(id1));
+      assert.notEqual(id1, id2);
     });
   });
   
