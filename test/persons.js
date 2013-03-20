@@ -160,6 +160,13 @@ describe("Persons collection", function () {
         },
       ], done);
     });
+
+    it("document that does not exist", function (done) {
+      request
+        .del("/api/persons/does-not-exist")
+        .expect(204)
+        .end(done);
+    });
     
   });
 
