@@ -94,7 +94,7 @@ function validateBody (req, res, next) {
   
   // If there is no id create one
   if (!body.id) {
-    body.id = Storage.generateID();
+    body.id = req.params.id || Storage.generateID();
   }
 
   validate(collectionName, body, function (err, errors) {
@@ -125,6 +125,32 @@ app.post('/:collection', validateBody, function (req, res, next) {
 
   var collectionName = req.params.collection;
   var body = req.body;
+
+  req.storage.store(collectionName, body, function (err) {
+    if (err) { return next(err); }
+    res
+      .status(201)
+      .location([collectionName, body.id].join('/'))
+      .send();
+  });
+
+});
+
+
+app.put('/:collection/:id', validateBody, function (req, res, next) {
+
+  var collectionName = req.params.collection;
+  var id             = req.params.id;
+  var body           = req.body;
+
+  if (id !== body.id) {
+    return res
+      .status(400)
+      .jsonp({
+        error: "URL id and document id are different"
+      });
+    
+  }
 
   req.storage.store(collectionName, body, function (err) {
     if (err) { return next(err); }

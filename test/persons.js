@@ -19,7 +19,7 @@ describe("Persons collection", function () {
     });
   });
 
-  describe("list collection", function () {
+  describe("GET collection", function () {
 
     it("should return empty list", function (done) {
       request
@@ -58,7 +58,7 @@ describe("Persons collection", function () {
 
   });
 
-  describe("post to collection", function () {
+  describe("POST collection", function () {
 
     it("should create entry and return Location when valid", function (done) {
       async.waterfall([
@@ -126,6 +126,62 @@ describe("Persons collection", function () {
         .expect({
           errors: [ "Error 'Property is required' with 'http://popoloproject.com/schemas/person.json#/properties/name'." ]
         })
+        .end(done);
+    });
+
+  });
+
+  describe("PUT collection/id", function () {
+
+    it("should create entry and return Location when valid", function (done) {
+      async.series([
+        function(callback){
+          request
+            .put("/api/persons/test")
+            .send({ name: "Joe Bloggs" })
+            .expect(201)
+            .expect('')
+            .expect('Location', '/api/persons/test')
+            .end(callback);
+        },
+        function(callback){
+          request
+            .get("/api/persons/test")
+            .expect(200)
+            .expect({ id: "test", name: "Joe Bloggs" })
+            .end(callback);
+        },
+        function(callback){
+          request
+            .put("/api/persons/test")
+            .send({ id: 'test', name: "Fred Smith" })
+            .expect(201)
+            .end(callback);
+        },
+        function(callback){
+          request
+            .get("/api/persons/test")
+            .expect(200)
+            .expect({ id: "test", name: "Fred Smith" })
+            .end(callback);
+        },
+      ], done);
+    });
+
+    it("should error if url id and doc id differ", function (done) {
+      request
+        .put("/api/persons/test")
+        .send({ id: "different", name: "Joe Bloggs" })
+        .expect(400)
+        .expect({error: "URL id and document id are different"})
+        .end(done);
+    });
+
+    it("should error when not valid (bad name)", function (done) {
+      request
+        .put("/api/persons/test")
+        .send({ name: 123, meme: "Harlem Shake" }) // name should be string
+        .expect(400)
         .end(done);
     });
 
