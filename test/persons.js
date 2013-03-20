@@ -2,11 +2,22 @@
 
 var request   = require("supertest"),
     async     = require('async'),
+    assert    = require('assert'),
+    config    = require('../src/config'),
+    Storage   = require("../src/storage"),
     serverApp = require("../server-app");
 
 request = request(serverApp);
 
 describe("Persons collection", function () {
+
+  beforeEach(function (done) {
+    Storage.connectToDatabase(function (err ) {
+      assert.ifError(err);
+      var storage = new Storage(config['popit-api'].database.name);
+      storage.empty(done);
+    });
+  });
 
   describe("list collection", function () {
 
@@ -16,6 +27,33 @@ describe("Persons collection", function () {
         .expect(200)
         .expect([])
         .end(done);
+    });
+
+    it("should return created entries", function (done) {
+      async.series([
+        function(callback){
+          request
+            .post("/api/persons")
+            .send({ id: 'joe-bloggs', name: "Joe Bloggs" })
+            .end(callback);
+        },
+        function(callback){
+          request
+            .post("/api/persons")
+            .send({ id: 'fred-smith', name: "Fred Smith" })
+            .end(callback);
+        },
+        function(callback){
+          request
+            .get("/api/persons")
+            .expect(200)
+            .expect([
+              { id: 'joe-bloggs', name: "Joe Bloggs" },
+              { id: 'fred-smith', name: "Fred Smith" },
+            ])
+            .end(callback);
+        },
+      ], done);
     });
 
   });

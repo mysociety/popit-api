@@ -24,7 +24,7 @@ function determineStorage (req, res, next) {
 app.use(determineStorage);
 
 app.get('/', function (req, res) {
-  res.jsonp({foo: 'bar'});
+  res.jsonp({foo: 'FIXME'});
 });
 
 
@@ -44,8 +44,12 @@ app.param('collection', function (req, res, next, collection) {
   }
 });
 
-app.get('/:collection', function (req, res) {
-  res.send("FIXME");
+app.get('/:collection', function (req, res, next) {
+  var collectionName = req.params.collection;
+  req.storage.list(collectionName, function (err, docs) {
+    if (err) { return next(err); }
+    res.jsonp(docs);
+  });
 });
 
 app.get('/:collection/:id', function (req, res, next) {
