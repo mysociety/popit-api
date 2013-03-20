@@ -1,6 +1,7 @@
 "use strict";
 
 var request   = require("supertest"),
+    async     = require('async'),
     serverApp = require("../server-app");
 
 request = request(serverApp);
@@ -22,14 +23,48 @@ describe("Persons collection", function () {
   describe("post to collection", function () {
 
     it("should create entry and return Location when valid", function (done) {
-      // FIXME - data is not currently being saved. Need to check that it will be.
-      request
-        .post("/api/persons")
-        .send({ name: "Joe Bloggs" })
-        .expect(201)
-        .expect('')
-        .expect('Location', /^\/api\/persons\/[0-9a-f]{24}$/)
-        .end(done);
+      async.waterfall([
+        function(callback){
+          request
+            .post("/api/persons")
+            .send({ name: "Joe Bloggs" })
+            .expect(201)
+            .expect('')
+            .expect('Location', /^\/api\/persons\/[0-9a-f]{24}$/)
+            .end(function (err, res) {
+              callback(err, res.headers.location);
+            });
+        },
+        function(location, callback){
+          var id = location.match(/\w+$/)[0];
+          request
+            .get(location)
+            .expect(200)
+            .expect({ id: id, name: "Joe Bloggs" })
+            .end(callback);
+        },
+      ], done);
+    });
+
+    it("should create entry using provided id", function (done) {
+      async.series([
+        function(callback){
+          request
+            .post("/api/persons")
+            .send({ id: 'test', name: "Joe Bloggs" })
+            .expect(201)
+            .expect('')
+            .expect('Location', '/api/persons/test')
+            .end(callback);
+        },
+        function(callback){
+          request
+            .get('/api/persons/test')
+            .expect(200)
+            .expect({ id: 'test', name: "Joe Bloggs" })
+            .end(callback);
+        },
+      ], done);
     });
 
     it("should error when not valid (bad name)", function (done) {

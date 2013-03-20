@@ -4,11 +4,23 @@ var util        = require('util'),
     express     = require('express'),
     collections = require('./collections'),
     validate    = require('./validate'),
+    Storage     = require('./storage'),
     _           = require('underscore');
 
 var app = module.exports = express();
 
 app.use(express.bodyParser());
+
+function determineStorage (req, res, next) {
+  Storage.connectToDatabase(function (err) {
+    if (!err) {
+      req.storage = new Storage( 'FIXME-change-this');
+    }
+    next(err);
+  });
+}
+
+app.use(determineStorage);
 
 app.get('/', function (req, res) {
   res.jsonp({foo: 'bar'});
@@ -35,6 +47,25 @@ app.get('/:collection', function (req, res) {
   res.send("FIXME");
 });
 
+app.get('/:collection/:id', function (req, res, next) {
+  var collectionName = req.params.collection;
+  var id             = req.params.id;
+
+  req.storage.retrieve( collectionName, id, function (err, doc) {
+    if (err) {
+      next(err);
+    } else if (doc) {
+      res.jsonp(doc);
+    } else {
+      res
+        .status(404)
+        .jsonp({
+          error: "id '" + id + "' not found"
+        });
+    }
+  });
+});
+
 
 function validateBody (req, res, next) {
 
@@ -43,8 +74,7 @@ function validateBody (req, res, next) {
   
   // If there is no id create one
   if (!body.id) {
-    //FIXME - replace with mongo object id
-    body.id = '123456789012345678901234';
+    body.id = Storage.generateID();
   }
 
   validate(collectionName, body, function (err, errors) {
@@ -71,18 +101,18 @@ function validateBody (req, res, next) {
 }
 
 
-app.post('/:collection', validateBody, function (req, res) {
+app.post('/:collection', validateBody, function (req, res, next) {
 
   var collectionName = req.params.collection;
   var body = req.body;
-  var id   = body.id;
 
-  // FIXME - save the document here
+  req.storage.store(collectionName, body, function (err) {
+    if (err) { return next(err); }
+    res
+      .status(201)
+      .location([collectionName, body.id].join('/'))
+      .send();
+  });
 
-  res
-    .status(201)
-    .location([collectionName, id].join('/'))
-    .send();
 });
-
 
