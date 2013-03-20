@@ -95,4 +95,12 @@ Storage.prototype.retrieve = function (collectionName, id, cb) {
   });
 };
 
+/*
+  Delete a document from the database.
+*/
+Storage.prototype.delete = function (collectionName, id, cb) {
+  var collection = this.db.collection(collectionName);
+  collection.remove({_id: id}, cb);
+};
+
 module.exports = Storage;

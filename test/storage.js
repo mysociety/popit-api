@@ -45,8 +45,27 @@ describe("Storage", function () {
         done();
       });
     });
-    
-    it("can't store without an id", function (done) {
+
+    it("delete it", function (done) {
+      storage.delete('samples', sampleData.id, function (err) {
+        assert.ifError(err);
+        done();
+      });
+    });
+
+    it("now gone", function (done) {
+      storage.retrieve('samples', sampleData.id, function (err, doc) {
+        assert.ifError(err);
+        assert(!doc);
+        done();
+      });
+    });
+  });
+  
+
+  describe("error checking", function () {
+
+    it("can't store doc without an id", function (done) {
       storage.store('samples', {foo: 'bar'}, function (err, doc) {
         assert(err);
         assert(!doc);
@@ -56,11 +75,5 @@ describe("Storage", function () {
     });
 
   });
-  
-  describe("empty", function () {
-    it("should be true", function () {
-      assert(storage);
-    });
-  });
-  
+    
 });
