@@ -4,23 +4,36 @@ var Storage = require("../src/storage"),
     assert  = require('assert');
 
 
-var storage = new Storage('test-popit-db');
+
 
 
 describe("Storage", function () {
 
+  var storage = null;
+
   before(function (done) {
-    storage.init(done);
+    Storage.connectToDatabase(done);
   });
 
+  before(function () {
+    storage = new Storage('test-popit-db');
+  });
+    
+  it("connecting a second time does not error", function (done) {
+    Storage.connectToDatabase(function(err) {
+      assert.ifError(err);
+      done();
+    });
+  });
+  
   describe("store, retrieve and delete", function () {
-
+  
     before(function (done) {
       storage.empty(done);
     });
-
+  
     var sampleData = { id: 'test', foo: 'bar' };
-
+  
     it("check not in collection", function (done) {
       storage.retrieve('samples', sampleData.id, function (err, doc) {
         assert.ifError(err);
@@ -28,7 +41,7 @@ describe("Storage", function () {
         done();
       });
     });
-
+  
     it("store some data", function (done) {
       storage.store('samples', sampleData, function (err, doc) {
         assert.ifError(err);
@@ -36,7 +49,7 @@ describe("Storage", function () {
         done();
       });
     });
-
+  
     it("retrieve it", function (done) {
       storage.retrieve('samples', sampleData.id, function (err, doc) {
         assert.ifError(err);
@@ -45,14 +58,14 @@ describe("Storage", function () {
         done();
       });
     });
-
+  
     it("delete it", function (done) {
       storage.delete('samples', sampleData.id, function (err) {
         assert.ifError(err);
         done();
       });
     });
-
+  
     it("now gone", function (done) {
       storage.retrieve('samples', sampleData.id, function (err, doc) {
         assert.ifError(err);
@@ -62,9 +75,9 @@ describe("Storage", function () {
     });
   });
   
-
+  
   describe("error checking", function () {
-
+  
     it("can't store doc without an id", function (done) {
       storage.store('samples', {foo: 'bar'}, function (err, doc) {
         assert(err);
@@ -73,7 +86,7 @@ describe("Storage", function () {
         done();
       });
     });
-
+  
   });
     
 });
