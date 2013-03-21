@@ -9,7 +9,7 @@ var request   = require("supertest"),
 
 request = request(serverApp);
 
-describe("Persons collection", function () {
+describe("REST", function () {
 
   beforeEach(function (done) {
     Storage.connectToDatabase(function (err ) {
