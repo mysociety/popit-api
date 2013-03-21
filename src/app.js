@@ -43,7 +43,7 @@ module.exports = function (options) {
       res
         .status(404)
         .jsonp({
-          error: "collection '" + collection + "' not found"
+          errors: ["collection '" + collection + "' not found"]
         });
     } else {
       next();
@@ -54,7 +54,7 @@ module.exports = function (options) {
     var collectionName = req.params.collection;
     req.storage.list(collectionName, function (err, docs) {
       if (err) { return next(err); }
-      res.jsonp(docs);
+      res.jsonp({ result: docs });
     });
   });
 
@@ -66,12 +66,12 @@ module.exports = function (options) {
       if (err) {
         next(err);
       } else if (doc) {
-        res.jsonp(doc);
+        res.jsonp({ result: doc });
       } else {
         res
           .status(404)
           .jsonp({
-            error: "id '" + id + "' not found"
+            errors: ["id '" + id + "' not found"]
           });
       }
     });
@@ -153,7 +153,7 @@ module.exports = function (options) {
       return res
         .status(400)
         .jsonp({
-          error: "URL id and document id are different"
+          errors: ["URL id and document id are different"]
         });
 
     }
@@ -173,7 +173,7 @@ module.exports = function (options) {
     Anything else we should 400 for as it is probably an unsupported method.
   */
   app.all('*', function (req, res) {
-    res.status(405).jsonp({error: "unsupported method"});
+    res.status(405).jsonp({errors: ["unsupported method"] });
   });
 
   return app;

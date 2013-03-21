@@ -25,7 +25,7 @@ describe("REST", function () {
       request
         .get("/api/persons")
         .expect(200)
-        .expect([])
+        .expect({result: []})
         .end(done);
     });
 
@@ -47,10 +47,12 @@ describe("REST", function () {
           request
             .get("/api/persons")
             .expect(200)
-            .expect([
-              { id: 'joe-bloggs', name: "Joe Bloggs" },
-              { id: 'fred-smith', name: "Fred Smith" },
-            ])
+            .expect({
+              result: [
+                { id: 'joe-bloggs', name: "Joe Bloggs" },
+                { id: 'fred-smith', name: "Fred Smith" },
+              ],
+            })
             .end(callback);
         },
       ], done);
@@ -78,7 +80,7 @@ describe("REST", function () {
           request
             .get(location)
             .expect(200)
-            .expect({ id: id, name: "Joe Bloggs" })
+            .expect({ result: { id: id, name: "Joe Bloggs" }})
             .end(callback);
         },
       ], done);
@@ -99,7 +101,7 @@ describe("REST", function () {
           request
             .get('/api/persons/test')
             .expect(200)
-            .expect({ id: 'test', name: "Joe Bloggs" })
+            .expect({ result: { id: 'test', name: "Joe Bloggs" } })
             .end(callback);
         },
       ], done);
@@ -148,7 +150,7 @@ describe("REST", function () {
           request
             .get("/api/persons/test")
             .expect(200)
-            .expect({ id: "test", name: "Joe Bloggs" })
+            .expect({ result: { id: "test", name: "Joe Bloggs" } })
             .end(callback);
         },
         function(callback){
@@ -162,7 +164,7 @@ describe("REST", function () {
           request
             .get("/api/persons/test")
             .expect(200)
-            .expect({ id: "test", name: "Fred Smith" })
+            .expect({ result: { id: "test", name: "Fred Smith" } })
             .end(callback);
         },
       ], done);
@@ -173,7 +175,7 @@ describe("REST", function () {
         .put("/api/persons/test")
         .send({ id: "different", name: "Joe Bloggs" })
         .expect(400)
-        .expect({error: "URL id and document id are different"})
+        .expect({errors: ["URL id and document id are different"]})
         .end(done);
     });
 
@@ -199,7 +201,7 @@ describe("REST", function () {
         function(callback){
           request
             .get('/api/persons/test')
-            .expect({ id: 'test', name: "Joe Bloggs" })
+            .expect({ result: { id: 'test', name: "Joe Bloggs" } })
             .end(callback);
         },
         function(callback){

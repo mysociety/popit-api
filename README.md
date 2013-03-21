@@ -82,6 +82,21 @@ different to the current official ones until the standard is finalised.
 The REST API is being kept as simple as possible. We'll be adding features as
 required.
 
+Responses are always in JSON, or JSONP if a `callback` query is provided. HTTP
+Status codes are used to describe the success or failure. If data is returned it
+will be something like:
+
+``` json
+{ "result": { "id": "123", "name": "Joe Bloggs" } }
+{ "result": [ { "id": "123", "name": "Joe Bloggs" }, ... ] }
+```
+
+Errors will also return JSON:
+
+```json
+{ "errors": [ "Error message - hopefully helpful...", ... ] }
+```
+
 ### GET '/api/collectionName`
 
 Returns an array of all the documents in that collection (currently there is no

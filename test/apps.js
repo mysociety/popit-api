@@ -70,7 +70,7 @@ describe("Apps", function () {
         request
           .get("/api/bad")
           .expect(404)
-          .expect({error: "collection 'bad' not found" })
+          .expect({errors: ["collection 'bad' not found"] })
           .end(done);
       });
       
