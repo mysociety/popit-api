@@ -17,7 +17,7 @@ configuration files that are needed. The actual `popit-api` code is installed
 using [npm](https://npmjs.org/) to encourage us to keep the version there
 current.
 
-The MongoDB database name is `'popit-api-' + slugify(req.url.hostname)` (eg
+The MongoDB database name is `'popit-api-' + slugify(req.host)` (eg
 `foo.bar.com` -> `popit-api-foo-bar-com`). This allows several sites to be
 served off one vhost which might be convenient and should make the configuration
 a little simpler.
