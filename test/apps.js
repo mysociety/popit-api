@@ -32,14 +32,14 @@ describe("Apps", function () {
 
   describe("API app", function () {
   
-    describe('config', function () {
+    describe('config for fixedName selector', function () {
   
       it("should throw if not given correct config", function () {
         assert.throws(
           function () {
             apiApp({});
           },
-          "Missing required option 'databaseName'"
+          /Missing required option 'databaseName'/
         );
       });
       
@@ -50,7 +50,21 @@ describe("Apps", function () {
       });
       
     });
+
   
+    describe('config for unknown selector', function () {
+  
+      it("should throw", function () {
+        assert.throws(
+          function () {
+            apiApp({ storageSelector: 'unknownSelector' });
+          },
+          /Could not load storage selector 'unknownSelector'/
+        );
+      });
+      
+    });
+
     describe('paths', function () {
       it("should 200 on '/api'", function (done) {
         request

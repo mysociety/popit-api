@@ -8,26 +8,45 @@ var util        = require('util'),
     Storage     = require('../src/storage'),
     _           = require('underscore');
 
+var storageSelectors = {
+  fixedName: {
+    selector: function (req, res, next) {
+      Storage.connectToDatabase(function (err) {
+        if (!err) {
+          var databaseName = req.app.get('popitApiOptions').databaseName;
+          req.storage = new Storage(databaseName);
+        }
+        next(err);
+      });
+    },
+    optionsCheck: function (options) {
+      assert(options.databaseName, "Missing required option 'databaseName'");
+    }
+  }
+};
+
 module.exports = function (options) {
   
-  // check that we have all the options that we need
-  assert(options.databaseName, "Missing required option 'databaseName'");
+  // Apply defaults to the options here.
+  _.defaults(options, {
+    storageSelector: 'fixedName'
+  });
 
+  // check that we have all the options that we need
+  var storageSelector = storageSelectors[options.storageSelector];
+  assert(storageSelector, "Could not load storage selector '"+options.storageSelector+"'");
+  if (storageSelector.optionsCheck) {
+    storageSelector.optionsCheck(options);
+  }
 
   var app = express();
 
+  // store the options
+  app.set('popitApiOptions', options);
+
   app.use(express.bodyParser());
 
-  function determineStorage (req, res, next) {
-    Storage.connectToDatabase(function (err) {
-      if (!err) {
-        req.storage = new Storage(options.databaseName);
-      }
-      next(err);
-    });
-  }
-
-  app.use(determineStorage);
+  app.use(storageSelector.selector);
 
   app.get('/', function (req, res) {
     res.jsonp({foo: 'FIXME'});
