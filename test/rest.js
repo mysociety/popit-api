@@ -233,14 +233,14 @@ describe("REST", function () {
       request
         .post("/api/persons/does-not-exist")
         .send({name: "Foo"})
-        .expect(400)
+        .expect(405)
         .end(done);
     });
 
     it("DELETE collection", function (done) {
       request
         .del("/api/persons")
-        .expect(400)
+        .expect(405)
         .end(done);
     });
 
@@ -248,7 +248,7 @@ describe("REST", function () {
       request
         .put("/api/persons")
         .send([{id: "test", name: "Foo"}])
-        .expect(400)
+        .expect(405)
         .end(done);
     });
 

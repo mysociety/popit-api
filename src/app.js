@@ -173,7 +173,7 @@ module.exports = function (options) {
     Anything else we should 400 for as it is probably an unsupported method.
   */
   app.all('*', function (req, res) {
-    res.status(400).jsonp({error: "unsupported method"});
+    res.status(405).jsonp({error: "unsupported method"});
   });
 
   return app;
