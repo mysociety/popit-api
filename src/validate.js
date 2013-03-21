@@ -1,7 +1,7 @@
 "use strict";
 
 var _             = require('underscore'),
-    schemas       = require('./schemas'),
+    schemas       = require('../schemas'),
     collections   = require('./collections'),
     assert        = require('assert');
 
