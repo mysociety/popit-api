@@ -65,7 +65,24 @@ describe("Apps", function () {
           .expect(404)
           .end(done);
       });
+
+      it("should 404 on '/api/non-existent-collection'", function (done) {
+        request
+          .get("/api/bad")
+          .expect(404)
+          .expect({error: "collection 'bad' not found" })
+          .end(done);
+      });
+      
+      it("should 200 on '/api/good-collection'", function (done) {
+        request
+          .get("/api/persons")
+          .expect(200)
+          .end(done);
+      });
+
     });
+    
   });
 });
 
