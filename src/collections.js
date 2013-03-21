@@ -12,4 +12,13 @@ module.exports = {
   persons: {
     popoloSchemaUrl: 'http://popoloproject.com/schemas/person.json#',
   },
+  organizations: {
+    popoloSchemaUrl: 'http://popoloproject.com/schemas/organization.json#',
+  },
+  posts: {
+    popoloSchemaUrl: 'http://popoloproject.com/schemas/post.json#',
+  },
+  memberships: {
+    popoloSchemaUrl: 'http://popoloproject.com/schemas/membership.json#',
+  },
 };
