@@ -1,15 +1,19 @@
 "use strict";
 
 var util        = require('util'),
+    assert      = require('assert'),
     express     = require('express'),
     collections = require('./collections'),
     validate    = require('./validate'),
-    config      = require('../src/config'),
     Storage     = require('../src/storage'),
     _           = require('underscore');
 
-module.exports = function () {
+module.exports = function (options) {
   
+  // check that we have all the options that we need
+  assert(options.databaseName, "Missing required option 'databaseName'");
+
+
   var app = express();
 
   app.use(express.bodyParser());
@@ -17,7 +21,7 @@ module.exports = function () {
   function determineStorage (req, res, next) {
     Storage.connectToDatabase(function (err) {
       if (!err) {
-        req.storage = new Storage(config['popit-api'].database.name);
+        req.storage = new Storage(options.databaseName);
       }
       next(err);
     });

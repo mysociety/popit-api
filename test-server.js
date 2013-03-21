@@ -1,7 +1,7 @@
 "use strict";
 
 var express    = require('express'),
-    serverApp  = require('./server-app');
+    serverApp  = require('./test-server-app');
 
 serverApp.use(express.logger('dev'));
 

@@ -1,7 +1,8 @@
 "use strict";
 
-var express = require('express'),
-    apiApp  = require('./');
+var express  = require('express'),
+    apiApp   = require('./'),
+    defaults = require('./test/defaults');
 
 var app = module.exports = express();
 
@@ -10,7 +11,9 @@ app.use(express.errorHandler());
 app.use(express.favicon());
 
 // Use vhost to route to the correct app
-app.use('/api', apiApp());
+app.use('/api', apiApp({
+  databaseName: defaults.databaseName,
+}));
 
 // Handle everything else as a 404
 app.use(function (req, res) {

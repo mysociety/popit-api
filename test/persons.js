@@ -3,9 +3,9 @@
 var request   = require("supertest"),
     async     = require('async'),
     assert    = require('assert'),
-    config    = require('../src/config'),
+    defaults  = require('./defaults'),
     Storage   = require("../src/storage"),
-    serverApp = require("../server-app");
+    serverApp = require("../test-server-app");
 
 request = request(serverApp);
 
@@ -14,7 +14,7 @@ describe("Persons collection", function () {
   beforeEach(function (done) {
     Storage.connectToDatabase(function (err ) {
       assert.ifError(err);
-      var storage = new Storage(config['popit-api'].database.name);
+      var storage = new Storage(defaults.databaseName);
       storage.empty(done);
     });
   });

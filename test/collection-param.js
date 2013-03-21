@@ -1,7 +1,7 @@
 "use strict";
 
 var request   = require("supertest"),
-    serverApp = require("../server-app");
+    serverApp = require("../test-server-app");
 
 request = request(serverApp);
 
