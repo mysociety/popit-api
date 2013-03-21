@@ -14,6 +14,7 @@ var mongoConnected = false;
 
 var Storage = function (databaseName) {
   assert(databaseName, "Need to provide a database name");
+  this.databaseName = databaseName;
   this.db = mongoclient.db(databaseName);
 };
 

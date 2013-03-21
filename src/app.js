@@ -8,6 +8,8 @@ var util        = require('util'),
     Storage     = require('../src/storage'),
     _           = require('underscore');
 
+_.str = require('underscore.string');
+
 var storageSelectors = {
   fixedName: {
     selector: function (req, res, next) {
@@ -22,6 +24,18 @@ var storageSelectors = {
     optionsCheck: function (options) {
       assert(options.databaseName, "Missing required option 'databaseName'");
     }
+  },
+  hostName: {
+    selector: function (req, res, next) {
+      Storage.connectToDatabase(function (err) {
+        if (!err) {
+          var host = req.host.replace(/\./g, '-');
+          var databaseName = 'popit-api-' + _.str.slugify(host);
+          req.storage = new Storage(databaseName);
+        }
+        next(err);
+      });
+    },
   }
 };
 
@@ -49,7 +63,7 @@ module.exports = function (options) {
   app.use(storageSelector.selector);
 
   app.get('/', function (req, res) {
-    res.jsonp({foo: 'FIXME'});
+    res.jsonp({ databaseName: req.storage.databaseName });
   });
 
 

@@ -51,6 +51,22 @@ describe("Apps", function () {
       
     });
 
+    describe('config for hostName selector', function () {
+    
+      it("correct config", function (done) {
+
+        var app =  apiApp({ storageSelector: 'hostName' });
+        assert(app);
+
+        var hostRequest = require("supertest")(app);
+        hostRequest
+          .get('/')
+          .set('Host','foo.bar')
+          .expect({ databaseName: 'popit-api-foo-bar' })
+          .end(done);
+      });
+      
+    });
   
     describe('config for unknown selector', function () {
   
