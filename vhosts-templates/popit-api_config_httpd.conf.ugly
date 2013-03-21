@@ -1,0 +1,13 @@
+!!(*
+if (0) {
+    # add specific vhosts here
+    $port = 123456;
+} else {
+    # default to this port for this service
+    $port = 3100;
+}
+*)!!
+
+# Pass everything else to the backend app server
+ProxyPass / http://127.0.0.1:!!(*= $port *)!!/ retry=4
+ProxyPreserveHost On

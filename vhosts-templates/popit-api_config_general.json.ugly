@@ -1,0 +1,14 @@
+!!(*
+if (0) {
+    # add specific vhosts here
+    $port = 123456;
+} else {
+    # default to this port for this service
+    $port = 3100;
+}
+*)!!
+
+
+{
+  "serverPort": !!(*= $port *)!!
+}
