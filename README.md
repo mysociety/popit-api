@@ -5,7 +5,6 @@ This branch contains the files needed for it. Apart from being in the same repo
 (for convenience) it is unrelated to the other code, and probably not of
 interest to others. Please look at the `master` branch.
 
-
 ## Background
 
 As it is so easy to set up a local node environment for development it is not
@@ -23,7 +22,6 @@ The MongoDB database name is `'popit-api-' + slugify(req.host)` (eg
 served off one vhost which might be convenient and should make the configuration
 a little simpler.
 
-
 ## Files and what they do
 
 ### `README.md`
@@ -37,11 +35,19 @@ as it should contain the generated files that need to be ignored there too, or
 the deploy process will halt (as it won't delete something it does know it is
 safe to).
 
+### `package.json`
+
+NPM description of this project. Contains the NPM dependencies.
+
+### `server.js`
+
+Very simple script that mounts the API and serves it, producing logs as
+appropriate.
+
 ### `config/general.json`
 
 The generated config. Listed in `.gitignore` so it won't actually be present
-here. Copy and edit the `vhosts-templates/popit-api_config_general.json.ugly`
-file to create it.
+here. Copy and edit the `config/general.json-example` file to create it.
 
 ### `config/packages`
 
@@ -58,20 +64,15 @@ SYSV init style script that will start the daemon that Apache will proxy to.
 Script that is run each time post deploy. Makes sure that Node is installed
 locally and then installs and updates NPM modules.
 
-### `package.json`
-
-NPM description of this project. Contains the NPM dependencies.
-
-### `server.js`
-
-Very simple script that mounts the API and serves it, producing logs as
-appropriate.
-
-### `vhosts-templates/popit-api_config_general.json.ugly`
+### `config/general.json-example`
 
 Template to generate the `config/general.json` file. Output needs to be JSON,
-which is quite picky about the formatting. Should be copied to `/data/servers/vhosts/` for it to actually be used.
+which is quite picky about the formatting. Should be copied to
+`/data/servers/vhosts/popit-api_config_general.json.ugly` on server for it to
+actually be used.
 
-### `vhosts-templates/popit-api_config_httpd.conf.ugly`
+### `config/httpd.conf-example`
 
-Sample apache config.  Should be copied to `/data/servers/vhosts/` for it to actually be used.
+Sample apache config. Should be copied to
+`/data/servers/vhosts/popit-api_config_httpd.conf.ugly` on server for it to
+actually be used.
