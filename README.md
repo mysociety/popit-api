@@ -30,6 +30,8 @@ npm install popit-api
 
 ## Overview
 
+Example of how to create a simple API server:
+
 ``` javascript
 var express = require('express'),
     apiApp  = require('popit-api');
@@ -53,9 +55,12 @@ This app provides a REST interface to an API that lets you store
 [Popolo](http://popoloproject.com/) compliant data. That's it.
 
 It does not provide any logging or authentication etc. It is intended that you
-will do the app that you use this module in. There is a test app included that
-you can use to experiment quickly. These commands will get you a dev environment
-set up:
+will do the app that you use this module in.
+
+## Development setup
+
+There is a test app included that you can use to experiment quickly. These
+commands will get you a dev environment set up:
 
 ``` bash
 git clone https://github.com/mysociety/popit-api.git
@@ -63,12 +68,29 @@ cd popit-api
 npm install .
 npm test
 node test-server.js
-open http://0.0.0.0:3000
+open http://127.0.0.1:3000/
 ```
+
+When running the tests or the test-server a database called `test-popit-api-db`
+is used.
 
 ## Configuration
 
-All configuration is done by passing in the config to the app.
+All configuration is done by passing in the config to the app. Currently you
+need to either supply one of these two:
+
+``` javascript
+// Specify the database name
+{ databaseName: 'name-of-mongodb-to-use' }
+```
+
+``` javascript
+// Use the hostname to decide the db name
+{ storageSelector: 'hostName' }
+```
+
+Expect the configuration to change significantly as we work out what we actually
+need.
 
 ## Validation
 
