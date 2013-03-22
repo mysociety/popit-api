@@ -234,36 +234,39 @@ describe("REST", function () {
       });
 
     });
-  });
 
-  describe("DELETE", function () {
 
-    beforeEach(fixture.loadFixtures);
+    describe("DELETE", function () {
 
-    it("document that does exist", function (done) {
-      async.series([
-        function(callback){
-          request
-            .del("/api/persons/fred-bloggs")
-            .expect(204)
-            .end(callback);
-        },
-        function(callback){
-          request
-            .get('/api/persons/fred-bloggs')
-            .expect(404)
-            .end(callback);
-        },
-      ], done);
+      beforeEach(fixture.loadFixtures);
+
+      it("document that does exist", function (done) {
+        async.series([
+          function(callback){
+            request
+              .del("/api/persons/fred-bloggs")
+              .expect(204)
+              .end(callback);
+          },
+          function(callback){
+            request
+              .get('/api/persons/fred-bloggs')
+              .expect(404)
+              .end(callback);
+          },
+        ], done);
+      });
+
+      it("document that does not exist", function (done) {
+        request
+          .del("/api/persons/does-not-exist")
+          .expect(204)
+          .end(done);
+      });
+
     });
 
-    it("document that does not exist", function (done) {
-      request
-        .del("/api/persons/does-not-exist")
-        .expect(204)
-        .end(done);
-    });
-
   });
+
 
 });
