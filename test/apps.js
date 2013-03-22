@@ -1,9 +1,10 @@
 "use strict";
 
-var request   = require("supertest"),
-    assert    = require('assert'),
-    apiApp    = require("../"),
-    serverApp = require("../test-server-app");
+var request       = require("supertest"),
+    assert        = require('assert'),
+    apiApp        = require("../"),
+    packageJSON   = require("../package"),
+    serverApp     = require("../test-server-app");
 
 request = request(serverApp);
 
@@ -62,7 +63,12 @@ describe("Apps", function () {
         hostRequest
           .get('/')
           .set('Host','foo.bar')
-          .expect({ databaseName: 'popit-api-foo-bar' })
+          .expect({
+            info: {
+              databaseName: 'popit-api-foo-bar',
+              version:      packageJSON.version,
+            },
+          })
           .end(done);
       });
       

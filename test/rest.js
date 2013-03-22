@@ -1,11 +1,13 @@
 "use strict";
 
-var request   = require("supertest"),
-    async     = require('async'),
-    assert    = require('assert'),
-    fixture   = require("./fixture"),
-    Storage   = require("../src/storage"),
-    serverApp = require("../test-server-app");
+var request       = require("supertest"),
+    async         = require('async'),
+    assert        = require('assert'),
+    fixture       = require("./fixture"),
+    defaults      = require("./defaults"),
+    packageJSON   = require("../package"),
+    Storage       = require("../src/storage"),
+    serverApp     = require("../test-server-app");
 
 request = request(serverApp);
 
@@ -13,6 +15,22 @@ describe("REST", function () {
 
   before(Storage.connectToDatabase);
   beforeEach(fixture.clearDatabase);
+
+  describe("/api ", function () {
+    it("should 200 with API info", function (done) {
+      request
+        .get("/api")
+        .expect(200)
+        .expect({
+          info: {
+            databaseName: defaults.databaseName,
+            version:      packageJSON.version,
+          },
+        })
+        .end(done);
+      
+    });
+  });
 
   describe("/api/collectionName", function () {
 

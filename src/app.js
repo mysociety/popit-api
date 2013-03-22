@@ -6,6 +6,7 @@ var util        = require('util'),
     collections = require('./collections'),
     validate    = require('./validate'),
     Storage     = require('../src/storage'),
+    packageJSON = require("../package"),
     _           = require('underscore');
 
 _.str = require('underscore.string');
@@ -63,7 +64,12 @@ module.exports = function (options) {
   app.use(storageSelector.selector);
 
   app.get('/', function (req, res) {
-    res.jsonp({ databaseName: req.storage.databaseName });
+    res.jsonp({
+      info: {
+        databaseName: req.storage.databaseName,
+        version:      packageJSON.version,
+      },
+    });
   });
 
 
