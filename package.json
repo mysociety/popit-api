@@ -29,6 +29,7 @@
   "devDependencies": {
     "mocha": "~1.8.2",
     "supertest": "~0.5.1",
-    "jshint": "~1.1.0"
+    "jshint": "~1.1.0",
+    "pow-mongodb-fixtures": "~0.8.1"
   }
 }
