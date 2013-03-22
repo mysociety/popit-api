@@ -3,6 +3,3 @@ node_modules
 # generated if there is something wrong during deploy. Ignore it so we redeploy 
 # easily without having to delete it manually.
 public/down.html
-
-# generated during deploy
-config/*.deployed
