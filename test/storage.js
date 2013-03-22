@@ -2,6 +2,7 @@
 
 var Storage  = require("../src/storage"),
     defaults = require("./defaults"),
+    fixture  = require("./fixture"),
     assert   = require('assert');
 
 
@@ -38,9 +39,7 @@ describe("Storage", function () {
   
   describe("store, retrieve and delete", function () {
   
-    before(function (done) {
-      storage.empty(done);
-    });
+    before(fixture.clearDatabase);
   
     var sampleData = { id: 'test', foo: 'bar' };
   

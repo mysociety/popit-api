@@ -3,7 +3,7 @@
 var request   = require("supertest"),
     async     = require('async'),
     assert    = require('assert'),
-    defaults  = require('./defaults'),
+    fixture   = require("./fixture"),
     Storage   = require("../src/storage"),
     serverApp = require("../test-server-app");
 
@@ -14,8 +14,7 @@ describe("REST", function () {
   beforeEach(function (done) {
     Storage.connectToDatabase(function (err ) {
       assert.ifError(err);
-      var storage = new Storage(defaults.databaseName);
-      storage.empty(done);
+      fixture.clearDatabase(done);
     });
   });
 

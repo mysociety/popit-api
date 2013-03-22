@@ -4,8 +4,7 @@
 
 var mongo  = require('mongodb'),
     assert = require('assert'),
-    _      = require('underscore'),
-    async  = require('async');
+    _      = require('underscore');
  
 
 var server      = new mongo.Server('localhost', 27017, {auto_reconnect: true});
@@ -36,27 +35,6 @@ Storage.connectToDatabase = function (cb) {
 Storage.generateID = function () {
   var objectId = new mongo.ObjectID();
   return objectId.toHexString();
-};
-
-
-/*
-  Empty the database of all data. Not something you'd want to do in production :)
-*/
-Storage.prototype.empty = function (cb) {
-  var storage = this;
-
-  storage.db.collections(function(err, collections) {
-    var names = _.chain(collections)
-      .pluck('collectionName')
-      .reject(function (name) { return (/^system\./).test(name); })
-      .value();
-
-    async.each(
-      names,
-      function (name, done) { storage.db.dropCollection(name, done); },
-      cb
-    );
-  });
 };
 
 
