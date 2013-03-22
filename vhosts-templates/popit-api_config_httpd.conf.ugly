@@ -8,6 +8,10 @@ if (0) {
 }
 *)!!
 
+# serve static files directly (needed for the down.html)
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f
+RewriteRule /(.+) /$1 [L]
+
 # Pass everything else to the backend app server
 ProxyPass / http://127.0.0.1:!!(*= $port *)!!/ retry=4
 ProxyPreserveHost On
