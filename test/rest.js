@@ -2,7 +2,7 @@
 
 var request   = require("supertest"),
     async     = require('async'),
-    // assert    = require('assert'),
+    assert    = require('assert'),
     fixture   = require("./fixture"),
     Storage   = require("../src/storage"),
     serverApp = require("../test-server-app");
@@ -27,32 +27,19 @@ describe("REST", function () {
       });
 
       it("should return created entries", function (done) {
-        async.series([
-          function(callback){
-            request
-              .post("/api/persons")
-              .send({ id: 'joe-bloggs', name: "Joe Bloggs" })
-              .end(callback);
-          },
-          function(callback){
-            request
-              .post("/api/persons")
-              .send({ id: 'fred-smith', name: "Fred Smith" })
-              .end(callback);
-          },
-          function(callback){
-            request
-              .get("/api/persons")
-              .expect(200)
-              .expect({
-                result: [
-                  { id: 'joe-bloggs', name: "Joe Bloggs" },
-                  { id: 'fred-smith', name: "Fred Smith" },
-                ],
-              })
-              .end(callback);
-          },
-        ], done);
+        fixture.loadFixtures(function(err) {
+          assert.ifError(err);
+          request
+            .get("/api/persons")
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'fred-bloggs', name: 'Fred Bloggs' },
+                { id: 'joe-bloggs', name: 'Joe Bloggs' },
+              ],
+            })
+            .end(done);
+        });
       });
 
     });
@@ -129,7 +116,7 @@ describe("REST", function () {
       });
 
     });
-    
+
     describe("PUT", function () {
       it("should 405", function (done) {
         request
@@ -139,7 +126,7 @@ describe("REST", function () {
           .end(done);
       });
     });
-    
+
     describe("DELETE", function () {
       it("should 405", function (done) {
         request
@@ -149,15 +136,39 @@ describe("REST", function () {
       });
     });
 
-    
   });
-
 
   describe("/api/collectionName/id", function () {
 
     describe("GET", function () {
+
+      beforeEach(fixture.loadFixtures);
+
+      it("should 200 when doc exists", function (done) {
+        request
+          .get("/api/persons/fred-bloggs")
+          .expect(200)
+          .expect({
+            result: {
+              id: 'fred-bloggs',
+              name: 'Fred Bloggs',
+            }
+          })
+          .end(done);
+      });
+
+      it("should 404 when doc does not exist", function (done) {
+        request
+          .get("/api/persons/i-do-not-exist")
+          .expect(404)
+          .expect({
+            errors: [ "id 'i-do-not-exist' not found" ]
+          })
+          .end(done);
+      });
+
     });
-    
+
     describe("POST", function () {
       it("should 405", function (done) {
         request
@@ -225,31 +236,21 @@ describe("REST", function () {
     });
   });
 
-
   describe("DELETE", function () {
-    it("create, test, delete, test", function (done) {
+
+    beforeEach(fixture.loadFixtures);
+
+    it("document that does exist", function (done) {
       async.series([
         function(callback){
           request
-            .post("/api/persons")
-            .send({ id: 'test', name: "Joe Bloggs" })
-            .end(callback);
-        },
-        function(callback){
-          request
-            .get('/api/persons/test')
-            .expect({ result: { id: 'test', name: "Joe Bloggs" } })
-            .end(callback);
-        },
-        function(callback){
-          request
-            .del("/api/persons/test")
+            .del("/api/persons/fred-bloggs")
             .expect(204)
             .end(callback);
         },
         function(callback){
           request
-            .get('/api/persons/test')
+            .get('/api/persons/fred-bloggs')
             .expect(404)
             .end(callback);
         },
@@ -262,7 +263,7 @@ describe("REST", function () {
         .expect(204)
         .end(done);
     });
-    
+
   });
 
 });
