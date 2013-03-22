@@ -30,6 +30,13 @@ a little simpler.
 
 This file that you are reading, please keep up to date :)
 
+### `.gitignore`
+
+Ignore some files and folders in this repo. Of particular interest on the server
+as it should contain the generated files that need to be ignored there too, or
+the deploy process will halt (as it won't delete something it does know it is
+safe to).
+
 ### `config/general.json`
 
 The generated config. Listed in `.gitignore` so it won't actually be present
