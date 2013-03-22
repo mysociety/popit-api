@@ -1,0 +1,15 @@
+language: node_js
+
+services:
+  - mongodb
+
+# blacklist
+branches:
+  except:
+    - mysociety-deploy
+
+notifications:
+  irc: "irc.mysociety.org#popit"
+  use_notice: true
+  skip_join: true
+
