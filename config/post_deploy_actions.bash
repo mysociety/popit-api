@@ -15,12 +15,12 @@ export PATH=$NODE_DIR/bin:$PATH
 
 # Run the install each time. This will just check that the packages needed are
 # present, won't check for the latest (or later) versions if deps are satisfied.
-npm install
+npm install --quiet
 
 # Specifically check for and then install the latest popit-api. This is most
 # likely the reason that the deploy is being done. If a specific version of
 # popit is required then something smarter will need to be used.
-npm install popit-api@latest
+npm install --quiet popit-api@latest
 
 # clear out anything that is not needed
 npm prune
