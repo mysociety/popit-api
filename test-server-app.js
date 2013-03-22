@@ -7,7 +7,7 @@ var express  = require('express'),
 var app = module.exports = express();
 
 // Make dev easier
-app.use(express.errorHandler());
+app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 app.use(express.favicon());
 
 // Use vhost to route to the correct app
