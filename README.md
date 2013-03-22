@@ -134,3 +134,9 @@ Replaces the current document with the one provided, if valid. Returns `201`.
 ### DELETE `/api/collectionName/id`
 
 Deletes the document. Returns `204` (even if the document did not exist).
+
+
+## Deployment
+
+You'll probably want to mount this app in your own app. For an example see
+`server.js` in the `mysociety-deploy` branch. This is how we deploy it.
