@@ -127,8 +127,8 @@ filtering or pagination).
 ### POST `/api/collectionName`
 
 Adds the posted document to the collection, if it validates. Can either specify
-an `id` or one will be created. Returns `201` with the path to the document in
-the `Location` header.
+an `id` or one will be created. Returns `200` with the document as the body
+(with the `id` in it).
 
 ### PUT `/api/collectionName`
 

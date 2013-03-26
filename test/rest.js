@@ -83,17 +83,17 @@ describe("REST", function () {
             request
               .post("/api/persons")
               .send({ name: "Joe Bloggs" })
-              .expect(201)
-              .expect('')
-              .expect('Location', /^\/api\/persons\/[0-9a-f]{24}$/)
+              .expect(200)
               .end(function (err, res) {
-                callback(err, res.headers.location);
+                var id = res.body.result.id;
+                assert(id);
+                assert.deepEqual(res.body.result, { id: id, name: "Joe Bloggs"});
+                callback(err, res.body.result.id);
               });
           },
-          function(location, callback){
-            var id = location.match(/\w+$/)[0];
+          function(id, callback){
             request
-              .get(location)
+              .get("/api/persons/" + id)
               .expect(200)
               .expect({ result: { id: id, name: "Joe Bloggs" }})
               .end(callback);
@@ -104,12 +104,13 @@ describe("REST", function () {
       it("should create entry using provided id", function (done) {
         async.series([
           function(callback){
+
+            var personDoc = { id: 'test', name: "Joe Bloggs" };
             request
               .post("/api/persons")
-              .send({ id: 'test', name: "Joe Bloggs" })
-              .expect(201)
-              .expect('')
-              .expect('Location', '/api/persons/test')
+              .send(personDoc)
+              .expect(200)
+              .expect({ result: personDoc })
               .end(callback);
           },
           function(callback){
