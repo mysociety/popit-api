@@ -206,12 +206,11 @@ module.exports = function (options) {
 
     }
 
-    req.storage.store(collectionName, body, function (err) {
+    req.storage.store(collectionName, body, function (err, doc) {
       if (err) { return next(err); }
       res
-        .status(201)
-        .location([collectionName, body.id].join('/'))
-        .send();
+        .status(200)
+        .jsonp({ result: doc });
     });
 
   });

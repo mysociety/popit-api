@@ -151,7 +151,7 @@ collections adding something to them with a `POST` does not apply.
 
 ### PUT `/api/collectionName/id`
 
-Replaces the current document with the one provided, if valid. Returns `201`.
+Replaces the current document with the one provided, if valid. Returns the document with status `200`.
 
 ### DELETE `/api/collectionName/id`
 

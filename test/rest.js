@@ -219,9 +219,8 @@ describe("REST", function () {
             request
               .put("/api/persons/test")
               .send({ name: "Joe Bloggs" })
-              .expect(201)
-              .expect('')
-              .expect('Location', '/api/persons/test')
+              .expect(200)
+              .expect({ result: { id: "test", name: "Joe Bloggs" } })
               .end(callback);
           },
           function(callback){
@@ -235,7 +234,8 @@ describe("REST", function () {
             request
               .put("/api/persons/test")
               .send({ id: 'test', name: "Fred Smith" })
-              .expect(201)
+              .expect(200)
+              .expect({ result: { id: "test", name: "Fred Smith" } })
               .end(callback);
           },
           function(callback){
