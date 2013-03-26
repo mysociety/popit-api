@@ -59,6 +59,16 @@ module.exports = function (options) {
   // store the options
   app.set('popitApiOptions', options);
 
+  // Clean up requests from tools like slumber that set the Content-Type but no body
+  // eg https://github.com/dstufft/slumber/pull/32
+  app.use( function (req, res, next) {
+    if ( (req.method == "GET" || req.method == "DELETE" ) && req.headers['content-type'] === 'application/json' && !req.body ) {
+      delete req.headers['content-type'];
+    }
+    next();
+  });
+
+
   app.use(express.bodyParser());
 
   app.use(storageSelector.selector);

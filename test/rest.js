@@ -16,6 +16,19 @@ describe("REST", function () {
   before(Storage.connectToDatabase);
   beforeEach(fixture.clearDatabase);
 
+  describe("malformed requests", function () {
+    describe("Content-Type of 'json' but no body", function () {
+      it("should not 400", function (done) {
+        request
+          .del("/api/persons/123")
+          .type('json') // to force the application/json content type header
+          .send("")     // don't send anything
+          .expect(204)
+          .end(done);
+      });
+    });
+  });
+
   describe("/api ", function () {
     it("should 200 with API info", function (done) {
       request
