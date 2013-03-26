@@ -1,9 +1,13 @@
 "use strict";
 
-var express    = require('express'),
-    serverApp  = require('./test-server-app');
+var express       = require('express'),
+    testServerApp = require('./test-server-app');
 
-serverApp.use(express.logger('dev'));
+var server = express();
+server.use(express.logger('dev'));
+server.use('/', testServerApp);
 
-serverApp.listen(3000);
+
+
+server.listen(3000);
 console.log('listening on http://0.0.0.0:3000');
