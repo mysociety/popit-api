@@ -119,41 +119,41 @@ Errors will also return JSON:
 { "errors": [ "Error message - hopefully helpful...", ... ] }
 ```
 
-### GET `/api/collectionName`
+### GET `/api/:collection`
 
 Returns an array of all the documents in that collection (currently there is no
 filtering or pagination).
 
-### POST `/api/collectionName`
+### POST `/api/:collection`
 
 Adds the posted document to the collection, if it validates. Can either specify
 an `id` or one will be created. Returns `200` with the document as the body
 (with the `id` in it).
 
-### PUT `/api/collectionName`
+### PUT `/api/:collection`
 
 Not implemented, will return `405`. Replacing a whole collection is not
 something we think that API users will want to do.
 
-### DELETE `/api/collectionName`
+### DELETE `/api/:collection`
 
 Not implemented, will return `405`. Deleting a whole collection is not
 something we think that API users will want to do.
 
-### GET `/api/collectionName/id`
+### GET `/api/:collection/:id`
 
 Returns the document requested, or `404` if it does not exist.
 
-### POST `/api/collectionName/id`
+### POST `/api/:collection/:id`
 
 Not implemented, will return `405`. As the documents can not be treated as
 collections adding something to them with a `POST` does not apply.
 
-### PUT `/api/collectionName/id`
+### PUT `/api/:collection/:id`
 
 Replaces the current document with the one provided, if valid. Returns the document with status `200`.
 
-### DELETE `/api/collectionName/id`
+### DELETE `/api/:collection/:id`
 
 Deletes the document. Returns `204` (even if the document did not exist).
 
