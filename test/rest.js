@@ -100,6 +100,20 @@ describe("REST", function () {
                   ],
                 })
                 .end(callback);
+            },
+            function(callback) {
+              request
+                .get("/api/posts")
+                .expect(200)
+                .expect({
+                  result: [
+                    { id: 'annapolis', organization_id: 'commons', label: 'MP for Annapolis', role: 'Member of Parliament',
+                      area: { name: 'Annapolis', id: 'http://mapit.example.org/area/1' } },
+                    { id: 'avalon', organization_id: 'commons', label: 'MP for Avalon', role: 'Member of Parliament',
+                      area: { name: 'Avalon', id: 'http://mapit.example.org/area/2' } },
+                  ],
+                })
+                .end(callback);
             }
           ], done);
         });

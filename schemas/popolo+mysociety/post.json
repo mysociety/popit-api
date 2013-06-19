@@ -25,6 +25,22 @@
       "type": "string",
       "required": true
     },
+    "area": {
+      "description": "The optional area with which this post is associated",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the area",
+          "type": "string"
+        },
+        "id": {
+          "description": "An identifier for the area, e.g. a URI",
+          "type": "string",
+          "required": true
+        }
+      }
+    },
+
     "addresses": {
       "description": "Addresses at which the post is based",
       "type": "array",

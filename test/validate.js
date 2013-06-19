@@ -157,7 +157,9 @@ describe("Validation", function () {
     it("validates correct entries", function (done) {
       validate(
         'posts',
-        { id: '123', organization_id: "parliament", label: "MP for Birmingham", role: "Member of Parliament" },
+        { id: '123', organization_id: "parliament", label: "MP for Birmingham",
+          role: "Member of Parliament", area: { id: "birmingham", name: "Birmingham" }
+        },
         errorCount(0, done)
       );
     });
