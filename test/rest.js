@@ -50,26 +50,58 @@ describe("REST", function () {
     describe("GET", function () {
 
       it("should return empty list", function (done) {
-        request
-          .get("/api/persons")
-          .expect(200)
-          .expect({result: []})
-          .end(done);
+        async.each( [ 'persons', 'memberships', 'organizations', 'posts' ], function(type, callback) {
+            request
+              .get("/api/" + type)
+              .expect(200)
+              .expect({result: []})
+              .end(callback);
+          }, done);
       });
 
       it("should return created entries", function (done) {
         fixture.loadFixtures(function(err) {
           assert.ifError(err);
-          request
-            .get("/api/persons")
-            .expect(200)
-            .expect({
-              result: [
-                { id: 'fred-bloggs', name: 'Fred Bloggs' },
-                { id: 'joe-bloggs', name: 'Joe Bloggs' },
-              ],
-            })
-            .end(done);
+          async.series([
+            function(callback) {
+              request
+                .get("/api/persons")
+                .expect(200)
+                .expect({
+                  result: [
+                    { id: 'fred-bloggs', name: 'Fred Bloggs' },
+                    { id: 'joe-bloggs', name: 'Joe Bloggs' },
+                  ],
+                })
+                .end(callback);
+            },
+            function(callback) {
+              request
+                .get("/api/organizations")
+                .expect(200)
+                .expect({
+                  result: [
+                    { id: 'parliament', name: 'Houses of Parliament' },
+                    { id: 'commons', name: 'House of Commons', parent_id: "parliament" },
+                  ],
+                })
+                .end(callback);
+            },
+            function(callback) {
+              request
+                .get("/api/memberships")
+                .expect(200)
+                .expect({
+                  result: [
+                    { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
+                      person_id: 'fred-bloggs', start_date: '2000', end_date: '2004' },
+                    { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
+                        person_id: 'fred-bloggs', start_date: '2011' },
+                  ],
+                })
+                .end(callback);
+            }
+          ], done);
         });
       });
 

@@ -2,7 +2,7 @@
   "node": true,
   "es5":  true,
 
-  "camelcase": true,
+  "camelcase": false,
   "curly":     true,
   "indent":    2,
   "newcap":    true,

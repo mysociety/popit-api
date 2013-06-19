@@ -33,6 +33,53 @@ collections.persons = {
   },
 };
 
+collections.organizations = {
+  parliament: {
+    id: "parliament",
+    name: "Houses of Parliament",
+  },
+  commons: {
+    id: "commons",
+    name: "House of Commons",
+    parent_id: "parliament",
+  },
+};
+
+collections.posts = {
+  annapolis: {
+    id: "annapolis",
+    organization_id: "commons",
+    label: "MP for Annapolis",
+    role: "Member of Parliament",
+  },
+  avalon: {
+    id: "avalon",
+    organization_id: "commons",
+    label: "MP for Avalon",
+    role: "Member of Parliament",
+  },
+};
+
+collections.memberships = {
+  oldMP: {
+    id: "oldMP",
+    post_id: "avalon",
+    organization_id: "commons",
+    role: "Member of Parliament",
+    person_id: "fred-bloggs",
+    start_date: "2000",
+    end_date: "2004",
+  },
+  backAsMP: {
+    id: "backAsMP",
+    post_id: "avalon",
+    organization_id: "commons",
+    role: "Member of Parliament",
+    person_id: "fred-bloggs",
+    start_date: "2011",
+  },
+};
+
 
 // go through all the entries and add the _id field
 _.each( collections, function(collection) {

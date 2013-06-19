@@ -137,4 +137,30 @@ describe("Validation", function () {
 
   });
 
+  describe("membership", function () {
+
+    it("validates correct entries", function (done) {
+      validate(
+        'memberships',
+        { id: '123', post_id: "mp-birmingham", organization_id: "parliament",
+          role: "Member of Parliament", person_id: "fred-bloggs",
+          start_date: "2000", end_date: "2006"
+        },
+        errorCount(0, done)
+      );
+    });
+
+  });
+
+  describe("post", function () {
+
+    it("validates correct entries", function (done) {
+      validate(
+        'posts',
+        { id: '123', organization_id: "parliament", label: "MP for Birmingham", role: "Member of Parliament" },
+        errorCount(0, done)
+      );
+    });
+
+  });
 });

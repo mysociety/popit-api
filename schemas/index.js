@@ -10,11 +10,11 @@ var draftSchemas = {
 
 var popoloSchemas = {
   "address":                    require('./popolo/address.json'),
-  "membership":                 require('./popolo/membership.json'),
+  "membership":                 require('./popolo+mysociety/membership.json'),
   "organization":               require('./popolo/organization.json'),
   "other_name":                 require('./popolo/other_name.json'),
   "person":                     require('./popolo/person.json'),
-  "post":                       require('./popolo/post.json'),
+  "post":                       require('./popolo+mysociety/post.json'),
 };
 
 var allSchemas = _.extend({}, draftSchemas, popoloSchemas);
