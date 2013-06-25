@@ -37,6 +37,40 @@ Storage.generateID = function () {
   return objectId.toHexString();
 };
 
+function deduplicate_slug(collection, cb) {
+  /*jshint validthis:true */
+  var self = this;
+
+  if (!self.slug) {
+    return cb(null);
+  }
+
+  // find other entries in the database that have the same slug
+  collection.findOne({ slug: self.slug, _id: { $ne: self.id } }, function(err, doc) {
+    if (err) {
+      return cb(err);
+    }
+
+    // if nothing found then no need to change slug
+    if ( ! doc ) {
+      return cb(null);
+    }
+
+    // we have a conflict, increment the slug
+    var matches = self.slug.match(/^(.*)\-(\d+)$/);
+
+    if ( !matches ) {
+      self.slug = self.slug + '-1';
+    } else {
+      var base_slug = matches[1];
+      var counter   = parseInt( matches[2], 10 ) + 1;
+      self.slug     = base_slug + '-' + counter;
+    }
+
+    return deduplicate_slug.apply( self, [ collection, cb ] ); // recurse
+
+  });
+}
 
 /*
   Store a document in the database.
@@ -47,13 +81,16 @@ Storage.prototype.store = function (collectionName, doc, cb) {
     return cb(new Error("Can't store document without an id"));
   }
 
-  var docToStore = _.extend({}, doc, {_id: doc.id});
-
   var collection = this.db.collection(collectionName);
-  collection.update({_id: doc.id}, docToStore, {upsert: true}, function (err, result) {
-    assert(result);
-    cb(err, doc);
-  });
+
+  deduplicate_slug.apply(doc, [ collection, function() {
+    var docToStore = _.extend({}, doc, {_id: doc.id});
+    collection.update({_id: doc.id}, docToStore, {upsert: true}, function (err, result) {
+      assert(result);
+      cb(err, doc);
+    });
+  } ] );
+
 };
 
 /*
