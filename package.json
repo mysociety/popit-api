@@ -1,6 +1,6 @@
 {
   "name": "popit-api",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "API part of PopIt which lets you store details of people, organisations and positions",
   "main": "index.js",
   "scripts": {

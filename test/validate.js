@@ -164,5 +164,15 @@ describe("Validation", function () {
       );
     });
 
+    it("invalidates missing area ID", function (done) {
+      validate(
+        'posts',
+        { id: '123', organization_id: "parliament", label: "MP for Birmingham",
+          role: "Member of Parliament", area: { name: "Birmingham" }
+        },
+        errorCount(1, done)
+      );
+    });
+
   });
 });

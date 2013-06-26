@@ -9,15 +9,29 @@ var draftSchemas = {
 };
 
 var popoloSchemas = {
-  "address":                    require('./popolo/address.json'),
-  "membership":                 require('./popolo+mysociety/membership.json'),
+  "contact_detail":             require('./popolo/contact_detail.json'),
+  "identifier":                 require('./popolo/identifier.json'),
+  "link":                       require('./popolo/link.json'),
+  "membership":                 require('./popolo/membership.json'),
   "organization":               require('./popolo/organization.json'),
   "other_name":                 require('./popolo/other_name.json'),
   "person":                     require('./popolo/person.json'),
+  "post":                       require('./popolo/post.json'),
+};
+
+var mySocietySchemas = {
   "post":                       require('./popolo+mysociety/post.json'),
 };
 
-var allSchemas = _.extend({}, draftSchemas, popoloSchemas);
+// Schemas for which it is okay to substitute in the workaround below
+var leafSchemas = [
+  "http://popoloproject.com/schemas/contact_detail.json#",
+  "http://popoloproject.com/schemas/identifier.json#",
+  "http://popoloproject.com/schemas/link.json#",
+  "http://popoloproject.com/schemas/other_name.json#",
+];
+
+var allSchemas = _.extend({}, draftSchemas, popoloSchemas, mySocietySchemas);
 
 var urlSchemas = {};
 _.each( allSchemas, function (schema) {
@@ -46,11 +60,13 @@ function swapOutDollarRefs (data) {
     if (_.isObject(val)) {
       if (_.has(val, '$ref')) {
         var $ref = val.$ref;
-        var refSchema = urlSchemas[$ref];
-        assert(refSchema, "Could not find schema for '" + $ref + "'");
+        if (leafSchemas.indexOf($ref) != -1) {
+          var refSchema = urlSchemas[$ref];
+          assert(refSchema, "Could not find schema for '" + $ref + "'");
 
-        // swap out the contents
-        data[key] = refSchema;
+          // swap out the contents
+          data[key] = refSchema;
+        }
       }
     }
   });
