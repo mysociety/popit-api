@@ -107,7 +107,7 @@ module.exports = function (options) {
     });
   });
 
-  app.get('/:collection/:id', function (req, res, next) {
+  app.get('/:collection/:id(*)', function (req, res, next) {
     var collectionName = req.params.collection;
     var id             = req.params.id;
 
@@ -126,7 +126,7 @@ module.exports = function (options) {
     });
   });
 
-  app.del('/:collection/:id', function (req, res, next) {
+  app.del('/:collection/:id(*)', function (req, res, next) {
     var collectionName = req.params.collection;
     var id             = req.params.id;
 
@@ -191,7 +191,7 @@ module.exports = function (options) {
   });
 
 
-  app.put('/:collection/:id', validateBody, function (req, res, next) {
+  app.put('/:collection/:id(*)', validateBody, function (req, res, next) {
 
     var collectionName = req.params.collection;
     var id             = req.params.id;
