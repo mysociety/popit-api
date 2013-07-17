@@ -20,6 +20,7 @@ var popoloSchemas = {
 };
 
 var mySocietySchemas = {
+  "membership":                 require('./popolo+mysociety/membership.json'),
   "post":                       require('./popolo+mysociety/post.json'),
 };
 
