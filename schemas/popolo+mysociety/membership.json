@@ -68,11 +68,11 @@
     },
     "start_reason": {
       "description": "The reason why this relationship began",
-      "type": ["string", "null"],
+      "type": ["string", "null"]
     },
     "end_reason": {
       "description": "The reason why this relationship ended",
-      "type": ["string", "null"],
+      "type": ["string", "null"]
     },
     "contact_details": {
       "description": "Means of contacting the person who is a party to the relationship",
