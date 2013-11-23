@@ -53,13 +53,13 @@ describe("Apps", function () {
     });
 
     describe('config for hostName selector', function () {
-    
+
+      var app =  apiApp({ storageSelector: 'hostName' });
+      assert(app);
+
+      var hostRequest = require("supertest")(app);
+
       it("correct config", function (done) {
-
-        var app =  apiApp({ storageSelector: 'hostName' });
-        assert(app);
-
-        var hostRequest = require("supertest")(app);
         hostRequest
           .get('/')
           .set('Host','foo.bar')
@@ -71,7 +71,17 @@ describe("Apps", function () {
           })
           .end(done);
       });
-      
+
+      it("handles long hostnames gracefully", function(done) {
+        hostRequest
+          .get('/persons')
+          .set('Host', 'cores-por-antartica-chilena-con-mucho-frio.popit.votainteligente.org')
+          .expect(200)
+          .expect({
+            result: []
+          })
+          .end(done);
+      });
     });
   
     describe('config for unknown selector', function () {
