@@ -7,7 +7,8 @@ var util        = require('util'),
     validate    = require('./validate'),
     Storage     = require('../src/storage'),
     packageJSON = require("../package"),
-    _           = require('underscore');
+    _           = require('underscore'),
+    slugToDb    = require('./slug-to-database');
 
 _.str = require('underscore.string');
 
@@ -31,7 +32,7 @@ var storageSelectors = {
       Storage.connectToDatabase(function (err) {
         if (!err) {
           var host = req.host.replace(/\./g, '-');
-          var databaseName = 'popit-api-' + _.str.slugify(host);
+          var databaseName = slugToDb('popit-api-' + _.str.slugify(host));
           req.storage = new Storage(databaseName);
         }
         next(err);
