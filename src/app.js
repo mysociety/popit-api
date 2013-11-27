@@ -3,11 +3,11 @@
 var util        = require('util'),
     assert      = require('assert'),
     express     = require('express'),
+    _           = require('underscore'),
     collections = require('./collections'),
     validate    = require('./validate'),
-    Storage     = require('../src/storage'),
+    Storage     = require('./storage'),
     packageJSON = require("../package"),
-    _           = require('underscore'),
     slugToDb    = require('./slug-to-database');
 
 _.str = require('underscore.string');
