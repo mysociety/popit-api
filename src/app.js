@@ -1,13 +1,13 @@
 "use strict";
 
-var express     = require('express'),
-    _           = require('underscore'),
-    collections = require('./collections'),
-    packageJSON = require("../package"),
-    storageSelector = require('./middleware/storage-selector'),
-    authCheck   = require('./middleware/auth-check'),
-    hiddenFields = require('./middleware/hidden-fields'),
-    validateBody = require('./middleware/validate-body');
+var express = require('express');
+var _ = require('underscore');
+var packageJSON = require("../package");
+var collections = require('./collections');
+var storageSelector = require('./middleware/storage-selector');
+var authCheck = require('./middleware/auth-check');
+var hiddenFields = require('./middleware/hidden-fields');
+var validateBody = require('./middleware/validate-body');
 
 module.exports = function (options) {
   
