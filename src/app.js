@@ -1,45 +1,13 @@
 "use strict";
 
 var util        = require('util'),
-    assert      = require('assert'),
     express     = require('express'),
     _           = require('underscore'),
     collections = require('./collections'),
     validate    = require('./validate'),
     Storage     = require('./storage'),
     packageJSON = require("../package"),
-    slugToDb    = require('./slug-to-database');
-
-_.str = require('underscore.string');
-
-var storageSelectors = {
-  fixedName: {
-    selector: function (req, res, next) {
-      Storage.connectToDatabase(function (err) {
-        if (!err) {
-          var databaseName = req.app.get('popitApiOptions').databaseName;
-          req.storage = new Storage(databaseName);
-        }
-        next(err);
-      });
-    },
-    optionsCheck: function (options) {
-      assert(options.databaseName, "Missing required option 'databaseName'");
-    }
-  },
-  hostName: {
-    selector: function (req, res, next) {
-      Storage.connectToDatabase(function (err) {
-        if (!err) {
-          var host = req.host.replace(/\./g, '-');
-          var databaseName = slugToDb('popit-api-' + _.str.slugify(host));
-          req.storage = new Storage(databaseName);
-        }
-        next(err);
-      });
-    },
-  }
-};
+    storageSelector = require('./storage-selector');
 
 module.exports = function (options) {
   
@@ -48,17 +16,7 @@ module.exports = function (options) {
     storageSelector: 'fixedName'
   });
 
-  // check that we have all the options that we need
-  var storageSelector = storageSelectors[options.storageSelector];
-  assert(storageSelector, "Could not load storage selector '"+options.storageSelector+"'");
-  if (storageSelector.optionsCheck) {
-    storageSelector.optionsCheck(options);
-  }
-
   var app = express();
-
-  // store the options
-  app.set('popitApiOptions', options);
 
   // Clean up requests from tools like slumber that set the Content-Type but no body
   // eg https://github.com/dstufft/slumber/pull/32
@@ -69,10 +27,9 @@ module.exports = function (options) {
     next();
   });
 
-
   app.use(express.bodyParser());
 
-  app.use(storageSelector.selector);
+  app.use(storageSelector(options));
 
   app.get('/', function (req, res) {
     res.jsonp({
