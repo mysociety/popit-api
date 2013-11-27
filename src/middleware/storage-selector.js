@@ -2,8 +2,8 @@
 
 var assert = require('assert');
 var slugify = require('underscore.string').slugify;
-var Storage = require('./storage');
-var slugToDb = require('./slug-to-database');
+var Storage = require('../storage');
+var slugToDb = require('../slug-to-database');
 
 /**
  * The are the various storage selectors which define what the database is called

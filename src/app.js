@@ -7,9 +7,9 @@ var util        = require('util'),
     validate    = require('./validate'),
     Storage     = require('./storage'),
     packageJSON = require("../package"),
-    storageSelector = require('./storage-selector'),
-    authCheck   = require('./auth-check'),
-    hiddenFields = require('./hidden-fields');
+    storageSelector = require('./middleware/storage-selector'),
+    authCheck   = require('./middleware/auth-check'),
+    hiddenFields = require('./middleware/hidden-fields');
 
 module.exports = function (options) {
   
