@@ -1,15 +1,13 @@
 "use strict";
 
-var util        = require('util'),
-    express     = require('express'),
+var express     = require('express'),
     _           = require('underscore'),
     collections = require('./collections'),
-    validate    = require('./validate'),
-    Storage     = require('./storage'),
     packageJSON = require("../package"),
     storageSelector = require('./middleware/storage-selector'),
     authCheck   = require('./middleware/auth-check'),
-    hiddenFields = require('./middleware/hidden-fields');
+    hiddenFields = require('./middleware/hidden-fields'),
+    validateBody = require('./middleware/validate-body');
 
 module.exports = function (options) {
   
@@ -102,41 +100,6 @@ module.exports = function (options) {
       }
     });
   });
-
-
-  function validateBody (req, res, next) {
-
-    var collectionName = req.params.collection;
-    var body = req.body;
-
-    // If there is no id create one
-    if (!body.id) {
-      body.id = req.params.id || Storage.generateID();
-    }
-
-    validate(collectionName, body, function (err, errors) {
-
-      if (err) {
-        return next(err);
-      } else if (errors.length === 0) {
-        return next(null);
-      } else {
-
-        var details = _.map(errors, function (error) {
-          return util.format(
-            "Error '%s' with '%s'.",
-            error.message,
-            error.schemaUri
-          );
-        });
-
-        res
-          .status(400)
-          .send({errors: details});
-      }
-    });
-  }
-
 
   app.post('/:collection', validateBody, function (req, res, next) {
 
