@@ -30,6 +30,7 @@ collections.persons = {
   joeBloggs: {
     id: "joe-bloggs",
     name: "Joe Bloggs",
+    email: "jbloggs@example.org",
   },
 };
 

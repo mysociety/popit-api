@@ -70,7 +70,7 @@ describe("REST", function () {
                 .expect({
                   result: [
                     { id: 'fred-bloggs', name: 'Fred Bloggs' },
-                    { id: 'joe-bloggs', name: 'Joe Bloggs' },
+                    { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
                   ],
                 })
                 .end(callback);
@@ -346,5 +346,40 @@ describe("REST", function () {
 
   });
 
+  describe("hidden fields", function () {
+    var storage;
+
+
+    beforeEach(fixture.loadFixtures);
+
+    beforeEach(function() {
+      storage = new Storage(defaults.databaseName);
+    });
+
+    describe("hiding a field on all documents in a collection", function () {
+
+      it("doesn't return the hidden field", function (done) {
+        var hiddenDoc = {
+          id: Storage.generateID(),
+          collection: 'persons',
+          hidden_fields: 'email'
+        };
+
+        storage.store('hidden', hiddenDoc, function (err, doc) {
+          if (err) {
+            return done(err);
+          }
+          assert(doc);
+          request
+            .get("/api/persons/joe-bloggs")
+            .expect(200)
+            .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs' } }, done);
+        });
+
+      });
+
+    });
+
+  });
 
 });
