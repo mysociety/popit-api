@@ -7,7 +7,8 @@ var util        = require('util'),
     validate    = require('./validate'),
     Storage     = require('./storage'),
     packageJSON = require("../package"),
-    storageSelector = require('./storage-selector');
+    storageSelector = require('./storage-selector'),
+    authCheck   = require('./auth-check');
 
 module.exports = function (options) {
   
@@ -30,6 +31,10 @@ module.exports = function (options) {
   app.use(express.bodyParser());
 
   app.use(storageSelector(options));
+
+  if (options.apiKey) {
+    app.use(authCheck(options.apiKey));
+  }
 
   app.get('/', function (req, res) {
     res.jsonp({
