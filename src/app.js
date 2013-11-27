@@ -51,16 +51,14 @@ module.exports = function (options) {
     Check that the collection is in the allowed list.
   */
   app.param('collection', function (req, res, next, collection) {
-
-    if (! collections[collection]) {
-      res
-        .status(404)
-        .jsonp({
-          errors: ["collection '" + collection + "' not found"]
-        });
-    } else {
-      next();
+    // If the collection exists, carry on.
+    if (collections[collection]) {
+      return next();
     }
+
+    res.status(404).jsonp({
+      errors: ["collection '" + collection + "' not found"]
+    });
   });
 
   app.get('/:collection', function (req, res, next) {
