@@ -96,14 +96,29 @@ Storage.prototype.store = function (collectionName, doc, cb) {
 /*
   Retrieve a document from the database.
 */
-Storage.prototype.retrieve = function (collectionName, id, cb) {
+Storage.prototype.retrieve = function (collectionName, id, fields, cb) {
+  if (typeof fields === 'function') {
+    cb = fields;
+    fields = {};
+  }
+  fields = fields || {};
+
   var collection = this.db.collection(collectionName);
-  collection.findOne({_id: id}, function (err, doc) {
-    if (doc) {
-      doc.id = doc._id;
-      delete doc._id;
+  collection.find({_id: id}, fields, function (err, docs) {
+    if (err) {
+      return cb(err);
     }
-    cb(err, doc);
+    docs.toArray(function(err, docs) {
+      if (err) {
+        return cb(err);
+      }
+      var doc = docs[0];
+      if (doc) {
+        doc.id = doc._id;
+        delete doc._id;
+      }
+      cb(null, doc);
+    });
   });
 };
 

@@ -8,7 +8,8 @@ var util        = require('util'),
     Storage     = require('./storage'),
     packageJSON = require("../package"),
     storageSelector = require('./storage-selector'),
-    authCheck   = require('./auth-check');
+    authCheck   = require('./auth-check'),
+    hiddenFields = require('./hidden-fields');
 
 module.exports = function (options) {
   
@@ -70,11 +71,11 @@ module.exports = function (options) {
     });
   });
 
-  app.get('/:collection/:id(*)', function (req, res, next) {
+  app.get('/:collection/:id(*)', hiddenFields, function (req, res, next) {
     var collectionName = req.params.collection;
     var id             = req.params.id;
 
-    req.storage.retrieve( collectionName, id, function (err, doc) {
+    req.storage.retrieve( collectionName, id, req.fields, function (err, doc) {
       if (err) {
         next(err);
       } else if (doc) {
