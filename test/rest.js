@@ -347,35 +347,40 @@ describe("REST", function () {
   });
 
   describe("hidden fields", function () {
-    var storage;
 
 
     beforeEach(fixture.loadFixtures);
 
-    beforeEach(function() {
-      storage = new Storage(defaults.databaseName);
+    beforeEach(function(done) {
+      var storage = new Storage(defaults.databaseName);
+      var hiddenDoc = {
+        id: Storage.generateID(),
+        collection: 'persons',
+        fields: {
+          email: false
+        }
+      };
+
+      storage.store('hidden', hiddenDoc, done);
     });
 
     describe("hiding a field on all documents in a collection", function () {
 
-      it("doesn't return the hidden field", function (done) {
-        var hiddenDoc = {
-          id: Storage.generateID(),
-          collection: 'persons',
-          hidden_fields: 'email'
-        };
+      it("doesn't return the hidden field for public requests", function (done) {
+        request
+          .get("/api/persons/joe-bloggs")
+          .expect(200)
+          .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs' } }, done);
+      });
 
-        storage.store('hidden', hiddenDoc, function (err, doc) {
-          if (err) {
-            return done(err);
-          }
-          assert(doc);
-          request
-            .get("/api/persons/joe-bloggs")
-            .expect(200)
-            .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs' } }, done);
-        });
-
+      it("does return the fields for authenticated requests", function(done) {
+        var apiKey = 'secret';
+        var apiApp = require('..')({databaseName: defaults.databaseName, apiKey: apiKey});
+        var api = require('supertest')(apiApp);
+        api
+          .get('/persons/joe-bloggs?apiKey=' + apiKey)
+          .expect(200)
+          .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' } }, done);
       });
 
     });
