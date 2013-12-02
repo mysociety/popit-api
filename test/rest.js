@@ -349,23 +349,22 @@ describe("REST", function () {
 
   describe("hidden fields", function () {
 
-
     beforeEach(fixture.loadFixtures);
 
-    beforeEach(function(done) {
-      var storage = new Storage(defaults.databaseName);
-      var hiddenDoc = {
-        id: Storage.generateID(),
-        collection: 'persons',
-        fields: {
-          email: false
-        }
-      };
-
-      storage.store('hidden', hiddenDoc, done);
-    });
-
     describe("hiding a field on all documents in a collection", function () {
+
+      beforeEach(function(done) {
+        var storage = new Storage(defaults.databaseName);
+        var hiddenDoc = {
+          id: Storage.generateID(),
+          collection: 'persons',
+          fields: {
+            email: false
+          }
+        };
+
+        storage.store('hidden', hiddenDoc, done);
+      });
 
       it("doesn't return the hidden field for public requests", function (done) {
         request
@@ -382,6 +381,38 @@ describe("REST", function () {
           .get('/persons/joe-bloggs?apiKey=' + apiKey)
           .expect(200)
           .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' } }, done);
+      });
+
+    });
+
+    describe("hiding a field on an individual document", function() {
+
+      beforeEach(function(done) {
+        var storage = new Storage(defaults.databaseName);
+        var hiddenDoc = {
+          id: Storage.generateID(),
+          collection: 'persons',
+          doc: 'joe-bloggs',
+          fields: {
+            email: false
+          }
+        };
+
+        storage.store('hidden', hiddenDoc, done);
+      });
+
+      it("doesn't return the hidden field for the specified doc", function(done) {
+        request
+          .get("/api/persons/joe-bloggs")
+          .expect(200)
+          .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs' } }, done);
+      });
+
+      it("returns the hidden field for other docs", function(done) {
+        request
+          .get("/api/persons/fred-bloggs")
+          .expect(200)
+          .expect({ result: { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' } }, done);
       });
 
     });
