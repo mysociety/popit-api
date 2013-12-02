@@ -27,9 +27,9 @@ function hiddenFields(req, res, next) {
 
   var hidden = req.storage.db.collection('hidden');
 
-  // Find collections that have hidden fields.
-  function hiddenCollections(callback) {
-    hidden.find({collection: req.params.collection, doc: null}, function(err, hiddenDocs) {
+  // Find documents for the given query and convert them to an array.
+  function hiddenFind(query, callback) {
+    hidden.find(query, function(err, hiddenDocs) {
       if (err) {
         return callback(err);
       }
@@ -37,17 +37,10 @@ function hiddenFields(req, res, next) {
     });
   }
 
-  // Find documents that have hidden fields
-  function hiddenDocuments(callback) {
-    hidden.find({collection: req.params.collection, doc: req.params.id}, function(err, hiddenDocs) {
-      if (err) {
-        return callback(err);
-      }
-      hiddenDocs.toArray(callback);
-    });
-  }
-
-  async.parallel([hiddenCollections, hiddenDocuments], function(err, results) {
+  async.map([
+    {collection: req.params.collection, doc: null},
+    {collection: req.params.collection, doc: req.params.id}
+  ], hiddenFind, function(err, results) {
     if (err) {
       return next(err);
     }
