@@ -69,7 +69,7 @@ describe("REST", function () {
                 .expect(200)
                 .expect({
                   result: [
-                    { id: 'fred-bloggs', name: 'Fred Bloggs' },
+                    { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
                     { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
                   ],
                 })
@@ -230,6 +230,7 @@ describe("REST", function () {
             result: {
               id: 'fred-bloggs',
               name: 'Fred Bloggs',
+              email: 'fbloggs@example.org',
             }
           })
           .end(done);
