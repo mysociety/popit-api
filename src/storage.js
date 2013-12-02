@@ -125,9 +125,15 @@ Storage.prototype.retrieve = function (collectionName, id, fields, cb) {
 /*
   List documents in the database.
 */
-Storage.prototype.list = function (collectionName, cb) {
+Storage.prototype.list = function (collectionName, fields, cb) {
+  if (typeof fields === 'function') {
+    cb = fields;
+    fields = {};
+  }
+  fields = fields || {};
+
   var collection = this.db.collection(collectionName);
-  var cursor = collection.find({});
+  var cursor = collection.find({}, fields);
   
   cursor.toArray(function (err, docs) {
 

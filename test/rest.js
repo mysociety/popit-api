@@ -417,6 +417,39 @@ describe("REST", function () {
 
     });
 
+    describe("hidden fields for collections", function() {
+
+      describe("hide fields in all documents", function() {
+
+        beforeEach(function(done) {
+          var storage = new Storage(defaults.databaseName);
+          var hiddenDoc = {
+            id: Storage.generateID(),
+            collection: 'persons',
+            fields: {
+              email: false
+            }
+          };
+
+          storage.store('hidden', hiddenDoc, done);
+        });
+
+        it("doesn't render the field for any document", function(done) {
+          request
+            .get('/api/persons')
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'fred-bloggs', name: 'Fred Bloggs'},
+                { id: 'joe-bloggs', name: 'Joe Bloggs'}
+              ]
+            }, done);
+        });
+
+      });
+
+    });
+
   });
 
 });

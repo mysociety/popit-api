@@ -59,9 +59,9 @@ module.exports = function (options) {
     });
   });
 
-  app.get('/:collection', function (req, res, next) {
+  app.get('/:collection', hiddenFields, function (req, res, next) {
     var collectionName = req.params.collection;
-    req.storage.list(collectionName, function (err, docs) {
+    req.storage.list(collectionName, req.fields, function (err, docs) {
       if (err) { return next(err); }
       res.jsonp({ result: docs });
     });
