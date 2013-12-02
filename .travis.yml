@@ -17,4 +17,3 @@ notifications:
     channels:
       - "irc.mysociety.org#popit"
     use_notice: true
-    skip_join: true
