@@ -39,16 +39,20 @@ function hiddenFields(req, res, next) {
 
   async.map([
     {collection: req.params.collection, doc: null},
-    {collection: req.params.collection, doc: req.params.id}
+    {collection: req.params.collection, doc: {'$ne': null}}
   ], hiddenFind, function(err, results) {
     if (err) {
       return next(err);
     }
 
-    var docs = _.flatten(results);
+    req.fields.all = {};
 
-    docs.forEach(function(doc) {
-      req.fields = _.extend(req.fields, doc.fields);
+    results[0].forEach(function(doc) {
+      req.fields.all = _.extend(req.fields.all, doc.fields);
+    });
+
+    results[1].forEach(function(doc) {
+      req.fields[doc.doc] = doc.fields;
     });
 
     next();

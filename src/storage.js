@@ -103,8 +103,12 @@ Storage.prototype.retrieve = function (collectionName, id, fields, cb) {
   }
   fields = fields || {};
 
+  if (fields[id]) {
+    _.extend(fields.all, fields[id]);
+  }
+
   var collection = this.db.collection(collectionName);
-  collection.find({_id: id}, fields, function (err, docs) {
+  collection.find({_id: id}, fields.all || {}, function (err, docs) {
     if (err) {
       return cb(err);
     }
@@ -133,13 +137,21 @@ Storage.prototype.list = function (collectionName, fields, cb) {
   fields = fields || {};
 
   var collection = this.db.collection(collectionName);
-  var cursor = collection.find({}, fields);
+  var cursor = collection.find({}, fields.all || {});
   
   cursor.toArray(function (err, docs) {
 
     _.each(docs, function (doc) {
       doc.id = doc._id;
       delete doc._id;
+      if (fields[doc.id]) {
+        for (var field in fields[doc.id]) {
+          var value = fields[doc.id][field];
+          if (value === false) {
+            delete doc[field];
+          }
+        }
+      }
     });
 
     cb(err, docs);

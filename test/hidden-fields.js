@@ -123,6 +123,18 @@ describe("hidden fields", function () {
         .expect({ result: { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' } }, done);
       });
 
+      it("doesn't include fields on hidden documents for /:collection", function(done) {
+        request
+        .get('/api/persons')
+        .expect(200)
+        .expect({
+          result: [
+            { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org'},
+            { id: 'joe-bloggs', name: 'Joe Bloggs'}
+          ]
+        }, done);
+      });
+
     });
 
   });
