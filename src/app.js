@@ -1,7 +1,6 @@
 "use strict";
 
 var express = require('express');
-var _ = require('underscore');
 var packageJSON = require("../package");
 var collections = require('./collections');
 var storageSelector = require('./middleware/storage-selector');
@@ -10,11 +9,7 @@ var hiddenFields = require('./middleware/hidden-fields');
 var validateBody = require('./middleware/validate-body');
 
 module.exports = function (options) {
-  
-  // Apply defaults to the options here.
-  _.defaults(options, {
-    storageSelector: 'fixedName'
-  });
+  options.storageSelector = options.storageSelector || 'fixedName';
 
   var app = express();
 
