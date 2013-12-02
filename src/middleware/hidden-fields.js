@@ -1,6 +1,7 @@
 "use strict";
 
 var _ = require('underscore');
+var async = require('async');
 
 /**
  * Hidden fields middleware.
@@ -17,29 +18,47 @@ var _ = require('underscore');
  * @param {object} next The express next function
  */
 function hiddenFields(req, res, next) {
-  var hidden = req.storage.db.collection('hidden');
+  req.fields = {};
+
   // Admin can see any fields.
   if (req.isAdmin) {
     return next();
   }
 
-  req.fields = {};
+  var hidden = req.storage.db.collection('hidden');
 
-  hidden.find({collection: req.params.collection}, function(err, hiddenDoc) {
+  // Find collections that have hidden fields.
+  function hiddenCollections(callback) {
+    hidden.find({collection: req.params.collection, doc: null}, function(err, hiddenDocs) {
+      if (err) {
+        return callback(err);
+      }
+      hiddenDocs.toArray(callback);
+    });
+  }
+
+  // Find documents that have hidden fields
+  function hiddenDocuments(callback) {
+    hidden.find({collection: req.params.collection, doc: req.params.id}, function(err, hiddenDocs) {
+      if (err) {
+        return callback(err);
+      }
+      hiddenDocs.toArray(callback);
+    });
+  }
+
+  async.parallel([hiddenCollections, hiddenDocuments], function(err, results) {
     if (err) {
       return next(err);
     }
-    hiddenDoc.toArray(function(err, docs) {
-      if (err) {
-        return next(err);
-      }
 
-      docs.forEach(function(doc) {
-        req.fields = _.extend(req.fields, doc.fields);
-      });
-      next();
+    var docs = _.flatten(results);
+
+    docs.forEach(function(doc) {
+      req.fields = _.extend(req.fields, doc.fields);
     });
 
+    next();
   });
 }
 
