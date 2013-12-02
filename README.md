@@ -17,7 +17,7 @@ Feel free to experiment but do not use in production until this message is
 removed.
 
 The exact implementation of the [Popolo](http://popoloproject.com/) standard
-used here may not be fully up to date, or may contain discrepencies to the
+used here may not be fully up to date, or may contain discrepancies to the
 official one. We ([mySociety](http://www.mysociety.org/)) are using this project
 to help develop the standard in the light of requirements from our own projects.
 The eventual aim is to be Popolo compliant.
