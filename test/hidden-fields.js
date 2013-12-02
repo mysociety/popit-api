@@ -6,6 +6,41 @@ var defaults = require('./defaults');
 var serverApp = require('../test-server-app');
 var request = require('supertest')(serverApp);
 
+function showsAllFieldsForAuthenticatedRequests() {
+  var apiKey = 'secret';
+  var apiApp = require('..')({databaseName: defaults.databaseName, apiKey: apiKey});
+  var api = require('supertest')(apiApp);
+
+  describe("authenticated requests", function() {
+
+    it("includes the hidden fields on /:collection/:id", function(done) {
+      api
+      .get('/persons/joe-bloggs?apiKey=' + apiKey)
+      .expect(200)
+      .expect({
+        result: {
+          id: 'joe-bloggs',
+          name: 'Joe Bloggs',
+          email: 'jbloggs@example.org'
+        }
+      }, done);
+    });
+
+    it("includes the hidden fields on /:collection", function(done) {
+      api
+      .get('/persons?apiKey=' + apiKey)
+      .expect(200)
+      .expect({
+        result: [
+          { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
+          { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
+        ]
+      }, done);
+    });
+
+  });
+}
+
 describe("hidden fields", function () {
 
   before(Storage.connectToDatabase);
@@ -26,6 +61,8 @@ describe("hidden fields", function () {
 
       storage.store('hidden', hiddenDoc, done);
     });
+
+    showsAllFieldsForAuthenticatedRequests();
 
     describe("public requests", function() {
 
@@ -68,6 +105,8 @@ describe("hidden fields", function () {
       storage.store('hidden', hiddenDoc, done);
     });
 
+    showsAllFieldsForAuthenticatedRequests();
+
     describe("public requests", function() {
 
       it("doesn't include the hidden field for the individual document", function(done) {
@@ -85,36 +124,6 @@ describe("hidden fields", function () {
       });
 
     });
-
-  });
-
-  describe("authenticated requests", function() {
-
-    it("includes the hidden fields on /:collection/:id", function(done) {
-      var apiKey = 'secret';
-      var apiApp = require('..')({databaseName: defaults.databaseName, apiKey: apiKey});
-      var api = require('supertest')(apiApp);
-      api
-      .get('/persons/joe-bloggs?apiKey=' + apiKey)
-      .expect(200)
-      .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' } }, done);
-    });
-
-    it("includes the hidden fields on /:collection", function(done) {
-      var apiKey = 'secret';
-      var apiApp = require('..')({databaseName: defaults.databaseName, apiKey: apiKey});
-      var api = require('supertest')(apiApp);
-      api
-      .get('/persons?apiKey=' + apiKey)
-      .expect(200)
-      .expect({
-        result: [
-          { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
-          { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
-        ]
-      }, done);
-    });
-
 
   });
 
