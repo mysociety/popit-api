@@ -18,9 +18,12 @@ removed.
 
 The exact implementation of the [Popolo](http://popoloproject.com/) standard
 used here may not be fully up to date, or may contain discrepancies to the
-official one. We ([mySociety](http://www.mysociety.org/)) are using this project
-to help develop the standard in the light of requirements from our own projects.
-The eventual aim is to be Popolo compliant.
+official one. See the json files in the [schemas](schemas/) directory
+for the current spec we're validating against.
+
+We ([mySociety](http://www.mysociety.org/)) are using this project to help
+develop the standard in the light of requirements from our own projects. The
+eventual aim is to be Popolo compliant.
 
 ## Installation
 
@@ -28,34 +31,72 @@ The eventual aim is to be Popolo compliant.
 npm install popit-api
 ```
 
-## Overview
+## Usage
 
-Example of how to create a simple API server:
+Example of how to create a simple API server.
+
+Put the following in a file called `server.js` in the directory where
+you installed `popit-api`.
 
 ``` javascript
 var express = require('express'),
-    apiApp  = require('popit-api');
+    popitApi  = require('popit-api');
 
-// Some minimal config is required
-var apiConfig = {
-  databaseName: 'some-name',
-};
-
-// Create the Express app, mount the PopIt api app at the appropriate path and
-// start to listen.
 var app = express();
-app.use('/api', apiApp(apiConfig));
+
+// Configure the PopIt API app
+var apiApp = popitApi({
+  databaseName: 'popit-api-example-instance'
+});
+
+// Mount the PopIt API app at the appropriate path
+app.use('/api', apiApp);
+
+// Start to listen
 app.listen(3000);
+console.log("API Server listening at http://localhost:3000/api");
 ```
 
-You should then be able to go to http://127.0.0.1:3000/api/persons to list all
+The run it with node.
+
+```bash
+node server.js
+```
+
+You should then be able to go to http://localhost:3000/api/persons to list all
 people (which will not be any initially as the database is empty).
 
-This app provides a REST interface to an API that lets you store
-[Popolo](http://popoloproject.com/) compliant data. That's it.
+You can add a person to the database using curl.
 
-It does not provide any logging or authentication etc. It is intended that you
-will do the app that you use this module in.
+```bash
+curl \
+-H 'Content-Type: application/json' \
+-d '{"id": "david-cameron", "name": "David Cameron", "email": "camerond@example.com"}' \
+http://localhost:3000/api/persons
+```
+
+Which should give the following response.
+
+```
+{
+  "result": {
+    "id": "david-cameron",
+    "name": "David Cameron",
+    "email": "camerond@example.com"
+  }
+}
+```
+
+Now visiting http://localhost:3000/api/persons you will see the entry
+you just created.
+
+## Philosophy
+
+This app provides a REST interface to an API that lets you store
+[Popolo](http://popoloproject.com/) compliant data.
+
+It does not provide any logging and only basic authentication. It is intended
+that you will do this in the app that you use this module in.
 
 ## Development setup
 
@@ -65,10 +106,10 @@ commands will get you a dev environment set up:
 ``` bash
 git clone https://github.com/mysociety/popit-api.git
 cd popit-api
-npm install .
+npm install
 npm test
 node test-server.js
-open http://127.0.0.1:3000/
+open http://localhost:3000/
 ```
 
 When running the tests or the test-server a database called `test-popit-api-db`
@@ -81,12 +122,12 @@ need to either supply one of these two:
 
 ``` javascript
 // Specify the database name
-{ databaseName: 'name-of-mongodb-to-use' }
+popitApi({ databaseName: 'name-of-mongodb-to-use' });
 ```
 
 ``` javascript
 // Use the hostname to decide the db name
-{ storageSelector: 'hostName' }
+popitApi({ storageSelector: 'hostName' })
 ```
 
 Expect the configuration to change significantly as we work out what we actually
@@ -95,7 +136,7 @@ need.
 ## Validation
 
 All data written to the REST API is validated against the schemas stored in
-`schemas/popolo`. Local copies are used rather than fetching over http so that
+[schemas/popolo](schemas/popolo/). Local copies are used rather than fetching over http so that
 changes can be easily made and experimented with. Note that these schemas may be
 different to the current official ones until the standard is finalised.
 
