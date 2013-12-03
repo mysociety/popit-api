@@ -51,13 +51,16 @@ function hiddenFields(req, res, next) {
       return next(err);
     }
 
+    var collectionWide = results[0];
+    var documentSpecific = results[1];
+
     req.fields.all = {};
 
-    results[0].forEach(function(doc) {
+    collectionWide.forEach(function(doc) {
       req.fields.all = _.extend(req.fields.all, doc.fields);
     });
 
-    results[1].forEach(function(doc) {
+    documentSpecific.forEach(function(doc) {
       req.fields[doc.doc] = doc.fields;
     });
 
