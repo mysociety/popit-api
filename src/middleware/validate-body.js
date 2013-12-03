@@ -1,7 +1,6 @@
 "use strict";
 
 var util = require('util');
-var _ = require('underscore');
 var validate = require('../validate');
 var Storage = require('../storage');
 
@@ -23,7 +22,7 @@ function validateBody (req, res, next) {
       return next(null);
     } else {
 
-      var details = _.map(errors, function (error) {
+      var details = errors.map(function (error) {
         return util.format(
           "Error '%s' with '%s'.",
           error.message,
