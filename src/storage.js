@@ -102,26 +102,21 @@ Storage.prototype.retrieve = function (collectionName, id, fields, cb) {
   }
   fields = fields || {};
 
+  // If there are document specific hidden fields add them to fields.all
   if (fields[id]) {
     _.extend(fields.all, fields[id]);
   }
 
   var collection = this.db.collection(collectionName);
-  collection.find({_id: id}, fields.all || {}, function (err, docs) {
+  collection.findOne({_id: id}, fields.all || {}, function (err, doc) {
     if (err) {
       return cb(err);
     }
-    docs.toArray(function(err, docs) {
-      if (err) {
-        return cb(err);
-      }
-      var doc = docs[0];
-      if (doc) {
-        doc.id = doc._id;
-        delete doc._id;
-      }
-      cb(null, doc);
-    });
+    if (doc) {
+      doc.id = doc._id;
+      delete doc._id;
+    }
+    cb(null, doc);
   });
 };
 
