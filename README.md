@@ -60,7 +60,7 @@ app.use('/api', apiApp);
 
 // Start to listen
 app.listen(3000);
-console.log("API Server listening at http://localhost:3000/api");
+console.log("API Server listening at http://127.0.0.1:3000/api");
 ```
 
 The run it with node.
@@ -69,7 +69,7 @@ The run it with node.
 node server.js
 ```
 
-You should then be able to go to http://localhost:3000/api/persons to list all
+You should then be able to go to http://127.0.0.1:3000/api/persons to list all
 people (which will not be any initially as the database is empty).
 
 You can add a person to the database using curl.
@@ -78,7 +78,7 @@ You can add a person to the database using curl.
 curl \
 -H 'Content-Type: application/json' \
 -d '{"id": "david-cameron", "name": "David Cameron", "email": "camerond@example.com"}' \
-http://localhost:3000/api/persons
+http://127.0.0.1:3000/api/persons
 ```
 
 Which should give the following response.
@@ -93,7 +93,7 @@ Which should give the following response.
 }
 ```
 
-Now visiting http://localhost:3000/api/persons you will see the entry
+Now visiting http://127.0.0.1:3000/api/persons you will see the entry
 you just created.
 
 ## Philosophy
@@ -115,7 +115,7 @@ cd popit-api
 npm install
 npm test
 node test-server.js
-open http://localhost:3000/
+open http://127.0.0.1:3000/
 ```
 
 When running the tests or the test-server a database called `test-popit-api-db`
@@ -153,11 +153,11 @@ different to the current official ones until the standard is finalised.
 ## Hidden fields
 
 Some applications may want to keep a subset of fields hidden from the
-public. For example PopIt could be used to store contact details for
-writing to MPs, and the MP has given the service their email to use but
-don't want it to be publicly available, the service can still store
+public. For example, PopIt could be used to store contact details for
+writing to MPs, the MP has given the service their email to use but
+don't want it to be publicly available. The service can still store
 email addresses in PopIt, but they will only be returned when the
-correct API key is used.
+correct API key is provided.
 
 Before using the hidden fields you need to specify an `apiKey` option in
 the configuration object.
@@ -182,9 +182,9 @@ mongo mp-contacts
 > db.hidden.insert({collection: 'persons', fields: {email: false}})
 ```
 
-After restarting the app, public requests to http://localhost:3000/api/persons
+After restarting the app, public requests to http://127.0.0.1:3000/api/persons
 won't include any email addresses unless you specify provide the correct `apiKey`
-parameter, e.g. http://localhost:3000/api/persons?apiKey=secret.
+parameter, e.g. http://127.0.0.1:3000/api/persons?apiKey=secret.
 
 ## REST actions
 
