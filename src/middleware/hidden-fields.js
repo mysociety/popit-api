@@ -10,8 +10,14 @@ var async = require('async');
  * documents that match the current collection and if it finds any field specs then
  * it exposes them on `req.fields`.
  *
- * The fields spec is passed directly to mongo's `find` method, which accepts fields
+ * The fields spec is passed to mongo's `find` method, which accepts fields
  * as its second argument and retricts the returned documents based on that.
+ *
+ * Example
+ *
+ *     app.get('/:collection', hiddenFields, function(req, res, next) {
+ *       // req.fields will be populated based on the `:collection` param.
+ *     });
  *
  * @param {object} req The express request object
  * @param {object} res The express response object
