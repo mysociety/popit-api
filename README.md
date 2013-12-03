@@ -182,6 +182,13 @@ mongo mp-contacts
 > db.hidden.insert({collection: 'persons', fields: {email: false}})
 ```
 
+Or to hide an individual document's fields
+
+```
+mongo mp-contacts
+> db.hidden.insert({collection: 'persons', doc: 'david-cameron', fields: {email: false}})
+```
+
 After restarting the app, public requests to http://127.0.0.1:3000/api/persons
 won't include any email addresses unless you specify provide the correct `apiKey`
 parameter, e.g. http://127.0.0.1:3000/api/persons?apiKey=secret.
