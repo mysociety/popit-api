@@ -43,7 +43,6 @@ function showsAllFieldsForAuthenticatedRequests() {
 
 describe("hidden fields", function () {
 
-  before(Storage.connectToDatabase);
   beforeEach(fixture.clearDatabase);
   beforeEach(fixture.loadFixtures);
 

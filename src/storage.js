@@ -9,27 +9,18 @@ var mongo  = require('mongodb'),
 
 var server      = new mongo.Server('localhost', 27017, {auto_reconnect: true});
 var mongoclient = new mongo.MongoClient(server, {journal: true});
-var mongoConnected = false;
+
+mongoclient.open(function (err) {
+  if (err) {
+    throw err;
+  }
+});
 
 function Storage(databaseName) {
   assert(databaseName, "Need to provide a database name");
   this.databaseName = databaseName;
   this.db = mongoclient.db(databaseName);
 }
-
-/*
-  Get ready to do stuff. Connect to the database.
-*/
-Storage.connectToDatabase = function (cb) {
-  if (!mongoConnected) {
-    mongoclient.open(function (err) {
-      mongoConnected = !err;
-      cb(err);
-    });
-  } else {
-    cb();
-  }
-};
 
 Storage.generateID = function () {
   var objectId = new mongo.ObjectID();

@@ -6,14 +6,12 @@ var request       = require("supertest"),
     fixture       = require("./fixture"),
     defaults      = require("./defaults"),
     packageJSON   = require("../package"),
-    Storage       = require("../src/storage"),
     serverApp     = require("../test-server-app");
 
 request = request(serverApp);
 
 describe("REST", function () {
 
-  before(Storage.connectToDatabase);
   beforeEach(fixture.clearDatabase);
 
   describe("malformed requests", function () {

@@ -17,13 +17,9 @@ var storageSelectors = {
   fixedName: function(options) {
     return {
       selector: function (req, res, next) {
-        Storage.connectToDatabase(function (err) {
-          if (!err) {
-            var databaseName = options.databaseName;
-            req.storage = new Storage(databaseName);
-          }
-          next(err);
-        });
+        var databaseName = options.databaseName;
+        req.storage = new Storage(databaseName);
+        next();
       },
       optionsCheck: function (options) {
         assert(options.databaseName, "Missing required option 'databaseName'");
@@ -33,14 +29,10 @@ var storageSelectors = {
   hostName: function() {
     return {
       selector: function (req, res, next) {
-        Storage.connectToDatabase(function (err) {
-          if (!err) {
-            var host = req.host.replace(/\./g, '-');
-            var databaseName = slugToDb('popit-api-' + slugify(host));
-            req.storage = new Storage(databaseName);
-          }
-          next(err);
-        });
+        var host = req.host.replace(/\./g, '-');
+        var databaseName = slugToDb('popit-api-' + slugify(host));
+        req.storage = new Storage(databaseName);
+        next();
       }
     };
   }
