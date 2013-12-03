@@ -27,6 +27,8 @@ eventual aim is to be Popolo compliant.
 
 ## Installation
 
+- Install [MongoDB](http://www.mongodb.org/) using your package manager
+
 ``` bash
 npm install popit-api
 ```
@@ -35,8 +37,12 @@ npm install popit-api
 
 Example of how to create a simple API server.
 
-Put the following in a file called `server.js` in the directory where
-you installed `popit-api`.
+```
+mkdir popit-api-example && cd popit-api-example
+npm install express popit-api
+```
+
+Put the following in a file called `server.js`:
 
 ``` javascript
 var express = require('express'),
@@ -46,7 +52,7 @@ var app = express();
 
 // Configure the PopIt API app
 var apiApp = popitApi({
-  databaseName: 'popit-api-example-instance'
+  databaseName: 'mp-contacts'
 });
 
 // Mount the PopIt API app at the appropriate path
@@ -121,13 +127,17 @@ All configuration is done by passing in the config to the app. Currently you
 need to either supply one of these two:
 
 ``` javascript
-// Specify the database name
-popitApi({ databaseName: 'name-of-mongodb-to-use' });
+// Specify the database name directly
+var apiApp = popitApi({
+  databaseName: 'name-of-mongodb-to-use'
+});
 ```
 
 ``` javascript
-// Use the hostname to decide the db name
-popitApi({ storageSelector: 'hostName' })
+// Derive the database name from the Host header
+var apiApp = popitApi({
+  storageSelector: 'hostName'
+});
 ```
 
 Expect the configuration to change significantly as we work out what we actually
@@ -139,6 +149,42 @@ All data written to the REST API is validated against the schemas stored in
 [schemas/popolo](schemas/popolo/). Local copies are used rather than fetching over http so that
 changes can be easily made and experimented with. Note that these schemas may be
 different to the current official ones until the standard is finalised.
+
+## Hidden fields
+
+Some applications may want to keep a subset of fields hidden from the
+public. For example PopIt could be used to store contact details for
+writing to MPs, and the MP has given the service their email to use but
+don't want it to be publicly available, the service can still store
+email addresses in PopIt, but they will only be returned when the
+correct API key is used.
+
+Before using the hidden fields you need to specify an `apiKey` option in
+the configuration object.
+
+```javascript
+// ...
+
+// Configure the PopIt API app
+var apiApp = popitApi({
+  databaseName: 'mp-contacts',
+  apiKey: 'secret' // This could come from an environment variable or similar
+});
+
+// ...
+```
+
+Then to hide all the email addresses for people in this instance, add a
+document to mongo from the command line:
+
+```
+mongo mp-contacts
+> db.hidden.insert({collection: 'persons', fields: {email: false}})
+```
+
+After restarting the app, public requests to http://localhost:3000/api/persons
+won't include any email addresses unless you specify provide the correct `apiKey`
+parameter, e.g. http://localhost:3000/api/persons?apiKey=secret.
 
 ## REST actions
 
