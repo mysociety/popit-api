@@ -11,12 +11,11 @@ var server      = new mongo.Server('localhost', 27017, {auto_reconnect: true});
 var mongoclient = new mongo.MongoClient(server, {journal: true});
 var mongoConnected = false;
 
-var Storage = function (databaseName) {
+function Storage(databaseName) {
   assert(databaseName, "Need to provide a database name");
   this.databaseName = databaseName;
   this.db = mongoclient.db(databaseName);
-};
-
+}
 
 /*
   Get ready to do stuff. Connect to the database.
