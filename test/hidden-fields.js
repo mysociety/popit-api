@@ -46,6 +46,67 @@ describe("hidden fields", function () {
   beforeEach(fixture.clearDatabase);
   beforeEach(fixture.loadFixtures);
 
+  describe("globally hidden fields", function() {
+    var apiApp = require('..')({
+      databaseName: defaults.databaseName,
+      apiKey: 'secret',
+      hidden: [{
+        collection: 'persons',
+        fields: {
+          email: false
+        }
+      }]
+    });
+    var api = require('supertest')(apiApp);
+
+    it("hides fields in all documents", function(done) {
+      api
+      .get('/persons')
+      .expect(200)
+      .expect({
+        result: [
+          { id: 'fred-bloggs', name: 'Fred Bloggs'},
+          { id: 'joe-bloggs', name: 'Joe Bloggs'}
+        ]
+      }, done);
+    });
+
+    it("hides fields on individual documents", function(done) {
+      api
+      .get('/persons/fred-bloggs')
+      .expect(200)
+      .expect({
+        result: { id: 'fred-bloggs', name: 'Fred Bloggs' }
+      }, done);
+    });
+
+    describe("when apiKey is provided", function() {
+
+      it("shows all fields in all documents", function(done) {
+        api
+        .get('/persons?apiKey=secret')
+        .expect(200)
+        .expect({
+          result: [
+            { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
+            { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' }
+          ]
+        }, done);
+      });
+
+      it("shows all fields on individual documents", function(done) {
+        api
+        .get('/persons/fred-bloggs?apiKey=secret')
+        .expect(200)
+        .expect({
+          result: { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' }
+        }, done);
+      });
+
+    });
+
+  });
+
   describe("collection wide", function () {
 
     beforeEach(function(done) {

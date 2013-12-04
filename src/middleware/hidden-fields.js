@@ -24,11 +24,23 @@ var async = require('async');
  * @param {object} next The express next function
  */
 function hiddenFields(req, res, next) {
-  req.fields = {};
+  req.fields = {
+    all: {}
+  };
 
   // Admin can see any fields.
   if (req.isAdmin) {
     return next();
+  }
+
+  var globallyHidden = req.app.get('hidden');
+
+  if (globallyHidden) {
+    globallyHidden.forEach(function(hidden) {
+      if (hidden.collection === req.params.collection) {
+        _.extend(req.fields.all, hidden.fields);
+      }
+    });
   }
 
   var hidden = req.storage.db.collection('hidden');
@@ -54,10 +66,8 @@ function hiddenFields(req, res, next) {
     var collectionWide = results[0];
     var documentSpecific = results[1];
 
-    req.fields.all = {};
-
     collectionWide.forEach(function(doc) {
-      req.fields.all = _.extend(req.fields.all, doc.fields);
+      _.extend(req.fields.all, doc.fields);
     });
 
     documentSpecific.forEach(function(doc) {

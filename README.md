@@ -159,22 +159,43 @@ don't want it to be publicly available. The service can still store
 email addresses in PopIt, but they will only be returned when the
 correct API key is provided.
 
-Before using the hidden fields you need to specify an `apiKey` option in
-the configuration object.
+The simplest way to get started is to specify fields to be hidden
+globally directly in the configuration when creating the api, along with
+an API key which will unlock all the fields.
 
 ```javascript
 // ...
 
-// Configure the PopIt API app
+// Configure the PopIt API app with hidden fields.
 var apiApp = popitApi({
   databaseName: 'mp-contacts',
   apiKey: 'secret' // This could come from an environment variable or similar
+  hidden: [
+    {
+      collection: 'persons',
+      fields: {
+        email: false
+      }
+    }
+  ]
 });
 
 // ...
 ```
 
-Then to hide all the email addresses for people in this instance, add a
+After restarting the app, public requests to http://127.0.0.1:3000/api/persons
+won't include any email addresses unless you specify provide the correct `apiKey`
+parameter, e.g. http://127.0.0.1:3000/api/persons?apiKey=secret.
+
+### Specifying hidden documents in the database
+
+Putting the hidden fields in the configuration is a convenient way to
+hide fields across all instances, but sometimes you might want more
+granular control over which documents are hidden in which database. To
+do this you can add documents to a `hidden` collection in the database
+you want to change, as shown below.
+
+To hide all the email addresses for people in this instance, add a
 document to mongo from the command line:
 
 ```
@@ -188,10 +209,6 @@ Or to hide an individual document's fields
 mongo mp-contacts
 > db.hidden.insert({collection: 'persons', doc: 'david-cameron', fields: {email: false}})
 ```
-
-After restarting the app, public requests to http://127.0.0.1:3000/api/persons
-won't include any email addresses unless you specify provide the correct `apiKey`
-parameter, e.g. http://127.0.0.1:3000/api/persons?apiKey=secret.
 
 ## REST actions
 

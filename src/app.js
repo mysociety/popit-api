@@ -13,6 +13,9 @@ module.exports = function (options) {
 
   var app = express();
 
+  // Expose globally hidden fields in the app config.
+  app.set('hidden', options.hidden);
+
   // Clean up requests from tools like slumber that set the Content-Type but no body
   // eg https://github.com/dstufft/slumber/pull/32
   app.use( function (req, res, next) {
