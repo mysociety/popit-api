@@ -63,7 +63,7 @@ app.listen(3000);
 console.log("API Server listening at http://127.0.0.1:3000/api");
 ```
 
-The run it with node.
+Then run it with node.
 
 ```bash
 node server.js
