@@ -160,8 +160,8 @@ email addresses in PopIt, but they will only be returned when the
 correct API key is provided.
 
 The simplest way to get started is to specify fields to be hidden
-globally directly in the configuration when creating the api, along with
-an API key which will unlock all the fields.
+**globally** directly in the configuration when creating the api using the
+`fieldSpec` option, along with an API key which will unlock all the fields.
 
 ```javascript
 // ...
@@ -170,7 +170,7 @@ an API key which will unlock all the fields.
 var apiApp = popitApi({
   databaseName: 'mp-contacts',
   apiKey: 'secret' // This could come from an environment variable or similar
-  hidden: [
+  fieldSpec: [
     {
       collection: 'persons',
       fields: {
@@ -182,6 +182,11 @@ var apiApp = popitApi({
 
 // ...
 ```
+
+This example uses `email: false` in the `fieldSpec` option, which means
+that the email field will not be included it the response. If you wanted
+the output to *only* contain an email address then you'd set `email:
+true` which wouldn't render any fields except the email.
 
 After restarting the app, public requests to http://127.0.0.1:3000/api/persons
 won't include any email addresses unless you specify provide the correct `apiKey`

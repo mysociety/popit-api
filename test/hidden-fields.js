@@ -50,7 +50,7 @@ describe("hidden fields", function () {
     var apiApp = require('..')({
       databaseName: defaults.databaseName,
       apiKey: 'secret',
-      hidden: [{
+      fieldSpec: [{
         collection: 'persons',
         fields: {
           email: false

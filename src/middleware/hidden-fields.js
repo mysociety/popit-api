@@ -33,7 +33,7 @@ function hiddenFields(req, res, next) {
     return next();
   }
 
-  var globallyHidden = req.app.get('hidden');
+  var globallyHidden = req.app.get('fieldSpec');
 
   if (globallyHidden) {
     globallyHidden.forEach(function(hidden) {
