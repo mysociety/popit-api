@@ -17,45 +17,92 @@ Feel free to experiment but do not use in production until this message is
 removed.
 
 The exact implementation of the [Popolo](http://popoloproject.com/) standard
-used here may not be fully up to date, or may contain discrepencies to the
-official one. We ([mySociety](http://www.mysociety.org/)) are using this project
-to help develop the standard in the light of requirements from our own projects.
-The eventual aim is to be Popolo compliant.
+used here may not be fully up to date, or may contain discrepancies to the
+official one. See the json files in the [schemas](schemas/) directory
+for the current spec we're validating against.
+
+We ([mySociety](http://www.mysociety.org/)) are using this project to help
+develop the standard in the light of requirements from our own projects. The
+eventual aim is to be Popolo compliant.
 
 ## Installation
+
+- Install [MongoDB](http://www.mongodb.org/) using your package manager
 
 ``` bash
 npm install popit-api
 ```
 
-## Overview
+## Usage
 
-Example of how to create a simple API server:
+Example of how to create a simple API server.
+
+```
+mkdir popit-api-example && cd popit-api-example
+npm install express popit-api
+```
+
+Put the following in a file called `server.js`:
 
 ``` javascript
 var express = require('express'),
-    apiApp  = require('popit-api');
+    popitApi  = require('popit-api');
 
-// Some minimal config is required
-var apiConfig = {
-  databaseName: 'some-name',
-};
-
-// Create the Express app, mount the PopIt api app at the appropriate path and
-// start to listen.
 var app = express();
-app.use('/api', apiApp(apiConfig));
+
+// Configure the PopIt API app
+var apiApp = popitApi({
+  databaseName: 'mp-contacts'
+});
+
+// Mount the PopIt API app at the appropriate path
+app.use('/api', apiApp);
+
+// Start to listen
 app.listen(3000);
+console.log("API Server listening at http://127.0.0.1:3000/api");
+```
+
+Then run it with node.
+
+```bash
+node server.js
 ```
 
 You should then be able to go to http://127.0.0.1:3000/api/persons to list all
 people (which will not be any initially as the database is empty).
 
-This app provides a REST interface to an API that lets you store
-[Popolo](http://popoloproject.com/) compliant data. That's it.
+You can add a person to the database using curl.
 
-It does not provide any logging or authentication etc. It is intended that you
-will do the app that you use this module in.
+```bash
+curl \
+-H 'Content-Type: application/json' \
+-d '{"id": "david-cameron", "name": "David Cameron", "email": "camerond@example.com"}' \
+http://127.0.0.1:3000/api/persons
+```
+
+Which should give the following response.
+
+```
+{
+  "result": {
+    "id": "david-cameron",
+    "name": "David Cameron",
+    "email": "camerond@example.com"
+  }
+}
+```
+
+Now visiting http://127.0.0.1:3000/api/persons you will see the entry
+you just created.
+
+## Philosophy
+
+This app provides a REST interface to an API that lets you store
+[Popolo](http://popoloproject.com/) compliant data.
+
+It does not provide any logging and only basic authentication. It is intended
+that you will do this in the app that you use this module in.
 
 ## Development setup
 
@@ -65,7 +112,7 @@ commands will get you a dev environment set up:
 ``` bash
 git clone https://github.com/mysociety/popit-api.git
 cd popit-api
-npm install .
+npm install
 npm test
 node test-server.js
 open http://127.0.0.1:3000/
@@ -80,13 +127,17 @@ All configuration is done by passing in the config to the app. Currently you
 need to either supply one of these two:
 
 ``` javascript
-// Specify the database name
-{ databaseName: 'name-of-mongodb-to-use' }
+// Specify the database name directly
+var apiApp = popitApi({
+  databaseName: 'name-of-mongodb-to-use'
+});
 ```
 
 ``` javascript
-// Use the hostname to decide the db name
-{ storageSelector: 'hostName' }
+// Derive the database name from the Host header
+var apiApp = popitApi({
+  storageSelector: 'hostName'
+});
 ```
 
 Expect the configuration to change significantly as we work out what we actually
@@ -95,9 +146,74 @@ need.
 ## Validation
 
 All data written to the REST API is validated against the schemas stored in
-`schemas/popolo`. Local copies are used rather than fetching over http so that
+[schemas/popolo](schemas/popolo/). Local copies are used rather than fetching over http so that
 changes can be easily made and experimented with. Note that these schemas may be
 different to the current official ones until the standard is finalised.
+
+## Hidden fields
+
+Some applications may want to keep a subset of fields hidden from the
+public. For example, PopIt could be used to store contact details for
+writing to MPs, the MP has given the service their email to use but
+don't want it to be publicly available. The service can still store
+email addresses in PopIt, but they will only be returned when the
+correct API key is provided.
+
+The simplest way to get started is to specify fields to be hidden
+**globally** directly in the configuration when creating the api using the
+`fieldSpec` option, along with an API key which will unlock all the fields.
+
+```javascript
+// ...
+
+// Configure the PopIt API app with hidden fields.
+var apiApp = popitApi({
+  databaseName: 'mp-contacts',
+  apiKey: 'secret' // This could come from an environment variable or similar
+  fieldSpec: [
+    {
+      collection: 'persons',
+      fields: {
+        email: false
+      }
+    }
+  ]
+});
+
+// ...
+```
+
+This example uses `email: false` in the `fieldSpec` option, which means
+that the email field will not be included it the response. If you wanted
+the output to *only* contain an email address then you'd set `email:
+true` which wouldn't render any fields except the email.
+
+After restarting the app, public requests to http://127.0.0.1:3000/api/persons
+won't include any email addresses unless you specify provide the correct `apiKey`
+parameter, e.g. http://127.0.0.1:3000/api/persons?apiKey=secret.
+
+### Specifying hidden documents in the database
+
+Putting the hidden fields in the configuration is a convenient way to
+hide fields across all instances, but sometimes you might want more
+granular control over which documents are hidden in which database. To
+do this you can add documents to a `hidden` collection in the database
+you want to change, as shown below.
+
+To hide all the email addresses for people in this instance, add a
+document to mongo from the command line:
+
+```
+mongo mp-contacts
+> db.hidden.insert({collection: 'persons', fields: {email: false}})
+```
+
+Or to hide an individual document's fields
+
+```
+mongo mp-contacts
+> db.hidden.insert({collection: 'persons', doc: 'david-cameron', fields: {email: false}})
+```
 
 ## REST actions
 

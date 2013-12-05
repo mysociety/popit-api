@@ -6,14 +6,12 @@ var request       = require("supertest"),
     fixture       = require("./fixture"),
     defaults      = require("./defaults"),
     packageJSON   = require("../package"),
-    Storage       = require("../src/storage"),
     serverApp     = require("../test-server-app");
 
 request = request(serverApp);
 
 describe("REST", function () {
 
-  before(Storage.connectToDatabase);
   beforeEach(fixture.clearDatabase);
 
   describe("malformed requests", function () {
@@ -69,8 +67,8 @@ describe("REST", function () {
                 .expect(200)
                 .expect({
                   result: [
-                    { id: 'fred-bloggs', name: 'Fred Bloggs' },
-                    { id: 'joe-bloggs', name: 'Joe Bloggs' },
+                    { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
+                    { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
                   ],
                 })
                 .end(callback);
@@ -230,6 +228,7 @@ describe("REST", function () {
             result: {
               id: 'fred-bloggs',
               name: 'Fred Bloggs',
+              email: 'fbloggs@example.org',
             }
           })
           .end(done);

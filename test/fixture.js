@@ -26,10 +26,12 @@ collections.persons = {
   fredBloggs: {
     id: "fred-bloggs",
     name: "Fred Bloggs",
+    email: 'fbloggs@example.org',
   },
   joeBloggs: {
     id: "joe-bloggs",
     name: "Joe Bloggs",
+    email: "jbloggs@example.org",
   },
 };
 

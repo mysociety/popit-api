@@ -10,23 +10,10 @@ describe("Storage", function () {
 
   var storage = null;
 
-  before(function (done) {
-    Storage.connectToDatabase(done);
-  });
-
   before(function () {
     storage = new Storage(defaults.databaseName);
   });
-    
-  describe('connections', function () {
-    it("connecting a second time does not error", function (done) {
-      Storage.connectToDatabase(function(err) {
-        assert.ifError(err);
-        done();
-      });
-    });
-  });
-  
+
   describe('helpers', function () {
     it("generateID", function () {
       var id1 = Storage.generateID();

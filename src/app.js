@@ -1,64 +1,20 @@
 "use strict";
 
-var util        = require('util'),
-    assert      = require('assert'),
-    express     = require('express'),
-    collections = require('./collections'),
-    validate    = require('./validate'),
-    Storage     = require('../src/storage'),
-    packageJSON = require("../package"),
-    _           = require('underscore'),
-    slugToDb    = require('./slug-to-database');
-
-_.str = require('underscore.string');
-
-var storageSelectors = {
-  fixedName: {
-    selector: function (req, res, next) {
-      Storage.connectToDatabase(function (err) {
-        if (!err) {
-          var databaseName = req.app.get('popitApiOptions').databaseName;
-          req.storage = new Storage(databaseName);
-        }
-        next(err);
-      });
-    },
-    optionsCheck: function (options) {
-      assert(options.databaseName, "Missing required option 'databaseName'");
-    }
-  },
-  hostName: {
-    selector: function (req, res, next) {
-      Storage.connectToDatabase(function (err) {
-        if (!err) {
-          var host = req.host.replace(/\./g, '-');
-          var databaseName = slugToDb('popit-api-' + _.str.slugify(host));
-          req.storage = new Storage(databaseName);
-        }
-        next(err);
-      });
-    },
-  }
-};
+var express = require('express');
+var packageJSON = require("../package");
+var collections = require('./collections');
+var storageSelector = require('./middleware/storage-selector');
+var authCheck = require('./middleware/auth-check');
+var hiddenFields = require('./middleware/hidden-fields');
+var validateBody = require('./middleware/validate-body');
 
 module.exports = function (options) {
-  
-  // Apply defaults to the options here.
-  _.defaults(options, {
-    storageSelector: 'fixedName'
-  });
-
-  // check that we have all the options that we need
-  var storageSelector = storageSelectors[options.storageSelector];
-  assert(storageSelector, "Could not load storage selector '"+options.storageSelector+"'");
-  if (storageSelector.optionsCheck) {
-    storageSelector.optionsCheck(options);
-  }
+  options.storageSelector = options.storageSelector || 'fixedName';
 
   var app = express();
 
-  // store the options
-  app.set('popitApiOptions', options);
+  // Expose globally fieldSpec option in the app config.
+  app.set('fieldSpec', options.fieldSpec);
 
   // Clean up requests from tools like slumber that set the Content-Type but no body
   // eg https://github.com/dstufft/slumber/pull/32
@@ -69,10 +25,13 @@ module.exports = function (options) {
     next();
   });
 
-
   app.use(express.bodyParser());
 
-  app.use(storageSelector.selector);
+  app.use(storageSelector(options));
+
+  if (options.apiKey) {
+    app.use(authCheck(options.apiKey));
+  }
 
   app.get('/', function (req, res) {
     res.jsonp({
@@ -88,31 +47,29 @@ module.exports = function (options) {
     Check that the collection is in the allowed list.
   */
   app.param('collection', function (req, res, next, collection) {
-
-    if (! collections[collection]) {
-      res
-        .status(404)
-        .jsonp({
-          errors: ["collection '" + collection + "' not found"]
-        });
-    } else {
-      next();
+    // If the collection exists, carry on.
+    if (collections[collection]) {
+      return next();
     }
+
+    res.status(404).jsonp({
+      errors: ["collection '" + collection + "' not found"]
+    });
   });
 
-  app.get('/:collection', function (req, res, next) {
+  app.get('/:collection', hiddenFields, function (req, res, next) {
     var collectionName = req.params.collection;
-    req.storage.list(collectionName, function (err, docs) {
+    req.storage.list(collectionName, req.fields, function (err, docs) {
       if (err) { return next(err); }
       res.jsonp({ result: docs });
     });
   });
 
-  app.get('/:collection/:id(*)', function (req, res, next) {
+  app.get('/:collection/:id(*)', hiddenFields, function (req, res, next) {
     var collectionName = req.params.collection;
     var id             = req.params.id;
 
-    req.storage.retrieve( collectionName, id, function (err, doc) {
+    req.storage.retrieve( collectionName, id, req.fields, function (err, doc) {
       if (err) {
         next(err);
       } else if (doc) {
@@ -141,41 +98,6 @@ module.exports = function (options) {
       }
     });
   });
-
-
-  function validateBody (req, res, next) {
-
-    var collectionName = req.params.collection;
-    var body = req.body;
-
-    // If there is no id create one
-    if (!body.id) {
-      body.id = req.params.id || Storage.generateID();
-    }
-
-    validate(collectionName, body, function (err, errors) {
-
-      if (err) {
-        return next(err);
-      } else if (errors.length === 0) {
-        return next(null);
-      } else {
-
-        var details = _.map(errors, function (error) {
-          return util.format(
-            "Error '%s' with '%s'.",
-            error.message,
-            error.schemaUri
-          );
-        });
-
-        res
-          .status(400)
-          .send({errors: details});
-      }
-    });
-  }
-
 
   app.post('/:collection', validateBody, function (req, res, next) {
 

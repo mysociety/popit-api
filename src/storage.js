@@ -9,28 +9,18 @@ var mongo  = require('mongodb'),
 
 var server      = new mongo.Server('localhost', 27017, {auto_reconnect: true});
 var mongoclient = new mongo.MongoClient(server, {journal: true});
-var mongoConnected = false;
 
-var Storage = function (databaseName) {
+mongoclient.open(function (err) {
+  if (err) {
+    throw err;
+  }
+});
+
+function Storage(databaseName) {
   assert(databaseName, "Need to provide a database name");
   this.databaseName = databaseName;
   this.db = mongoclient.db(databaseName);
-};
-
-
-/*
-  Get ready to do stuff. Connect to the database.
-*/
-Storage.connectToDatabase = function (cb) {
-  if (!mongoConnected) {
-    mongoclient.open(function (err) {
-      mongoConnected = !err;
-      cb(err);
-    });
-  } else {
-    cb();
-  }
-};
+}
 
 Storage.generateID = function () {
   var objectId = new mongo.ObjectID();
@@ -96,29 +86,57 @@ Storage.prototype.store = function (collectionName, doc, cb) {
 /*
   Retrieve a document from the database.
 */
-Storage.prototype.retrieve = function (collectionName, id, cb) {
+Storage.prototype.retrieve = function (collectionName, id, fields, cb) {
+  if (typeof fields === 'function') {
+    cb = fields;
+    fields = {};
+  }
+  fields = fields || {};
+
+  // If there are document specific hidden fields add them to fields.all
+  if (fields[id]) {
+    _.extend(fields.all, fields[id]);
+  }
+
   var collection = this.db.collection(collectionName);
-  collection.findOne({_id: id}, function (err, doc) {
+  collection.findOne({_id: id}, fields.all || {}, function (err, doc) {
+    if (err) {
+      return cb(err);
+    }
     if (doc) {
       doc.id = doc._id;
       delete doc._id;
     }
-    cb(err, doc);
+    cb(null, doc);
   });
 };
 
 /*
   List documents in the database.
 */
-Storage.prototype.list = function (collectionName, cb) {
+Storage.prototype.list = function (collectionName, fields, cb) {
+  if (typeof fields === 'function') {
+    cb = fields;
+    fields = {};
+  }
+  fields = fields || {};
+
   var collection = this.db.collection(collectionName);
-  var cursor = collection.find({});
+  var cursor = collection.find({}, fields.all || {});
   
   cursor.toArray(function (err, docs) {
 
     _.each(docs, function (doc) {
       doc.id = doc._id;
       delete doc._id;
+      if (fields[doc.id]) {
+        for (var field in fields[doc.id]) {
+          var value = fields[doc.id][field];
+          if (value === false) {
+            delete doc[field];
+          }
+        }
+      }
     });
 
     cb(err, docs);
