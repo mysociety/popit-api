@@ -105,7 +105,7 @@ module.exports = function (options) {
 
     req.storage.store(collectionName, body, function (err, doc) {
       if (err) {
-        return res.send(400, err);
+        return next(err);
       }
       res
         .status(200)

@@ -43,7 +43,7 @@ function hiddenFields(req, res, next) {
     });
   }
 
-  var hidden = req.storage.db.collection('hidden');
+  var hidden = req.storage.connection.collection('hidden');
 
   // Find documents for the given query and convert them to an array.
   function hiddenFind(query, callback) {

@@ -2,27 +2,17 @@
 
 "use strict";
 
-var mongo  = require('mongodb'),
-    assert = require('assert'),
-    _      = require('underscore');
-var collections = require('./collections');
+var assert = require('assert');
+var _ = require('underscore');
 var mongoose = require('mongoose');
+var collections = require('./collections');
 
-var server      = new mongo.Server('localhost', 27017, {auto_reconnect: true});
-var mongoclient = new mongo.MongoClient(server, {journal: true});
-
-mongoclient.open(function (err) {
-  if (err) {
-    throw err;
-  }
-});
 
 var connections = {};
 
 function Storage(databaseName) {
   assert(databaseName, "Need to provide a database name");
   this.databaseName = databaseName;
-  this.db = mongoclient.db(databaseName);
   if (connections[databaseName]) {
     this.connection = connections[databaseName];
   } else {
@@ -31,7 +21,7 @@ function Storage(databaseName) {
 }
 
 Storage.generateID = function () {
-  var objectId = new mongo.ObjectID();
+  var objectId = new mongoose.Types.ObjectId();
   return objectId.toHexString();
 };
 
@@ -74,10 +64,14 @@ function deduplicate_slug(collection, cb) {
   Store a document in the database.
 */
 Storage.prototype.store = function (collectionName, doc, cb) {
-
-  var collection = this.connection.model('Person');
-
-  collection.create(doc, cb);
+  var collection = this.connection.model(collections[collectionName]);
+  if (!doc.id) {
+    doc.id = Storage.generateID();
+  }
+  if (!doc._id) {
+    doc._id = doc.id;
+  }
+  collection.findOneAndUpdate({_id: doc.id}, doc, {upsert: true}, cb);
 };
 
 /*
@@ -95,14 +89,10 @@ Storage.prototype.retrieve = function (collectionName, id, fields, cb) {
     _.extend(fields.all, fields[id]);
   }
 
-  var collection = this.db.collection(collectionName);
+  var collection = this.connection.model(collections[collectionName]);
   collection.findOne({_id: id}, fields.all || {}, function (err, doc) {
     if (err) {
       return cb(err);
-    }
-    if (doc) {
-      doc.id = doc._id;
-      delete doc._id;
     }
     cb(null, doc);
   });
@@ -118,17 +108,15 @@ Storage.prototype.list = function (collectionName, fields, cb) {
   }
   fields = fields || {};
 
-  var collection = this.db.collection(collectionName);
-  var cursor = collection.find({}, fields.all || {});
-  
-  cursor.toArray(function (err, docs) {
-
-    _.each(docs, function (doc) {
-      doc.id = doc._id;
-      delete doc._id;
-      if (fields[doc.id]) {
-        for (var field in fields[doc.id]) {
-          var value = fields[doc.id][field];
+  var collection = this.connection.model(collections[collectionName]);
+  collection.find({}, function(err, docs) {
+    if (err) {
+      return cb(err);
+    }
+    docs.forEach(function (doc) {
+      if (fields[doc._id]) {
+        for (var field in fields[doc._id]) {
+          var value = fields[doc._id][field];
           if (value === false) {
             delete doc[field];
           }
@@ -144,7 +132,7 @@ Storage.prototype.list = function (collectionName, fields, cb) {
   Delete a document from the database.
 */
 Storage.prototype.delete = function (collectionName, id, cb) {
-  var collection = this.db.collection(collectionName);
+  var collection = this.connection.model(collections[collectionName]);
   collection.remove({_id: id}, cb);
 };
 
