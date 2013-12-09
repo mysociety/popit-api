@@ -5,7 +5,8 @@
 var mongo  = require('mongodb'),
     assert = require('assert'),
     _      = require('underscore');
- 
+var collections = require('./collections');
+var mongoose = require('mongoose');
 
 var server      = new mongo.Server('localhost', 27017, {auto_reconnect: true});
 var mongoclient = new mongo.MongoClient(server, {journal: true});
@@ -16,10 +17,17 @@ mongoclient.open(function (err) {
   }
 });
 
+var connections = {};
+
 function Storage(databaseName) {
   assert(databaseName, "Need to provide a database name");
   this.databaseName = databaseName;
   this.db = mongoclient.db(databaseName);
+  if (connections[databaseName]) {
+    this.connection = connections[databaseName];
+  } else {
+    this.connection = connections[databaseName] = mongoose.createConnection('localhost', databaseName);
+  }
 }
 
 Storage.generateID = function () {
@@ -67,20 +75,9 @@ function deduplicate_slug(collection, cb) {
 */
 Storage.prototype.store = function (collectionName, doc, cb) {
 
-  if (!doc.id) {
-    return cb(new Error("Can't store document without an id"));
-  }
+  var collection = this.connection.model('Person');
 
-  var collection = this.db.collection(collectionName);
-
-  deduplicate_slug.apply(doc, [ collection, function() {
-    var docToStore = _.extend({}, doc, {_id: doc.id});
-    collection.update({_id: doc.id}, docToStore, {upsert: true}, function (err, result) {
-      assert(result);
-      cb(err, doc);
-    });
-  } ] );
-
+  collection.create(doc, cb);
 };
 
 /*

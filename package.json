@@ -24,7 +24,8 @@
     "JSV": "~4.0.2",
     "mongodb": "~1.2.14",
     "async": "~0.2.6",
-    "underscore.string": "~2.3.1"
+    "underscore.string": "~2.3.1",
+    "mongoose": "~3.8.1"
   },
   "devDependencies": {
     "mocha": "~1.8.2",

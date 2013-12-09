@@ -6,7 +6,6 @@ var collections = require('./collections');
 var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
-var validateBody = require('./middleware/validate-body');
 
 module.exports = function (options) {
   options.storageSelector = options.storageSelector || 'fixedName';
@@ -99,13 +98,15 @@ module.exports = function (options) {
     });
   });
 
-  app.post('/:collection', validateBody, function (req, res, next) {
+  app.post('/:collection', function (req, res, next) {
 
     var collectionName = req.params.collection;
     var body = req.body;
 
     req.storage.store(collectionName, body, function (err, doc) {
-      if (err) { return next(err); }
+      if (err) {
+        return res.send(400, err);
+      }
       res
         .status(200)
         .jsonp({ result: doc });
@@ -114,7 +115,7 @@ module.exports = function (options) {
   });
 
 
-  app.put('/:collection/:id(*)', validateBody, function (req, res, next) {
+  app.put('/:collection/:id(*)', function (req, res, next) {
 
     var collectionName = req.params.collection;
     var id             = req.params.id;

@@ -170,7 +170,7 @@ describe("REST", function () {
       it("should error when not valid (bad name)", function (done) {
         request
           .post("/api/persons")
-          .send({ name: 123, meme: "Harlem Shake" }) // name should be string
+          .send({ name: '', meme: "Harlem Shake" }) // name should be string
           .expect(400)
           .expect("Content-Type", "application/json; charset=utf-8")
           .expect({

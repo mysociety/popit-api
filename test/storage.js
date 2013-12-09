@@ -31,7 +31,7 @@ describe("Storage", function () {
     var sampleData = { id: 'test', foo: 'bar' };
   
     it("check not in collection", function (done) {
-      storage.retrieve('samples', sampleData.id, function (err, doc) {
+      storage.retrieve('persons', sampleData.id, function (err, doc) {
         assert.ifError(err);
         assert(!doc);
         done();
@@ -39,7 +39,7 @@ describe("Storage", function () {
     });
     
     it("list empty collection", function (done) {
-      storage.list('samples', function (err, docs) {
+      storage.list('persons', function (err, docs) {
         assert.ifError(err);
         assert(docs);
         assert.deepEqual( docs, [] );
@@ -48,7 +48,7 @@ describe("Storage", function () {
     });
   
     it("store some data", function (done) {
-      storage.store('samples', sampleData, function (err, doc) {
+      storage.store('persons', sampleData, function (err, doc) {
         assert.ifError(err);
         assert.deepEqual(doc, sampleData);
         done();
@@ -56,7 +56,7 @@ describe("Storage", function () {
     });
   
     it("retrieve it", function (done) {
-      storage.retrieve('samples', sampleData.id, function (err, doc) {
+      storage.retrieve('persons', sampleData.id, function (err, doc) {
         assert.ifError(err);
         assert(doc, "found the document");
         assert.deepEqual( doc, sampleData );
@@ -65,7 +65,7 @@ describe("Storage", function () {
     });
   
     it("list it", function (done) {
-      storage.list('samples', function (err, docs) {
+      storage.list('persons', function (err, docs) {
         assert.ifError(err);
         assert(docs, "found the document");
         assert.deepEqual( docs, [sampleData] );
@@ -74,14 +74,14 @@ describe("Storage", function () {
     });
 
     it("delete it", function (done) {
-      storage.delete('samples', sampleData.id, function (err) {
+      storage.delete('persons', sampleData.id, function (err) {
         assert.ifError(err);
         done();
       });
     });
   
     it("now gone", function (done) {
-      storage.retrieve('samples', sampleData.id, function (err, doc) {
+      storage.retrieve('persons', sampleData.id, function (err, doc) {
         assert.ifError(err);
         assert(!doc);
         done();
@@ -93,7 +93,7 @@ describe("Storage", function () {
   describe("error checking", function () {
   
     it("can't store doc without an id", function (done) {
-      storage.store('samples', {foo: 'bar'}, function (err, doc) {
+      storage.store('persons', {foo: 'bar'}, function (err, doc) {
         assert(err);
         assert(!doc);
         assert.equal(err.message, "Can't store document without an id");
