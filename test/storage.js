@@ -102,5 +102,21 @@ describe("Storage", function () {
     });
   
   });
-    
+
+  describe("search", function() {
+    beforeEach(function(done) {
+      storage.store('samples', {id: 'test', name: 'Bar'}, function(err, results) {
+        done(err, results);
+      });
+    });
+
+    it("returns docs that match the search query", function(done) {
+      storage.search('samples', 'bar', function(err, docs) {
+        assert.ifError(err);
+        assert.equal(1, docs.length);
+        done();
+      });
+    });
+  });
+
 });

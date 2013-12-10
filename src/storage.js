@@ -142,4 +142,42 @@ Storage.prototype.delete = function (collectionName, id, cb) {
   collection.remove({_id: id}, cb);
 };
 
+/**
+ * Search for a document by name
+ */
+Storage.prototype.search = function(collectionName, name, fields, cb) {
+  if (typeof fields === 'function') {
+    cb = fields;
+    fields = {};
+  }
+  fields = fields || {};
+
+  var collection = this.db.collection(collectionName);
+  var nameRegEx = new RegExp(name, 'i');
+
+  collection.find({name: nameRegEx}, fields.all || {}, function(err, result) {
+    if (err) {
+      return cb(err);
+    }
+    result.toArray(function(err, docs) {
+      if (err) {
+        return cb(err);
+      }
+      _.each(docs, function (doc) {
+        doc.id = doc._id;
+        delete doc._id;
+        if (fields[doc.id]) {
+          for (var field in fields[doc.id]) {
+            var value = fields[doc.id][field];
+            if (value === false) {
+              delete doc[field];
+            }
+          }
+        }
+      });
+      cb(null, docs);
+    });
+  });
+};
+
 module.exports = Storage;
