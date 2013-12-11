@@ -145,17 +145,12 @@ Storage.prototype.delete = function (collectionName, id, cb) {
 /**
  * Search for a document by name
  */
-Storage.prototype.search = function(collectionName, name, fields, cb) {
-  if (typeof fields === 'function') {
-    cb = fields;
-    fields = {};
-  }
-  fields = fields || {};
-
+Storage.prototype.search = function(collectionName, name, cb) {
+  var fields = this.fields;
   var collection = this.db.collection(collectionName);
   var nameRegEx = new RegExp(name, 'i');
 
-  collection.find({name: nameRegEx}, fields.all || {}, function(err, result) {
+  collection.find({name: nameRegEx}, fields.all, function(err, result) {
     if (err) {
       return cb(err);
     }

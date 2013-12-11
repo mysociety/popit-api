@@ -71,7 +71,7 @@ module.exports = function (options) {
     if (!name) {
       return res.send(400, {error: ["Please provide a 'name' parameter"]});
     }
-    req.storage.search(collectionName, name, req.fields, function(err, docs) {
+    req.storage.search(collectionName, name, function(err, docs) {
       if (err) {
         return next(err);
       }
