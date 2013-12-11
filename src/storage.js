@@ -117,20 +117,7 @@ Storage.prototype.list = function (collectionName, cb) {
   
   cursor.toArray(function (err, docs) {
 
-    _.each(docs, function (doc) {
-      doc.id = doc._id;
-      delete doc._id;
-      if (fields[doc.id]) {
-        for (var field in fields[doc.id]) {
-          var value = fields[doc.id][field];
-          if (value === false) {
-            delete doc[field];
-          }
-        }
-      }
-    });
-
-    cb(err, docs);
+    cb(err, filterDocs(docs, fields));
   });
 };
 
@@ -158,21 +145,32 @@ Storage.prototype.search = function(collectionName, name, cb) {
       if (err) {
         return cb(err);
       }
-      _.each(docs, function (doc) {
-        doc.id = doc._id;
-        delete doc._id;
-        if (fields[doc.id]) {
-          for (var field in fields[doc.id]) {
-            var value = fields[doc.id][field];
-            if (value === false) {
-              delete doc[field];
-            }
-          }
-        }
-      });
-      cb(null, docs);
+      cb(null, filterDocs(docs, fields));
     });
   });
 };
+
+/**
+ * Filter passed docs using the fields argument.
+ *
+ * @param {Array} docs The docs to filter
+ * @param {Object} fields The field spec to use when filtering
+ * @return {Array} The array of docs after processing
+ */
+function filterDocs(docs, fields) {
+  docs.forEach(function (doc) {
+    doc.id = doc._id;
+    delete doc._id;
+    if (fields[doc.id]) {
+      for (var field in fields[doc.id]) {
+        var value = fields[doc.id][field];
+        if (value === false) {
+          delete doc[field];
+        }
+      }
+    }
+  });
+  return docs;
+}
 
 module.exports = Storage;
