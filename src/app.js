@@ -65,6 +65,22 @@ module.exports = function (options) {
     });
   });
 
+  app.get('/:collection/_resolve', hiddenFields, function(req, res, next) {
+    var collectionName = req.param('collection');
+    var name = req.param('name');
+    if (!name) {
+      return res.send(400, {error: ["Please provide a 'name' parameter"]});
+    }
+    req.storage.search(collectionName, name, req.fields, function(err, docs) {
+      if (err) {
+        return next(err);
+      }
+
+      res.jsonp({ result: docs });
+    });
+  });
+
+
   app.get('/:collection/:id(*)', hiddenFields, function (req, res, next) {
     var collectionName = req.params.collection;
     var id             = req.params.id;

@@ -345,5 +345,19 @@ describe("REST", function () {
 
   });
 
+  describe("GET /:collection/_resolve", function() {
+    beforeEach(function(done) {
+      request.post('/api/persons')
+      .send({id: 'foo', name: 'Test'})
+      .expect(200, done);
+    });
+
+    it("returns names when searching", function(done) {
+      request.get('/api/persons/_resolve?name=test')
+      .expect(200)
+      .expect({result:[{id: 'foo', name: 'Test'}]}, done);
+    });
+  });
+
 
 });
