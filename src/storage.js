@@ -20,6 +20,7 @@ function Storage(databaseName) {
   assert(databaseName, "Need to provide a database name");
   this.databaseName = databaseName;
   this.db = mongoclient.db(databaseName);
+  this.fields = {all: {}};
 }
 
 Storage.generateID = function () {
@@ -86,20 +87,15 @@ Storage.prototype.store = function (collectionName, doc, cb) {
 /*
   Retrieve a document from the database.
 */
-Storage.prototype.retrieve = function (collectionName, id, fields, cb) {
-  if (typeof fields === 'function') {
-    cb = fields;
-    fields = {};
-  }
-  fields = fields || {};
-
+Storage.prototype.retrieve = function (collectionName, id, cb) {
+  var fields = this.fields;
   // If there are document specific hidden fields add them to fields.all
   if (fields[id]) {
     _.extend(fields.all, fields[id]);
   }
 
   var collection = this.db.collection(collectionName);
-  collection.findOne({_id: id}, fields.all || {}, function (err, doc) {
+  collection.findOne({_id: id}, fields.all, function (err, doc) {
     if (err) {
       return cb(err);
     }
@@ -114,15 +110,10 @@ Storage.prototype.retrieve = function (collectionName, id, fields, cb) {
 /*
   List documents in the database.
 */
-Storage.prototype.list = function (collectionName, fields, cb) {
-  if (typeof fields === 'function') {
-    cb = fields;
-    fields = {};
-  }
-  fields = fields || {};
-
+Storage.prototype.list = function (collectionName, cb) {
+  var fields = this.fields;
   var collection = this.db.collection(collectionName);
-  var cursor = collection.find({}, fields.all || {});
+  var cursor = collection.find({}, fields.all);
   
   cursor.toArray(function (err, docs) {
 

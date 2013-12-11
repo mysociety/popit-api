@@ -8,7 +8,7 @@ var async = require('async');
  *
  * This piece of middleware handles field visibility on the models. It looks for
  * documents that match the current collection and if it finds any field specs then
- * it exposes them on `req.fields`.
+ * it exposes them on `req.storage.fields`.
  *
  * The fields spec is passed to mongo's `find` method, which accepts fields
  * as its second argument and retricts the returned documents based on that.
@@ -16,7 +16,7 @@ var async = require('async');
  * Example
  *
  *     app.get('/:collection', hiddenFields, function(req, res, next) {
- *       // req.fields will be populated based on the `:collection` param.
+ *       // req.storage.fields will be populated based on the `:collection` param.
  *     });
  *
  * @param {object} req The express request object
@@ -24,7 +24,7 @@ var async = require('async');
  * @param {object} next The express next function
  */
 function hiddenFields(req, res, next) {
-  req.fields = {
+  var fields = {
     all: {}
   };
 
@@ -38,7 +38,7 @@ function hiddenFields(req, res, next) {
   if (globallyHidden) {
     globallyHidden.forEach(function(hidden) {
       if (hidden.collection === req.params.collection) {
-        _.extend(req.fields.all, hidden.fields);
+        _.extend(fields.all, hidden.fields);
       }
     });
   }
@@ -67,12 +67,14 @@ function hiddenFields(req, res, next) {
     var documentSpecific = results[1];
 
     collectionWide.forEach(function(doc) {
-      _.extend(req.fields.all, doc.fields);
+      _.extend(fields.all, doc.fields);
     });
 
     documentSpecific.forEach(function(doc) {
-      req.fields[doc.doc] = doc.fields;
+      fields[doc.doc] = doc.fields;
     });
+
+    req.storage.fields = fields;
 
     next();
   });
