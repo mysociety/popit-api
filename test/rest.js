@@ -348,7 +348,7 @@ describe("REST", function () {
   describe("GET /search/:collection", function() {
     beforeEach(function(done) {
       request.post('/api/persons')
-      .send({id: 'foo', name: 'Test'})
+      .send({id: 'foo', name: 'Test', email: 'test@example.org'})
       .expect(200, done);
     });
 
@@ -360,7 +360,7 @@ describe("REST", function () {
     it("returns names when searching", function(done) {
       request.get('/api/search/persons?q=test')
       .expect(200)
-      .expect({result:[{id: 'foo', name: 'Test'}]}, done);
+      .expect({result:[{id: 'foo', name: 'Test', email: 'test@example.org'}]}, done);
     });
   });
 

@@ -192,7 +192,7 @@ Storage.prototype.search = function(collectionName, search, cb) {
     perm(search_words, []);
 
     // Perform a double metaphone search.
-    collection.find({'$or': or}, {name: true, slug: true}, function(err, result) {
+    collection.find({'$or': or}, function(err, result) {
       result.toArray(function(err, docs) {
         if (err) {
           return cb(err);
