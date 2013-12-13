@@ -31,38 +31,35 @@ Storage.generateID = function () {
   return objectId.toHexString();
 };
 
-function deduplicate_slug(collection, cb) {
-  /*jshint validthis:true */
-  var self = this;
+function deduplicateSlug(doc, collection, cb) {
 
-  if (!self.slug) {
+  if (!doc.slug) {
     return cb(null);
   }
 
   // find other entries in the database that have the same slug
-  collection.findOne({ slug: self.slug, _id: { $ne: self.id } }, function(err, doc) {
+  collection.findOne({ slug: doc.slug, _id: { $ne: doc.id } }, function(err, conflict) {
     if (err) {
       return cb(err);
     }
 
     // if nothing found then no need to change slug
-    if ( ! doc ) {
+    if (!conflict) {
       return cb(null);
     }
 
     // we have a conflict, increment the slug
-    var matches = self.slug.match(/^(.*)\-(\d+)$/);
+    var matches = conflict.slug.match(/^(.*)\-(\d+)$/);
 
     if ( !matches ) {
-      self.slug = self.slug + '-1';
+      doc.slug = doc.slug + '-1';
     } else {
       var base_slug = matches[1];
       var counter   = parseInt( matches[2], 10 ) + 1;
-      self.slug     = base_slug + '-' + counter;
+      doc.slug     = base_slug + '-' + counter;
     }
 
-    return deduplicate_slug.apply( self, [ collection, cb ] ); // recurse
-
+    return deduplicateSlug(doc, collection, cb); // recurse
   });
 }
 
@@ -103,13 +100,18 @@ Storage.prototype.store = function (collectionName, doc, cb) {
   var collection = this.db.collection(collectionName);
   var filter = this.filter;
 
-  deduplicate_slug.apply(doc, [ collection, function() {
+  deduplicateSlug(doc, collection, function(err) {
+    if (err) {
+      return cb(err);
+    }
     var docToStore = _.extend({}, doc, {_id: doc.id});
-    collection.update({_id: doc.id}, docToStore, {upsert: true}, function (err, result) {
-      assert(result);
-      cb(err, filter.doc(doc));
+    collection.update({_id: doc.id}, docToStore, {upsert: true}, function (err) {
+      if (err) {
+        return cb(err);
+      }
+      cb(null, filter.doc(doc));
     });
-  } ] );
+  });
 
 };
 
