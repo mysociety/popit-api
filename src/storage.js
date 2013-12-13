@@ -2,13 +2,14 @@
 
 "use strict";
 
-var mongo  = require('mongodb'),
-    assert = require('assert'),
-    _      = require('underscore'),
-    unorm  = require('unorm'),
-    regexp_quote      = require('regexp-quote'),
-    DoubleMetaphone = require('doublemetaphone'),
-    dm = new DoubleMetaphone();
+var assert = require('assert');
+var mongo = require('mongodb');
+var _ = require('underscore');
+var unorm = require('unorm');
+var regexp_quote = require('regexp-quote');
+var DoubleMetaphone = require('doublemetaphone');
+
+var dm = new DoubleMetaphone();
 
 var server      = new mongo.Server('localhost', 27017, {auto_reconnect: true});
 var mongoclient = new mongo.MongoClient(server, {journal: true});
