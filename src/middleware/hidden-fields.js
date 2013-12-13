@@ -2,13 +2,14 @@
 
 var _ = require('underscore');
 var async = require('async');
+var filter = require('../filter');
 
 /**
  * Hidden fields middleware.
  *
  * This piece of middleware handles field visibility on the models. It looks for
  * documents that match the current collection and if it finds any field specs then
- * it exposes them on `req.storage.fields`.
+ * it exposes them on `filter.fields`.
  *
  * The fields spec is passed to mongo's `find` method, which accepts fields
  * as its second argument and retricts the returned documents based on that.
@@ -16,7 +17,7 @@ var async = require('async');
  * Example
  *
  *     app.get('/:collection', hiddenFields, function(req, res, next) {
- *       // req.storage.fields will be populated based on the `:collection` param.
+ *       // fields will be filtered based on the `:collection` param.
  *     });
  *
  * @param {object} req The express request object
@@ -24,7 +25,7 @@ var async = require('async');
  * @param {object} next The express next function
  */
 function hiddenFields(req, res, next) {
-  var fields = {
+  var fields = filter.fields = {
     all: {}
   };
 
@@ -74,7 +75,7 @@ function hiddenFields(req, res, next) {
       fields[doc.doc] = doc.fields;
     });
 
-    req.storage.fields = fields;
+    filter.fields = fields;
 
     next();
   });

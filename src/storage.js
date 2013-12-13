@@ -8,6 +8,7 @@ var _ = require('underscore');
 var unorm = require('unorm');
 var regexp_quote = require('regexp-quote');
 var DoubleMetaphone = require('doublemetaphone');
+var filter = require('./filter');
 
 var dm = new DoubleMetaphone();
 
@@ -24,7 +25,6 @@ function Storage(databaseName) {
   assert(databaseName, "Need to provide a database name");
   this.databaseName = databaseName;
   this.db = mongoclient.db(databaseName);
-  this.fields = {all: {}};
 }
 
 Storage.generateID = function () {
@@ -93,8 +93,6 @@ function indexNameWords(doc, v) {
 */
 Storage.prototype.store = function (collectionName, doc, cb) {
 
-  var fields = this.fields;
-
   if (!doc.id) {
     return cb(new Error("Can't store document without an id"));
   }
@@ -109,7 +107,7 @@ Storage.prototype.store = function (collectionName, doc, cb) {
     var docToStore = _.extend({}, doc, {_id: doc.id});
     collection.update({_id: doc.id}, docToStore, {upsert: true}, function (err, result) {
       assert(result);
-      cb(err, filterDoc(doc, fields));
+      cb(err, filter.doc(doc));
     });
   } ] );
 
@@ -119,18 +117,12 @@ Storage.prototype.store = function (collectionName, doc, cb) {
   Retrieve a document from the database.
 */
 Storage.prototype.retrieve = function (collectionName, id, cb) {
-  var fields = this.fields;
-  // If there are document specific hidden fields add them to fields.all
-  if (fields[id]) {
-    _.extend(fields.all, fields[id]);
-  }
-
   var collection = this.db.collection(collectionName);
-  collection.findOne({_id: id}, fields.all, function (err, doc) {
+  collection.findOne({_id: id}, function (err, doc) {
     if (err) {
       return cb(err);
     }
-    cb(null, filterDoc(doc, fields));
+    cb(null, filter.doc(doc));
   });
 };
 
@@ -138,13 +130,12 @@ Storage.prototype.retrieve = function (collectionName, id, cb) {
   List documents in the database.
 */
 Storage.prototype.list = function (collectionName, cb) {
-  var fields = this.fields;
   var collection = this.db.collection(collectionName);
-  var cursor = collection.find({}, fields.all);
+  var cursor = collection.find({});
   
   cursor.toArray(function (err, docs) {
 
-    cb(err, filterDocs(docs, fields));
+    cb(err, filter.docs(docs));
   });
 };
 
@@ -167,11 +158,10 @@ Storage.prototype.search = function(collectionName, search, cb) {
   var search_words = search.split(/\s+/);
   var search_words_re = search_words.map( function(word) { return new RegExp( regexp_quote(word), 'i' ); } );
 
-  var fields = this.fields;
   var collection = this.db.collection(collectionName);
 
   // First do a simple search using regex of search words.
-  collection.find({'_internal.name_words': {'$all': search_words_re}}, fields.all, function(err, docs) {
+  collection.find({'_internal.name_words': {'$all': search_words_re}}, function(err, docs) {
     if (err) {
       return cb(err);
     }
@@ -202,51 +192,11 @@ Storage.prototype.search = function(collectionName, search, cb) {
         if (err) {
           return cb(err);
         }
-        cb(null, filterDocs(docs, fields));
+        cb(null, filter.docs(docs));
       });
     });
 
   });
 };
-
-function filterDoc(doc, fields) {
-  if (!doc) {
-    return;
-  }
-  if (doc._id) {
-    doc.id = doc._id;
-    delete doc._id;
-  }
-
-  for (var field in doc) {
-    // Remove any fields that have been hidden on this doc.
-    if (fields[doc.id]) {
-      var value = fields[doc.id][field];
-      if (value === false) {
-        delete doc[field];
-      }
-    }
-
-    // Remove 'hidden' fields starting with an underscore.
-    if (field.substr(0, 1) === '_') {
-      delete doc[field];
-    }
-  }
-  return doc;
-}
-
-/**
- * Filter passed docs using the fields argument.
- *
- * @param {Array} docs The docs to filter
- * @param {Object} fields The field spec to use when filtering
- * @return {Array} The array of docs after processing
- */
-function filterDocs(docs, fields) {
-  docs.forEach(function (doc) {
-    filterDoc(doc, fields);
-  });
-  return docs;
-}
 
 module.exports = Storage;
