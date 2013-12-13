@@ -98,7 +98,7 @@ Storage.prototype.store = function (collectionName, doc, cb) {
     return cb(new Error("Can't store document without an id"));
   }
 
-  if (collectionName === 'persons') {
+  if (doc.name) {
     indexNameWords(doc, doc.name);
   }
 
