@@ -352,6 +352,11 @@ describe("REST", function () {
       .expect(200, done);
     });
 
+    it("returns a 400 when there is no q param", function(done) {
+      request.get('/api/search/persons')
+      .expect(400, done);
+    });
+
     it("returns names when searching", function(done) {
       request.get('/api/search/persons?q=test')
       .expect(200)
