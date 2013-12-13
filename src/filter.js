@@ -1,8 +1,23 @@
 "use strict";
 
-exports.fields = {all: {}};
+module.exports = Filter;
 
-function filterDoc(doc) {
+/**
+ * Constructor for Filter class.
+ */
+function Filter() {
+  this.fields = {
+    all: {}
+  };
+}
+
+/**
+ * Filter a document which has been retrieved from mongo. This handles
+ * swapping the `_id` and `id` fields, processing hidden fields and
+ * removing any fields that start with an underscore, which are considered
+ * internal.
+ */
+Filter.prototype.doc = function(doc) {
   if (!doc) {
     return;
   }
@@ -11,7 +26,7 @@ function filterDoc(doc) {
     delete doc._id;
   }
 
-  var fields = exports.fields;
+  var fields = this.fields;
 
   for (var field in doc) {
     // Remove any fields that have been hidden on this doc.
@@ -32,19 +47,15 @@ function filterDoc(doc) {
     }
   }
   return doc;
-}
+};
 
 /**
  * Filter passed docs using the fields argument.
  *
  * @param {Array} docs The docs to filter
- * @param {Object} fields The field spec to use when filtering
  * @return {Array} The array of docs after processing
  */
-function filterDocs(docs) {
-  docs.forEach(filterDoc);
+Filter.prototype.docs = function(docs) {
+  docs.forEach(this.doc, this);
   return docs;
-}
-
-exports.doc = filterDoc;
-exports.docs = filterDocs;
+};

@@ -8,7 +8,7 @@ var _ = require('underscore');
 var unorm = require('unorm');
 var regexp_quote = require('regexp-quote');
 var DoubleMetaphone = require('doublemetaphone');
-var filter = require('./filter');
+var Filter = require('./filter');
 
 var dm = new DoubleMetaphone();
 
@@ -25,6 +25,7 @@ function Storage(databaseName) {
   assert(databaseName, "Need to provide a database name");
   this.databaseName = databaseName;
   this.db = mongoclient.db(databaseName);
+  this.filter = new Filter();
 }
 
 Storage.generateID = function () {
@@ -102,6 +103,7 @@ Storage.prototype.store = function (collectionName, doc, cb) {
   }
 
   var collection = this.db.collection(collectionName);
+  var filter = this.filter;
 
   deduplicate_slug.apply(doc, [ collection, function() {
     var docToStore = _.extend({}, doc, {_id: doc.id});
@@ -118,6 +120,7 @@ Storage.prototype.store = function (collectionName, doc, cb) {
 */
 Storage.prototype.retrieve = function (collectionName, id, cb) {
   var collection = this.db.collection(collectionName);
+  var filter = this.filter;
   collection.findOne({_id: id}, function (err, doc) {
     if (err) {
       return cb(err);
@@ -131,6 +134,7 @@ Storage.prototype.retrieve = function (collectionName, id, cb) {
 */
 Storage.prototype.list = function (collectionName, cb) {
   var collection = this.db.collection(collectionName);
+  var filter = this.filter;
   var cursor = collection.find({});
   
   cursor.toArray(function (err, docs) {
@@ -159,6 +163,7 @@ Storage.prototype.search = function(collectionName, search, cb) {
   var search_words_re = search_words.map( function(word) { return new RegExp( regexp_quote(word), 'i' ); } );
 
   var collection = this.db.collection(collectionName);
+  var filter = this.filter;
 
   // First do a simple search using regex of search words.
   collection.find({'_internal.name_words': {'$all': search_words_re}}, function(err, docs) {
