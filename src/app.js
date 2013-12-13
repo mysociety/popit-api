@@ -57,15 +57,7 @@ module.exports = function (options) {
     });
   });
 
-  app.get('/:collection', hiddenFields, function (req, res, next) {
-    var collectionName = req.params.collection;
-    req.storage.list(collectionName, function (err, docs) {
-      if (err) { return next(err); }
-      res.jsonp({ result: docs });
-    });
-  });
-
-  app.get('/:collection/_resolve', hiddenFields, function(req, res, next) {
+  app.get('/search/:collection', hiddenFields, function(req, res, next) {
     var collectionName = req.param('collection');
     var name = req.param('name');
     if (!name) {
@@ -80,6 +72,13 @@ module.exports = function (options) {
     });
   });
 
+  app.get('/:collection', hiddenFields, function (req, res, next) {
+    var collectionName = req.params.collection;
+    req.storage.list(collectionName, function (err, docs) {
+      if (err) { return next(err); }
+      res.jsonp({ result: docs });
+    });
+  });
 
   app.get('/:collection/:id(*)', hiddenFields, function (req, res, next) {
     var collectionName = req.params.collection;

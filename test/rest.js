@@ -353,7 +353,7 @@ describe("REST", function () {
     });
 
     it("returns names when searching", function(done) {
-      request.get('/api/persons/_resolve?name=test')
+      request.get('/api/search/persons?name=test')
       .expect(200)
       .expect({result:[{id: 'foo', name: 'Test'}]}, done);
     });
