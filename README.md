@@ -273,6 +273,9 @@ Replaces the current document with the one provided, if valid. Returns the docum
 
 Deletes the document. Returns `204` (even if the document did not exist).
 
+### GET `/api/search/:collection?q=<search-query>`
+
+Searches for a document in the named collection which matches the `q` parameter.
 
 ## Deployment
 
