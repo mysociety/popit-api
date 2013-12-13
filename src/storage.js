@@ -4,8 +4,11 @@
 
 var mongo  = require('mongodb'),
     assert = require('assert'),
-    _      = require('underscore');
- 
+    _      = require('underscore'),
+    unorm  = require('unorm'),
+    regexp_quote      = require('regexp-quote'),
+    DoubleMetaphone = require('doublemetaphone'),
+    dm = new DoubleMetaphone();
 
 var server      = new mongo.Server('localhost', 27017, {auto_reconnect: true});
 var mongoclient = new mongo.MongoClient(server, {journal: true});
@@ -63,13 +66,40 @@ function deduplicate_slug(collection, cb) {
   });
 }
 
+function indexNameWords(doc, v) {
+  // Set normalized array of words for searching
+  var words = _.union(
+    v.split(/\s+/).map( function(s) {
+      return s.toLowerCase();
+    }),
+    v.split(/\s+/).map( function(s) {
+      return unorm.nfkd(s.toLowerCase()).replace(/[\u0300-\u036F]/g, '');
+    })
+  );
+  doc._internal = doc._internal || {};
+  doc._internal.name_words = words;
+  // Set the double metaphone entries. Currently just stores both primary and secondary without saying which is which
+  var dm_words = [];
+  words.forEach(function(w) {
+    dm_words.push.apply(dm_words, _.values(dm.doubleMetaphone(w)) );
+  });
+  // Also include the words to make the searching easier. Perhaps this can be just one array?
+  doc._internal.name_dm = dm_words.concat(words);
+}
+
 /*
   Store a document in the database.
 */
 Storage.prototype.store = function (collectionName, doc, cb) {
 
+  var fields = this.fields;
+
   if (!doc.id) {
     return cb(new Error("Can't store document without an id"));
+  }
+
+  if (collectionName === 'persons') {
+    indexNameWords(doc, doc.name);
   }
 
   var collection = this.db.collection(collectionName);
@@ -78,7 +108,7 @@ Storage.prototype.store = function (collectionName, doc, cb) {
     var docToStore = _.extend({}, doc, {_id: doc.id});
     collection.update({_id: doc.id}, docToStore, {upsert: true}, function (err, result) {
       assert(result);
-      cb(err, doc);
+      cb(err, filterDoc(doc, fields));
     });
   } ] );
 
@@ -99,11 +129,7 @@ Storage.prototype.retrieve = function (collectionName, id, cb) {
     if (err) {
       return cb(err);
     }
-    if (doc) {
-      doc.id = doc._id;
-      delete doc._id;
-    }
-    cb(null, doc);
+    cb(null, filterDoc(doc, fields));
   });
 };
 
@@ -132,23 +158,81 @@ Storage.prototype.delete = function (collectionName, id, cb) {
 /**
  * Search for a document by name
  */
-Storage.prototype.search = function(collectionName, name, cb) {
+Storage.prototype.search = function(collectionName, search, cb) {
+  if (!search) {
+    return cb( null, [] );
+  }
+
+  var search_words = search.split(/\s+/);
+  var search_words_re = search_words.map( function(word) { return new RegExp( regexp_quote(word), 'i' ); } );
+
   var fields = this.fields;
   var collection = this.db.collection(collectionName);
-  var nameRegEx = new RegExp(name, 'i');
 
-  collection.find({name: nameRegEx}, fields.all, function(err, result) {
+  // First do a simple search using regex of search words.
+  collection.find({'_internal.name_words': {'$all': search_words_re}}, fields.all, function(err, docs) {
     if (err) {
       return cb(err);
     }
-    result.toArray(function(err, docs) {
-      if (err) {
-        return cb(err);
+
+    if ( docs.length > 0 ) {
+      return cb(null, docs);
+    }
+
+    // TODO Secondary metaphone results...
+    var or = [];
+    function perm(s, o) {
+      if (s.length) {
+        o.push( new RegExp(regexp_quote(s[0]), 'i') );
+        perm(s.slice(1), o);
+        o.pop();
+        o.push( dm.doubleMetaphone(s[0]).primary );
+        perm(s.slice(1), o);
+        o.pop();
+      } else {
+        or.push( { '_internal.name_dm': { '$all': o.slice(0) } } );
       }
-      cb(null, filterDocs(docs, fields));
+    }
+    perm(search_words, []);
+
+    // Perform a double metaphone search.
+    collection.find({'$or': or}, {name: true, slug: true}, function(err, result) {
+      result.toArray(function(err, docs) {
+        if (err) {
+          return cb(err);
+        }
+        cb(null, filterDocs(docs, fields));
+      });
     });
+
   });
 };
+
+function filterDoc(doc, fields) {
+  if (!doc) {
+    return;
+  }
+  if (doc._id) {
+    doc.id = doc._id;
+    delete doc._id;
+  }
+
+  for (var field in doc) {
+    // Remove any fields that have been hidden on this doc.
+    if (fields[doc.id]) {
+      var value = fields[doc.id][field];
+      if (value === false) {
+        delete doc[field];
+      }
+    }
+
+    // Remove 'hidden' fields starting with an underscore.
+    if (field.substr(0, 1) === '_') {
+      delete doc[field];
+    }
+  }
+  return doc;
+}
 
 /**
  * Filter passed docs using the fields argument.
@@ -159,16 +243,7 @@ Storage.prototype.search = function(collectionName, name, cb) {
  */
 function filterDocs(docs, fields) {
   docs.forEach(function (doc) {
-    doc.id = doc._id;
-    delete doc._id;
-    if (fields[doc.id]) {
-      for (var field in fields[doc.id]) {
-        var value = fields[doc.id][field];
-        if (value === false) {
-          delete doc[field];
-        }
-      }
-    }
+    filterDoc(doc, fields);
   });
   return docs;
 }
