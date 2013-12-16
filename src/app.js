@@ -130,7 +130,6 @@ module.exports = function (options) {
 
   app.put('/:collection/:id(*)', validateBody, function (req, res, next) {
 
-    var collectionName = req.params.collection;
     var id             = req.params.id;
     var body           = req.body;
 
@@ -143,11 +142,13 @@ module.exports = function (options) {
 
     }
 
-    req.storage.store(collectionName, body, function (err, doc) {
-      if (err) { return next(err); }
-      res
-        .status(200)
-        .jsonp({ result: doc });
+    delete body._id;
+
+    req.collection.findByIdAndUpdate(id, body, {upsert: true}, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+      res.jsonp({ result: doc });
     });
 
   });
