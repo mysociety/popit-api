@@ -1,3 +1,4 @@
+require('./models');
 /*
 
   The various collections that the API will serve. This is intended to be
@@ -10,15 +11,19 @@
 
 module.exports = {
   persons: {
+    model: 'Person',
     popoloSchemaUrl: 'http://popoloproject.com/schemas/person.json#',
   },
   organizations: {
+    model: 'Organization',
     popoloSchemaUrl: 'http://popoloproject.com/schemas/organization.json#',
   },
   posts: {
+    model: 'Post',
     popoloSchemaUrl: 'http://popoloproject.com/schemas/post.json#',
   },
   memberships: {
+    model: 'Membership',
     popoloSchemaUrl: 'http://popoloproject.com/schemas/membership.json#',
   },
 };

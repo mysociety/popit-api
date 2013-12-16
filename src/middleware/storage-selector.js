@@ -2,8 +2,11 @@
 
 var assert = require('assert');
 var slugify = require('underscore.string').slugify;
+var mongoose = require('mongoose');
 var Storage = require('../storage');
 var slugToDb = require('../slug-to-database');
+
+var connections = {};
 
 /**
  * The are the various storage selectors which define what the database is called
@@ -19,6 +22,10 @@ var storageSelectors = {
       selector: function (req, res, next) {
         var databaseName = options.databaseName;
         req.storage = new Storage(databaseName);
+        if (!connections[databaseName]) {
+          connections[databaseName] = mongoose.createConnection('mongodb://localhost/' + databaseName);
+        }
+        req.db = connections[databaseName];
         next();
       },
       optionsCheck: function (options) {
@@ -32,6 +39,10 @@ var storageSelectors = {
         var host = req.host.replace(/\./g, '-');
         var databaseName = slugToDb('popit-api-' + slugify(host));
         req.storage = new Storage(databaseName);
+        if (!connections[databaseName]) {
+          connections[databaseName] = mongoose.createConnection('mongodb://localhost/' + databaseName);
+        }
+        req.db = connections[databaseName];
         next();
       }
     };
