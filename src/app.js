@@ -60,9 +60,9 @@ module.exports = function (options) {
     req.collection = req.db.model(collections[collection].model);
 
     next();
-  });
+  }, hiddenFields);
 
-  app.get('/search/:collection', hiddenFields, function(req, res, next) {
+  app.get('/search/:collection', function(req, res, next) {
     var collectionName = req.param('collection');
     var query = req.param('q');
     if (!query) {
@@ -77,7 +77,7 @@ module.exports = function (options) {
     });
   });
 
-  app.get('/:collection', hiddenFields, function (req, res, next) {
+  app.get('/:collection', function (req, res, next) {
     req.collection.find(function (err, docs) {
       if (err) {
         return next(err);
@@ -86,7 +86,7 @@ module.exports = function (options) {
     });
   });
 
-  app.get('/:collection/:id(*)', hiddenFields, function (req, res, next) {
+  app.get('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
 
     req.collection.findOne({_id: id}, function (err, doc) {
