@@ -1,7 +1,9 @@
 "use strict";
 
 var mongoose = require('mongoose');
-var mongooseJsonSchema = require('./mongoose-json-schema');
+var mongooseJsonSchema = require('./mongoose/json-schema');
+var deduplicateSlug = require('./mongoose/deduplicate-slug');
+var search = require('./mongoose/search');
 var collections = require('./collections');
 var Filter = require('./filter');
 
@@ -23,16 +25,14 @@ function toJSON(doc, ret, options) {
 for (var key in collections) {
   if (collections.hasOwnProperty(key)) {
     var spec = collections[key];
-    var Schema = new mongoose.Schema({
-      _id: String,
-      _internal: Object,
+    var Schema = new mongoose.Schema({_id: String}, {collection: key});
 
-      // Remove this when slugs are removed from popit, see https://github.com/mysociety/popit/issues/175
-      slug: String
-
-    }, {collection: key});
-    Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
     Schema.set('toJSON', {transform: toJSON});
+
+    Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
+    Schema.plugin(deduplicateSlug);
+    Schema.plugin(search);
+
     mongoose.model(spec.model, Schema);
   }
 }
