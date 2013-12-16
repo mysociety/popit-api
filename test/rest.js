@@ -65,10 +65,26 @@ describe("REST", function () {
             .get("/api/persons")
             .expect(200)
             .expect({
-              result: [
-                { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
-                { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
-              ],
+              result: [{
+                id: 'fred-bloggs',
+                name: 'Fred Bloggs',
+                email: 'fbloggs@example.org',
+                memberships: [],
+                links: [],
+                contact_details: [],
+                identifiers: [],
+                other_names: []
+              },
+              {
+                id: 'joe-bloggs',
+                name: 'Joe Bloggs',
+                email: 'jbloggs@example.org',
+                memberships: [],
+                links: [],
+                contact_details: [],
+                identifiers: [],
+                other_names: []
+              }]
             })
             .end(done);
         });
@@ -79,8 +95,22 @@ describe("REST", function () {
             .expect(200)
             .expect({
               result: [
-                { id: 'parliament', name: 'Houses of Parliament' },
-                { id: 'commons', name: 'House of Commons', parent_id: "parliament" },
+                { id: 'parliament', name: 'Houses of Parliament',
+                  posts: [],
+                  memberships: [],
+                  links: [],
+                  contact_details: [],
+                  identifiers: [],
+                  other_names: []
+                },
+                { id: 'commons', name: 'House of Commons', parent_id: "parliament",
+                  posts: [],
+                  memberships: [],
+                  links: [],
+                  contact_details: [],
+                  identifiers: [],
+                  other_names: []
+                },
               ],
             })
             .end(done);
@@ -93,9 +123,9 @@ describe("REST", function () {
             .expect({
               result: [
                 { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                  person_id: 'fred-bloggs', start_date: '2000', end_date: '2004' },
+                  person_id: 'fred-bloggs', start_date: '2000', end_date: '2004', links: [], contact_details: [] },
                 { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                    person_id: 'fred-bloggs', start_date: '2011' },
+                    person_id: 'fred-bloggs', start_date: '2011', links: [], contact_details: [] },
               ],
             })
             .end(done);
@@ -108,9 +138,9 @@ describe("REST", function () {
             .expect({
               result: [
                 { id: 'annapolis', organization_id: 'commons', label: 'MP for Annapolis', role: 'Member of Parliament',
-                  area: { name: 'Annapolis', id: 'http://mapit.example.org/area/1' } },
+                  area: { name: 'Annapolis', id: 'http://mapit.example.org/area/1' }, memberships: [], links: [], contact_details: [] },
                 { id: 'avalon', organization_id: 'commons', label: 'MP for Avalon', role: 'Member of Parliament',
-                  area: { name: 'Avalon', id: 'http://mapit.example.org/area/2' } },
+                  area: { name: 'Avalon', id: 'http://mapit.example.org/area/2' }, memberships: [], links: [], contact_details: [] },
               ],
             })
             .end(done);

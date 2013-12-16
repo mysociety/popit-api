@@ -74,8 +74,10 @@ module.exports = function (options) {
 
   app.get('/:collection', hiddenFields, function (req, res, next) {
     var collectionName = req.params.collection;
-    req.storage.list(collectionName, function (err, docs) {
-      if (err) { return next(err); }
+    req.db.model(collections[collectionName].model).find(function (err, docs) {
+      if (err) {
+        return next(err);
+      }
       res.jsonp({ result: docs });
     });
   });
