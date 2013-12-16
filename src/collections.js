@@ -1,13 +1,11 @@
-require('./models');
-/*
-
-  The various collections that the API will serve. This is intended to be
-  configuration that the rest of the code uses to work out how to deal with
-  API requests.
-  
-  Ideally there should be no special casing in the code.
-
-*/
+/**
+ * The various collections that the API will serve. This is intended to be
+ * configuration that the rest of the code uses to work out how to deal with
+ * API requests.
+ *
+ * This configuration is used by the models module to create mongoose models
+ * from json schemas.
+ */
 
 module.exports = {
   persons: {

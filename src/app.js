@@ -1,5 +1,6 @@
 "use strict";
 
+require('./models');
 var express = require('express');
 var packageJSON = require("../package");
 var collections = require('./collections');
