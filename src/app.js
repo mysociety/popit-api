@@ -107,30 +107,22 @@ module.exports = function (options) {
   });
 
   app.del('/:collection/:id(*)', function (req, res, next) {
-    var collectionName = req.params.collection;
     var id             = req.params.id;
 
-    req.storage.delete( collectionName, id, function (err) {
+    req.collection.remove({_id: id}, function (err) {
       if (err) {
-        next(err);
-      } else {
-        res
-          .status(204)
-          .send('');
+        return next(err);
       }
+      res.send(204);
     });
   });
 
   app.post('/:collection', validateBody, function (req, res, next) {
-
-    var collectionName = req.params.collection;
-    var body = req.body;
-
-    req.storage.store(collectionName, body, function (err, doc) {
-      if (err) { return next(err); }
-      res
-        .status(200)
-        .jsonp({ result: doc });
+    req.collection.create(req.body, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+      res.jsonp({ result: doc });
     });
 
   });

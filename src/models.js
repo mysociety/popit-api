@@ -23,7 +23,14 @@ function toJSON(doc, ret, options) {
 for (var key in collections) {
   if (collections.hasOwnProperty(key)) {
     var spec = collections[key];
-    var Schema = new mongoose.Schema({}, {collection: key, _id: false});
+    var Schema = new mongoose.Schema({
+      _id: String,
+      _internal: Object,
+
+      // Remove this when slugs are removed from popit, see https://github.com/mysociety/popit/issues/175
+      slug: String
+
+    }, {collection: key});
     Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
     Schema.set('toJSON', {transform: toJSON});
     mongoose.model(spec.model, Schema);

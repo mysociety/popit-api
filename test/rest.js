@@ -162,7 +162,7 @@ describe("REST", function () {
               .end(function (err, res) {
                 var id = res.body.result.id;
                 assert(id);
-                assert.deepEqual(res.body.result, { id: id, name: "Joe Bloggs"});
+                assert.deepEqual(res.body.result, person({ id: id, name: "Joe Bloggs"}));
                 callback(err, res.body.result.id);
               });
           },
@@ -180,7 +180,7 @@ describe("REST", function () {
         async.series([
           function(callback){
 
-            var personDoc = { id: 'test', name: "Joe Bloggs" };
+            var personDoc = person({ id: 'test', name: "Joe Bloggs" });
             request
               .post("/api/persons")
               .send(personDoc)
@@ -391,7 +391,9 @@ describe("REST", function () {
     it("returns names when searching", function(done) {
       request.get('/api/search/persons?q=test')
       .expect(200)
-      .expect({result:[{id: 'foo', name: 'Test', email: 'test@example.org'}]}, done);
+      .expect({result: [
+        person({id: 'foo', name: 'Test', email: 'test@example.org'})
+      ]}, done);
     });
   });
 
@@ -405,14 +407,14 @@ describe("REST", function () {
     it("appends a number for a duplicate slug", function(done) {
       request.post('/api/persons')
       .send({id: 'bar', name: 'Test', slug: 'test'})
-      .expect({result: {id: 'bar', name: 'Test', slug: 'test-1'}})
+      .expect({result: person({id: 'bar', name: 'Test', slug: 'test-1'})})
       .expect(200, function(err) {
         if (err) {
           return done(err);
         }
         request.post('/api/persons')
         .send({id: 'baz', name: 'Test', slug: 'test'})
-        .expect({result: {id: 'baz', name: 'Test', slug: 'test-2'}})
+        .expect({result: person({id: 'baz', name: 'Test', slug: 'test-2'})})
         .expect(200, done);
       });
     });

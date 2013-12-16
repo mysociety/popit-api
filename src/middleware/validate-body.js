@@ -14,6 +14,8 @@ function validateBody (req, res, next) {
     body.id = req.params.id || Storage.generateID();
   }
 
+  body._id = body.id;
+
   validate(collectionName, body, function (err, errors) {
 
     if (err) {

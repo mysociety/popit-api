@@ -3,8 +3,15 @@
 var util = require('util');
 var JSV = require('JSV').JSV;
 var schemas = require('../schemas');
+var _ = require('underscore');
+var unorm = require('unorm');
+var DoubleMetaphone = require('doublemetaphone');
+
+var dm = new DoubleMetaphone();
 
 var env = JSV.createEnvironment();
+
+module.exports = mongooseJsonSchema;
 
 /**
  * Mongoose plugin which infers fields and validations from a json schema.
@@ -48,7 +55,10 @@ function mongooseJsonSchema(schema, options) {
     var report = env.validate(this, jsonSchema);
 
     if (report.errors.length === 0) {
-      return next();
+      if (this.name) {
+        indexNameWords(this, this.name);
+      }
+      return deduplicateSlug(this, this.collection, next);
     }
 
     var err = new Error(util.format(
@@ -60,4 +70,55 @@ function mongooseJsonSchema(schema, options) {
   });
 }
 
-module.exports = mongooseJsonSchema;
+function indexNameWords(doc, v) {
+  // Set normalized array of words for searching
+  var words = _.union(
+    v.split(/\s+/).map( function(s) {
+      return s.toLowerCase();
+    }),
+    v.split(/\s+/).map( function(s) {
+      return unorm.nfkd(s.toLowerCase()).replace(/[\u0300-\u036F]/g, '');
+    })
+  );
+  doc._internal = doc._internal || {};
+  doc._internal.name_words = words;
+  // Set the double metaphone entries. Currently just stores both primary and secondary without saying which is which
+  var dm_words = [];
+  words.forEach(function(w) {
+    dm_words.push.apply(dm_words, _.values(dm.doubleMetaphone(w)) );
+  });
+  // Also include the words to make the searching easier. Perhaps this can be just one array?
+  doc._internal.name_dm = dm_words.concat(words);
+}
+
+function deduplicateSlug(doc, collection, cb) {
+
+  if (!doc.slug) {
+    return cb(null);
+  }
+
+  // find other entries in the database that have the same slug
+  collection.findOne({ slug: doc.slug, _id: { $ne: doc.id } }, function(err, conflict) {
+    if (err) {
+      return cb(err);
+    }
+
+    // if nothing found then no need to change slug
+    if (!conflict) {
+      return cb(null);
+    }
+
+    // we have a conflict, increment the slug
+    var matches = conflict.slug.match(/^(.*)\-(\d+)$/);
+
+    if ( !matches ) {
+      doc.slug = doc.slug + '-1';
+    } else {
+      var base_slug = matches[1];
+      var counter   = parseInt( matches[2], 10 ) + 1;
+      doc.slug     = base_slug + '-' + counter;
+    }
+
+    return deduplicateSlug(doc, collection, cb); // recurse
+  });
+}
