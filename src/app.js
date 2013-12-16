@@ -63,12 +63,11 @@ module.exports = function (options) {
   }, hiddenFields);
 
   app.get('/search/:collection', function(req, res, next) {
-    var collectionName = req.param('collection');
     var query = req.param('q');
     if (!query) {
       return res.send(400, {error: ["Please provide a 'query' parameter"]});
     }
-    req.storage.search(collectionName, query, function(err, docs) {
+    req.collection.search(query, function(err, docs) {
       if (err) {
         return next(err);
       }
