@@ -18,9 +18,10 @@ var env = JSV.createEnvironment();
  * @param {object} options The options to configure the plugin
  */
 function mongooseJsonSchema(schema, options) {
-  var fields = {};
   var jsonSchemaUrl = options.jsonSchemaUrl;
   var jsonSchema = schemas[jsonSchemaUrl];
+
+  var fields = {};
 
   for (var name in jsonSchema.properties) {
     if (jsonSchema.properties.hasOwnProperty(name)) {
@@ -44,8 +45,6 @@ function mongooseJsonSchema(schema, options) {
   schema.add(fields);
 
   schema.pre('save', function(next) {
-    this.slug = this.id;
-    delete this.id;
     var report = env.validate(this, jsonSchema);
 
     if (report.errors.length === 0) {
@@ -58,10 +57,6 @@ function mongooseJsonSchema(schema, options) {
       report.errors[0].schemaUri
     ));
     next(err);
-  });
-
-  schema.post('init', function(doc) {
-    doc.id = doc.slug;
   });
 }
 

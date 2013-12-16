@@ -3,13 +3,18 @@
 var mongoose = require('mongoose');
 var mongooseJsonSchema = require('./mongoose-json-schema');
 var collections = require('./collections');
+var Filter = require('./filter');
 
-function toJSON() {
-  /* jshint validthis: true */
-  var doc = this.toObject();
-  doc.id = doc._id;
-  delete doc._id;
-  return doc;
+/**
+ * Transform a document to a json doc.
+ *
+ * - options.fieldSpec The fields to show/hide
+ */
+function toJSON(doc, ret, options) {
+  if (options.fields) {
+    var filter = new Filter(options.fields);
+    return filter.doc(ret);
+  }
 }
 
 /**
@@ -20,7 +25,7 @@ for (var key in collections) {
     var spec = collections[key];
     var Schema = new mongoose.Schema({}, {collection: key, _id: false});
     Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
-    Schema.methods.toJSON = toJSON;
+    Schema.set('toJSON', {transform: toJSON});
     mongoose.model(spec.model, Schema);
   }
 }

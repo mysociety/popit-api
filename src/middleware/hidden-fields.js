@@ -27,6 +27,9 @@ function hiddenFields(req, res, next) {
   var fields = {
     all: {}
   };
+  var schema = req.collection.schema;
+
+  schema.options.toJSON.fields = fields;
 
   // Admin can see any fields.
   if (req.isAdmin) {
@@ -74,7 +77,9 @@ function hiddenFields(req, res, next) {
       fields[doc.doc] = doc.fields;
     });
 
-    req.storage.filter.fields = fields;
+    schema.options.toJSON.fields = fields;
+
+    req.fields = fields;
 
     next();
   });

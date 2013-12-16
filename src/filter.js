@@ -5,8 +5,8 @@ module.exports = Filter;
 /**
  * Constructor for Filter class.
  */
-function Filter() {
-  this.fields = {
+function Filter(fields) {
+  this.fields = fields || {
     all: {}
   };
 }
@@ -21,32 +21,36 @@ Filter.prototype.doc = function(doc) {
   if (!doc) {
     return;
   }
+
+  var newDoc = {};
+
   if (doc._id) {
-    doc.id = doc._id;
-    delete doc._id;
+    newDoc.id = doc._id;
   }
 
   var fields = this.fields;
 
   for (var field in doc) {
     // Remove any fields that have been hidden on this doc.
-    if (fields[doc.id]) {
-      var value = fields[doc.id][field];
+    if (fields[doc._id]) {
+      var value = fields[doc._id][field];
       if (value === false) {
-        delete doc[field];
+        continue;
       }
     }
 
     if (fields.all[field] === false) {
-      delete doc[field];
+      continue;
     }
 
     // Remove 'hidden' fields starting with an underscore.
     if (field.substr(0, 1) === '_') {
-      delete doc[field];
+      continue;
     }
+
+    newDoc[field] = doc[field];
   }
-  return doc;
+  return newDoc;
 };
 
 /**
@@ -56,6 +60,5 @@ Filter.prototype.doc = function(doc) {
  * @return {Array} The array of docs after processing
  */
 Filter.prototype.docs = function(docs) {
-  docs.forEach(this.doc, this);
-  return docs;
+  return docs.map(this.doc, this);
 };

@@ -1,6 +1,5 @@
 "use strict";
 
-require('./models');
 var express = require('express');
 var packageJSON = require("../package");
 var collections = require('./collections');
@@ -8,6 +7,9 @@ var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
 var validateBody = require('./middleware/validate-body');
+
+// Make sure models are defined (they are accessed though req.collection).
+require('./models');
 
 module.exports = function (options) {
   options.storageSelector = options.storageSelector || 'fixedName';
@@ -49,13 +51,15 @@ module.exports = function (options) {
   */
   app.param('collection', function (req, res, next, collection) {
     // If the collection exists, carry on.
-    if (collections[collection]) {
-      return next();
+    if (!collections[collection]) {
+      return res.status(404).jsonp({
+        errors: ["collection '" + collection + "' not found"]
+      });
     }
 
-    res.status(404).jsonp({
-      errors: ["collection '" + collection + "' not found"]
-    });
+    req.collection = req.db.model(collections[collection].model);
+
+    next();
   });
 
   app.get('/search/:collection', hiddenFields, function(req, res, next) {
@@ -74,8 +78,7 @@ module.exports = function (options) {
   });
 
   app.get('/:collection', hiddenFields, function (req, res, next) {
-    var collectionName = req.params.collection;
-    req.db.model(collections[collectionName].model).find(function (err, docs) {
+    req.collection.find(function (err, docs) {
       if (err) {
         return next(err);
       }
@@ -84,13 +87,14 @@ module.exports = function (options) {
   });
 
   app.get('/:collection/:id(*)', hiddenFields, function (req, res, next) {
-    var collectionName = req.params.collection;
-    var id             = req.params.id;
+    var id = req.params.id;
 
-    req.storage.retrieve( collectionName, id, function (err, doc) {
+    req.collection.findOne({_id: id}, function (err, doc) {
       if (err) {
-        next(err);
-      } else if (doc) {
+        return next(err);
+      }
+
+      if (doc) {
         res.jsonp({ result: doc });
       } else {
         res

@@ -5,6 +5,7 @@ var Storage = require('../src/storage');
 var defaults = require('./defaults');
 var serverApp = require('../test-server-app');
 var request = require('supertest')(serverApp);
+var person = require('./util').person;
 
 function showsAllFieldsForAuthenticatedRequests() {
   var apiKey = 'secret';
@@ -18,11 +19,11 @@ function showsAllFieldsForAuthenticatedRequests() {
       .get('/persons/joe-bloggs?apiKey=' + apiKey)
       .expect(200)
       .expect({
-        result: {
+        result: person({
           id: 'joe-bloggs',
           name: 'Joe Bloggs',
           email: 'jbloggs@example.org'
-        }
+        })
       }, done);
     });
 
@@ -32,8 +33,8 @@ function showsAllFieldsForAuthenticatedRequests() {
       .expect(200)
       .expect({
         result: [
-          { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
-          { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
+          person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' }),
+          person({ id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' }),
         ]
       }, done);
     });
@@ -65,8 +66,8 @@ describe("hidden fields", function () {
       .expect(200)
       .expect({
         result: [
-          { id: 'fred-bloggs', name: 'Fred Bloggs'},
-          { id: 'joe-bloggs', name: 'Joe Bloggs'}
+          person({ id: 'fred-bloggs', name: 'Fred Bloggs'}),
+          person({ id: 'joe-bloggs', name: 'Joe Bloggs'})
         ]
       }, done);
     });
@@ -76,7 +77,7 @@ describe("hidden fields", function () {
       .get('/persons/fred-bloggs')
       .expect(200)
       .expect({
-        result: { id: 'fred-bloggs', name: 'Fred Bloggs' }
+        result: person({ id: 'fred-bloggs', name: 'Fred Bloggs' })
       }, done);
     });
 
@@ -88,8 +89,8 @@ describe("hidden fields", function () {
         .expect(200)
         .expect({
           result: [
-            { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
-            { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' }
+            person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' }),
+            person({ id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' })
           ]
         }, done);
       });
@@ -99,7 +100,7 @@ describe("hidden fields", function () {
         .get('/persons/fred-bloggs?apiKey=secret')
         .expect(200)
         .expect({
-          result: { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' }
+          result: person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' })
         }, done);
       });
 
@@ -130,7 +131,7 @@ describe("hidden fields", function () {
         request
         .get("/api/persons/joe-bloggs")
         .expect(200)
-        .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs' } }, done);
+        .expect({ result: person({ id: 'joe-bloggs', name: 'Joe Bloggs' }) }, done);
       });
 
       it("doesn't return the hidden field on /:collection", function(done) {
@@ -139,8 +140,8 @@ describe("hidden fields", function () {
         .expect(200)
         .expect({
           result: [
-            { id: 'fred-bloggs', name: 'Fred Bloggs'},
-            { id: 'joe-bloggs', name: 'Joe Bloggs'}
+            person({ id: 'fred-bloggs', name: 'Fred Bloggs'}),
+            person({ id: 'joe-bloggs', name: 'Joe Bloggs'})
           ]
         }, done);
       });
@@ -173,14 +174,14 @@ describe("hidden fields", function () {
         request
         .get("/api/persons/joe-bloggs")
         .expect(200)
-        .expect({ result: { id: 'joe-bloggs', name: 'Joe Bloggs' } }, done);
+        .expect({ result: person({ id: 'joe-bloggs', name: 'Joe Bloggs' }) }, done);
       });
 
       it("includes the hidden field for other documents", function(done) {
         request
         .get("/api/persons/fred-bloggs")
         .expect(200)
-        .expect({ result: { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' } }, done);
+        .expect({ result: person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' }) }, done);
       });
 
       it("doesn't include fields on hidden documents for /:collection", function(done) {
@@ -189,8 +190,8 @@ describe("hidden fields", function () {
         .expect(200)
         .expect({
           result: [
-            { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org'},
-            { id: 'joe-bloggs', name: 'Joe Bloggs'}
+            person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org'}),
+            person({ id: 'joe-bloggs', name: 'Joe Bloggs'})
           ]
         }, done);
       });

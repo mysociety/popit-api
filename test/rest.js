@@ -6,7 +6,8 @@ var request       = require("supertest"),
     fixture       = require("./fixture"),
     defaults      = require("./defaults"),
     packageJSON   = require("../package"),
-    serverApp     = require("../test-server-app");
+    serverApp     = require("../test-server-app"),
+    person        = require('./util').person;
 
 request = request(serverApp);
 
@@ -57,7 +58,7 @@ describe("REST", function () {
           }, done);
       });
 
-      describe("should return created", function (done) {
+      describe("should return created", function () {
         beforeEach(fixture.loadFixtures);
 
         it('persons', function(done) {
@@ -169,7 +170,7 @@ describe("REST", function () {
             request
               .get("/api/persons/" + id)
               .expect(200)
-              .expect({ result: { id: id, name: "Joe Bloggs" }})
+              .expect({ result: person({ id: id, name: "Joe Bloggs" })})
               .end(callback);
           },
         ], done);
@@ -191,7 +192,7 @@ describe("REST", function () {
             request
               .get('/api/persons/test')
               .expect(200)
-              .expect({ result: { id: 'test', name: "Joe Bloggs" } })
+              .expect({ result: person({ id: 'test', name: "Joe Bloggs" }) })
               .end(callback);
           },
         ], done);
@@ -255,11 +256,11 @@ describe("REST", function () {
           .get("/api/persons/fred-bloggs")
           .expect(200)
           .expect({
-            result: {
+            result: person({
               id: 'fred-bloggs',
               name: 'Fred Bloggs',
               email: 'fbloggs@example.org',
-            }
+            })
           })
           .end(done);
       });
@@ -302,7 +303,7 @@ describe("REST", function () {
             request
               .get("/api/persons/test")
               .expect(200)
-              .expect({ result: { id: "test", name: "Joe Bloggs" } })
+              .expect({ result: person({ id: "test", name: "Joe Bloggs" }) })
               .end(callback);
           },
           function(callback){
@@ -317,7 +318,7 @@ describe("REST", function () {
             request
               .get("/api/persons/test")
               .expect(200)
-              .expect({ result: { id: "test", name: "Fred Smith" } })
+              .expect({ result: person({ id: "test", name: "Fred Smith" }) })
               .end(callback);
           },
         ], done);
