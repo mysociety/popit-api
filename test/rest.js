@@ -57,63 +57,63 @@ describe("REST", function () {
           }, done);
       });
 
-      it("should return created entries", function (done) {
-        fixture.loadFixtures(function(err) {
-          assert.ifError(err);
-          async.series([
-            function(callback) {
-              request
-                .get("/api/persons")
-                .expect(200)
-                .expect({
-                  result: [
-                    { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
-                    { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
-                  ],
-                })
-                .end(callback);
-            },
-            function(callback) {
-              request
-                .get("/api/organizations")
-                .expect(200)
-                .expect({
-                  result: [
-                    { id: 'parliament', name: 'Houses of Parliament' },
-                    { id: 'commons', name: 'House of Commons', parent_id: "parliament" },
-                  ],
-                })
-                .end(callback);
-            },
-            function(callback) {
-              request
-                .get("/api/memberships")
-                .expect(200)
-                .expect({
-                  result: [
-                    { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                      person_id: 'fred-bloggs', start_date: '2000', end_date: '2004' },
-                    { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                        person_id: 'fred-bloggs', start_date: '2011' },
-                  ],
-                })
-                .end(callback);
-            },
-            function(callback) {
-              request
-                .get("/api/posts")
-                .expect(200)
-                .expect({
-                  result: [
-                    { id: 'annapolis', organization_id: 'commons', label: 'MP for Annapolis', role: 'Member of Parliament',
-                      area: { name: 'Annapolis', id: 'http://mapit.example.org/area/1' } },
-                    { id: 'avalon', organization_id: 'commons', label: 'MP for Avalon', role: 'Member of Parliament',
-                      area: { name: 'Avalon', id: 'http://mapit.example.org/area/2' } },
-                  ],
-                })
-                .end(callback);
-            }
-          ], done);
+      describe("should return created", function (done) {
+        beforeEach(fixture.loadFixtures);
+
+        it('persons', function(done) {
+          request
+            .get("/api/persons")
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
+                { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
+              ],
+            })
+            .end(done);
+        });
+
+        it('organizations', function(done) {
+          request
+            .get("/api/organizations")
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'parliament', name: 'Houses of Parliament' },
+                { id: 'commons', name: 'House of Commons', parent_id: "parliament" },
+              ],
+            })
+            .end(done);
+        });
+
+        it('memberships', function(done) {
+          request
+            .get("/api/memberships")
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
+                  person_id: 'fred-bloggs', start_date: '2000', end_date: '2004' },
+                { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
+                    person_id: 'fred-bloggs', start_date: '2011' },
+              ],
+            })
+            .end(done);
+        });
+
+        it('posts', function(done) {
+          request
+            .get("/api/posts")
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'annapolis', organization_id: 'commons', label: 'MP for Annapolis', role: 'Member of Parliament',
+                  area: { name: 'Annapolis', id: 'http://mapit.example.org/area/1' } },
+                { id: 'avalon', organization_id: 'commons', label: 'MP for Avalon', role: 'Member of Parliament',
+                  area: { name: 'Avalon', id: 'http://mapit.example.org/area/2' } },
+              ],
+            })
+            .end(done);
         });
       });
 
