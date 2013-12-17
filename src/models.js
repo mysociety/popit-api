@@ -21,6 +21,11 @@ function toJSON(doc, ret, options) {
 
 /**
  * Generate mongoose models from the collections module.
+ *
+ * This creates a new Schema for each popolo collection that has
+ * been defined in collections.js. It then augments the schemas
+ * with plugins which allow the schema to infer their fields from
+ * a json schema, as well as search and slug deduplication.
  */
 for (var key in collections) {
   if (collections.hasOwnProperty(key)) {
@@ -37,6 +42,9 @@ for (var key in collections) {
   }
 }
 
+/**
+ * Hidden fields mongoose schema
+ */
 var HiddenSchema = new mongoose.Schema({
   collectionName: String,
   doc: String,
