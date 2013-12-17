@@ -8,7 +8,7 @@ var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
 var validateBody = require('./middleware/validate-body');
 
-// Make sure models are defined (they are accessed though req.collection).
+// Make sure models are defined (they are accessed through req.collection).
 require('./models');
 
 module.exports = function (options) {
