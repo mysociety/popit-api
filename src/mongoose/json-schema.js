@@ -14,7 +14,7 @@ module.exports = mongooseJsonSchema;
  * Example
  *
  *     var PersonSchema = new mongoose.Schema();
- *     PersonSchema.plugin(jsonSchema, {jsonSchema: require('../schemas/popolo/person.json')});
+ *     PersonSchema.plugin(jsonSchema, {jsonSchemaUrl: 'http://popoloproject.com/schemas/person.json#'});
  *
  * @param {mongoose.Schema} schema The schema to augment
  * @param {object} options The options to configure the plugin
