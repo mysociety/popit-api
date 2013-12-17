@@ -1,15 +1,6 @@
 "use strict";
 
-module.exports = Filter;
-
-/**
- * Constructor for Filter class.
- */
-function Filter(fields) {
-  this.fields = fields || {
-    all: {}
-  };
-}
+module.exports = filter;
 
 /**
  * Filter a document which has been retrieved from mongo. This handles
@@ -17,7 +8,7 @@ function Filter(fields) {
  * removing any fields that start with an underscore, which are considered
  * internal.
  */
-Filter.prototype.doc = function(doc) {
+function filter(doc, fields) {
   if (!doc) {
     return;
   }
@@ -28,10 +19,8 @@ Filter.prototype.doc = function(doc) {
     newDoc.id = doc._id;
   }
 
-  var fields = this.fields;
-
   for (var field in doc) {
-    // Remove any fields that have been hidden on this doc.
+    // Skip any fields that have been hidden on this doc.
     if (fields[doc._id]) {
       var value = fields[doc._id][field];
       if (value === false) {
@@ -39,26 +28,18 @@ Filter.prototype.doc = function(doc) {
       }
     }
 
+    // Skip any fields that have been hidden for all docs.
     if (fields.all[field] === false) {
       continue;
     }
 
-    // Remove 'hidden' fields starting with an underscore.
+    // Skip 'hidden' fields starting with an underscore.
     if (field.substr(0, 1) === '_') {
       continue;
     }
 
+    // If we've made it this far then copy the field to the new doc.
     newDoc[field] = doc[field];
   }
   return newDoc;
-};
-
-/**
- * Filter passed docs using the fields argument.
- *
- * @param {Array} docs The docs to filter
- * @return {Array} The array of docs after processing
- */
-Filter.prototype.docs = function(docs) {
-  return docs.map(this.doc, this);
-};
+}

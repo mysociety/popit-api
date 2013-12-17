@@ -5,7 +5,7 @@ var mongooseJsonSchema = require('./mongoose/json-schema');
 var deduplicateSlug = require('./mongoose/deduplicate-slug');
 var search = require('./mongoose/search');
 var collections = require('./collections');
-var Filter = require('./filter');
+var filter = require('./filter');
 
 /**
  * Transform a document to a json doc.
@@ -14,8 +14,7 @@ var Filter = require('./filter');
  */
 function toJSON(doc, ret, options) {
   if (options.fields) {
-    var filter = new Filter(options.fields);
-    return filter.doc(ret);
+    return filter(ret, options.fields);
   }
 }
 
