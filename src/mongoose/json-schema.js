@@ -23,28 +23,11 @@ function mongooseJsonSchema(schema, options) {
   var jsonSchemaUrl = options.jsonSchemaUrl;
   var jsonSchema = schemas[jsonSchemaUrl];
 
-  var fields = {};
-
-  for (var name in jsonSchema.properties) {
-    if (jsonSchema.properties.hasOwnProperty(name)) {
-      var field = jsonSchema.properties[name];
-
-      // TODO Handle document references in a smart way
-      if (field.$ref) {
-        continue;
-      }
-
-      fields[name] = {
-        type: typeof field.type === 'string' ? field.type : field.type[0],
-      };
-
-      if (field.required) {
-        fields[name].required = true;
-      }
-    }
+  if (!jsonSchema || !jsonSchema.properties) {
+    throw new Error("Invalid jsonSchemaUrl: " + jsonSchemaUrl);
   }
 
-  schema.add(fields);
+  schema.add(jsonSchemaFields(jsonSchema));
 
   schema.pre('save', function(next) {
     var report = env.validate(this, jsonSchema);
@@ -60,4 +43,33 @@ function mongooseJsonSchema(schema, options) {
     ));
     next(err);
   });
+}
+
+function jsonSchemaFields(jsonSchema) {
+  var fields = {};
+
+  for (var name in jsonSchema.properties) {
+    if (jsonSchema.properties.hasOwnProperty(name)) {
+      var field = jsonSchema.properties[name];
+
+      // TODO Handle document references in a smart way
+      if (field.$ref) {
+        continue;
+      }
+
+      if (field.type === 'array') {
+        fields[name] = [jsonSchemaFields(field.items)];
+      } else {
+        fields[name] = {
+          type: typeof field.type === 'string' ? field.type : field.type[0],
+        };
+      }
+
+      if (field.required) {
+        fields[name].required = true;
+      }
+    }
+  }
+
+  return fields;
 }
