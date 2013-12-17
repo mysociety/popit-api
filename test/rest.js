@@ -222,6 +222,16 @@ describe("REST", function () {
           .end(done);
       });
 
+      it("should accept arbitrary fields and save them", function(done) {
+        request
+          .post("/api/persons")
+          .send({id: 'test', name: 'Test', meme: 'Harlem Shake', tags: ['music', 'shaking']})
+          .expect(200)
+          .expect({
+            result: person({id: 'test', name: 'Test', meme: 'Harlem Shake', tags: ['music', 'shaking']})
+          }, done);
+      });
+
     });
 
     describe("PUT", function () {

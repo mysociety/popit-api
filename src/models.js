@@ -29,7 +29,7 @@ function toJSON(doc, ret, options) {
 for (var key in collections) {
   if (collections.hasOwnProperty(key)) {
     var spec = collections[key];
-    var Schema = new mongoose.Schema({_id: String}, {collection: key});
+    var Schema = new mongoose.Schema({_id: String}, {collection: key, strict: false});
 
     Schema.set('toJSON', {transform: toJSON});
 
