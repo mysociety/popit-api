@@ -46,9 +46,10 @@ module.exports = function (options) {
   });
 
 
-  /*
-    Check that the collection is in the allowed list.
-  */
+  /**
+   * Check that the collection is in the allowed list, if it is then expose
+   * it as req.collection.
+   */
   app.param('collection', function (req, res, next, collection) {
     // If the collection exists, carry on.
     if (!collections[collection]) {
@@ -60,7 +61,12 @@ module.exports = function (options) {
     req.collection = req.db.model(collections[collection].model);
 
     next();
-  }, hiddenFields);
+  });
+
+  /**
+   * Handle hidden fields on collections.
+   */
+  app.param('collection', hiddenFields);
 
   app.get('/search/:collection', function(req, res, next) {
     var query = req.param('q');
