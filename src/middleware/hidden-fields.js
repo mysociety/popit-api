@@ -27,8 +27,13 @@ function hiddenFields(req, res, next) {
   var fields = {
     all: {}
   };
-  var schema = req.collection.schema;
 
+  /**
+   * Hidden fields are set on the current collection's schema as an
+   * option that's passed to toJSON. Each schema uses the same custom
+   * toJSON method which handles filtering documents.
+   */
+  var schema = req.collection.schema;
   schema.options.toJSON.fields = fields;
 
   // Admin can see any fields.
@@ -67,6 +72,7 @@ function hiddenFields(req, res, next) {
       fields[doc.doc] = doc.fields;
     });
 
+    // Expose hidden fields as an option to the schema's toJSON method.
     schema.options.toJSON.fields = fields;
 
     next();
