@@ -172,7 +172,7 @@ var apiApp = popitApi({
   apiKey: 'secret' // This could come from an environment variable or similar
   fieldSpec: [
     {
-      collection: 'persons',
+      collectionName: 'persons',
       fields: {
         email: false
       }
@@ -205,14 +205,14 @@ document to mongo from the command line:
 
 ```
 mongo mp-contacts
-> db.hidden.insert({collection: 'persons', fields: {email: false}})
+> db.hidden.insert({collectionName: 'persons', fields: {email: false}})
 ```
 
 Or to hide an individual document's fields
 
 ```
 mongo mp-contacts
-> db.hidden.insert({collection: 'persons', doc: 'david-cameron', fields: {email: false}})
+> db.hidden.insert({collectionName: 'persons', doc: 'david-cameron', fields: {email: false}})
 ```
 
 ## REST actions

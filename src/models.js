@@ -36,3 +36,11 @@ for (var key in collections) {
     mongoose.model(spec.model, Schema);
   }
 }
+
+var HiddenSchema = new mongoose.Schema({
+  collectionName: String,
+  doc: String,
+  fields: Object
+});
+
+mongoose.model('Hidden', HiddenSchema);

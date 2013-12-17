@@ -40,28 +40,18 @@ function hiddenFields(req, res, next) {
 
   if (globallyHidden) {
     globallyHidden.forEach(function(hidden) {
-      if (hidden.collection === req.params.collection) {
+      if (hidden.collectionName === req.params.collection) {
         _.extend(fields.all, hidden.fields);
       }
     });
   }
 
-  var hidden = req.storage.db.collection('hidden');
-
-  // Find documents for the given query and convert them to an array.
-  function hiddenFind(query, callback) {
-    hidden.find(query, function(err, hiddenDocs) {
-      if (err) {
-        return callback(err);
-      }
-      hiddenDocs.toArray(callback);
-    });
-  }
+  var hidden = req.db.model('Hidden');
 
   async.map([
-    {collection: req.params.collection, doc: null},
-    {collection: req.params.collection, doc: {'$ne': null}}
-  ], hiddenFind, function(err, results) {
+    {collectionName: req.params.collection, doc: null},
+    {collectionName: req.params.collection, doc: {'$ne': null}}
+  ], hidden.find.bind(hidden), function(err, results) {
     if (err) {
       return next(err);
     }
@@ -78,8 +68,6 @@ function hiddenFields(req, res, next) {
     });
 
     schema.options.toJSON.fields = fields;
-
-    req.fields = fields;
 
     next();
   });

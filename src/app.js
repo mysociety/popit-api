@@ -39,7 +39,7 @@ module.exports = function (options) {
   app.get('/', function (req, res) {
     res.jsonp({
       info: {
-        databaseName: req.storage.databaseName,
+        databaseName: req.db.model('Hidden').db.name,
         version:      packageJSON.version,
       },
     });

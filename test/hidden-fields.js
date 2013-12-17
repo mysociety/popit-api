@@ -1,11 +1,13 @@
 "use strict";
 
 var fixture = require('./fixture');
-var Storage = require('../src/storage');
 var defaults = require('./defaults');
 var serverApp = require('../test-server-app');
 var request = require('supertest')(serverApp);
 var person = require('./util').person;
+var mongoose = require('mongoose');
+
+var connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
 
 function showsAllFieldsForAuthenticatedRequests() {
   var apiKey = 'secret';
@@ -52,7 +54,7 @@ describe("hidden fields", function () {
       databaseName: defaults.databaseName,
       apiKey: 'secret',
       fieldSpec: [{
-        collection: 'persons',
+        collectionName: 'persons',
         fields: {
           email: false
         }
@@ -111,16 +113,14 @@ describe("hidden fields", function () {
   describe("collection wide", function () {
 
     beforeEach(function(done) {
-      var storage = new Storage(defaults.databaseName);
       var hiddenDoc = {
-        id: Storage.generateID(),
-        collection: 'persons',
+        collectionName: 'persons',
         fields: {
           email: false
         }
       };
 
-      storage.store('hidden', hiddenDoc, done);
+      connection.model('Hidden').create(hiddenDoc, done);
     });
 
     showsAllFieldsForAuthenticatedRequests();
@@ -153,17 +153,15 @@ describe("hidden fields", function () {
   describe("on a per-document basis", function() {
 
     beforeEach(function(done) {
-      var storage = new Storage(defaults.databaseName);
       var hiddenDoc = {
-        id: Storage.generateID(),
-        collection: 'persons',
+        collectionName: 'persons',
         doc: 'joe-bloggs',
         fields: {
           email: false
         }
       };
 
-      storage.store('hidden', hiddenDoc, done);
+      connection.model('Hidden').create(hiddenDoc, done);
     });
 
     showsAllFieldsForAuthenticatedRequests();
