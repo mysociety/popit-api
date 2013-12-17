@@ -112,7 +112,7 @@ module.exports = function (options) {
   });
 
   app.del('/:collection/:id(*)', function (req, res, next) {
-    var id             = req.params.id;
+    var id = req.params.id;
 
     req.collection.remove({_id: id}, function (err) {
       if (err) {
@@ -135,8 +135,8 @@ module.exports = function (options) {
 
   app.put('/:collection/:id(*)', validateBody, function (req, res, next) {
 
-    var id             = req.params.id;
-    var body           = req.body;
+    var id = req.params.id;
+    var body = req.body;
 
     if (id !== body.id) {
       return res
@@ -147,6 +147,7 @@ module.exports = function (options) {
 
     }
 
+    // Upsert won't work with an _id attribute in the body.
     delete body._id;
 
     req.collection.findByIdAndUpdate(id, body, {upsert: true}, function (err, doc) {
