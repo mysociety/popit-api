@@ -8,6 +8,9 @@ var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
 var validateBody = require('./middleware/validate-body');
 
+// Make sure models are defined (they are accessed through req.collection).
+require('./models');
+
 module.exports = function (options) {
   options.storageSelector = options.storageSelector || 'fixedName';
 
@@ -36,43 +39,67 @@ module.exports = function (options) {
   app.get('/', function (req, res) {
     res.jsonp({
       info: {
-        databaseName: req.storage.databaseName,
+        databaseName: req.db.model('Hidden').db.name,
         version:      packageJSON.version,
       },
     });
   });
 
 
-  /*
-    Check that the collection is in the allowed list.
-  */
+  /**
+   * Check that the collection is in the allowed list, if it is then expose
+   * it as req.collection.
+   */
   app.param('collection', function (req, res, next, collection) {
     // If the collection exists, carry on.
-    if (collections[collection]) {
-      return next();
+    if (!collections[collection]) {
+      return res.status(404).jsonp({
+        errors: ["collection '" + collection + "' not found"]
+      });
     }
 
-    res.status(404).jsonp({
-      errors: ["collection '" + collection + "' not found"]
-    });
+    req.collection = req.db.model(collections[collection].model);
+
+    next();
   });
 
-  app.get('/:collection', hiddenFields, function (req, res, next) {
-    var collectionName = req.params.collection;
-    req.storage.list(collectionName, function (err, docs) {
-      if (err) { return next(err); }
+  /**
+   * Handle hidden fields on collections.
+   */
+  app.param('collection', hiddenFields);
+
+  app.get('/search/:collection', function(req, res, next) {
+    var query = req.param('q');
+    if (!query) {
+      return res.send(400, {error: ["Please provide a 'query' parameter"]});
+    }
+    req.collection.search(query, function(err, docs) {
+      if (err) {
+        return next(err);
+      }
+
       res.jsonp({ result: docs });
     });
   });
 
-  app.get('/:collection/:id(*)', hiddenFields, function (req, res, next) {
-    var collectionName = req.params.collection;
-    var id             = req.params.id;
-
-    req.storage.retrieve( collectionName, id, function (err, doc) {
+  app.get('/:collection', function (req, res, next) {
+    req.collection.find(function (err, docs) {
       if (err) {
-        next(err);
-      } else if (doc) {
+        return next(err);
+      }
+      res.jsonp({ result: docs });
+    });
+  });
+
+  app.get('/:collection/:id(*)', function (req, res, next) {
+    var id = req.params.id;
+
+    req.collection.findOne({_id: id}, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+
+      if (doc) {
         res.jsonp({ result: doc });
       } else {
         res
@@ -85,30 +112,22 @@ module.exports = function (options) {
   });
 
   app.del('/:collection/:id(*)', function (req, res, next) {
-    var collectionName = req.params.collection;
-    var id             = req.params.id;
+    var id = req.params.id;
 
-    req.storage.delete( collectionName, id, function (err) {
+    req.collection.remove({_id: id}, function (err) {
       if (err) {
-        next(err);
-      } else {
-        res
-          .status(204)
-          .send('');
+        return next(err);
       }
+      res.send(204);
     });
   });
 
   app.post('/:collection', validateBody, function (req, res, next) {
-
-    var collectionName = req.params.collection;
-    var body = req.body;
-
-    req.storage.store(collectionName, body, function (err, doc) {
-      if (err) { return next(err); }
-      res
-        .status(200)
-        .jsonp({ result: doc });
+    req.collection.create(req.body, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+      res.jsonp({ result: doc });
     });
 
   });
@@ -116,9 +135,8 @@ module.exports = function (options) {
 
   app.put('/:collection/:id(*)', validateBody, function (req, res, next) {
 
-    var collectionName = req.params.collection;
-    var id             = req.params.id;
-    var body           = req.body;
+    var id = req.params.id;
+    var body = req.body;
 
     if (id !== body.id) {
       return res
@@ -129,11 +147,14 @@ module.exports = function (options) {
 
     }
 
-    req.storage.store(collectionName, body, function (err, doc) {
-      if (err) { return next(err); }
-      res
-        .status(200)
-        .jsonp({ result: doc });
+    // Upsert won't work with an _id attribute in the body.
+    delete body._id;
+
+    req.collection.findByIdAndUpdate(id, body, {upsert: true}, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+      res.jsonp({ result: doc });
     });
 
   });

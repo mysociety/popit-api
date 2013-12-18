@@ -8,7 +8,7 @@ var async = require('async');
  *
  * This piece of middleware handles field visibility on the models. It looks for
  * documents that match the current collection and if it finds any field specs then
- * it exposes them on `req.storage.fields`.
+ * it exposes them to the storage's filter property.
  *
  * The fields spec is passed to mongo's `find` method, which accepts fields
  * as its second argument and retricts the returned documents based on that.
@@ -16,7 +16,7 @@ var async = require('async');
  * Example
  *
  *     app.get('/:collection', hiddenFields, function(req, res, next) {
- *       // req.storage.fields will be populated based on the `:collection` param.
+ *       // fields will be filtered based on the `:collection` param.
  *     });
  *
  * @param {object} req The express request object
@@ -28,6 +28,14 @@ function hiddenFields(req, res, next) {
     all: {}
   };
 
+  /**
+   * Hidden fields are set on the current collection's schema as an
+   * option that's passed to toJSON. Each schema uses the same custom
+   * toJSON method which handles filtering documents.
+   */
+  var schema = req.collection.schema;
+  schema.options.toJSON.fields = fields;
+
   // Admin can see any fields.
   if (req.isAdmin) {
     return next();
@@ -37,28 +45,18 @@ function hiddenFields(req, res, next) {
 
   if (globallyHidden) {
     globallyHidden.forEach(function(hidden) {
-      if (hidden.collection === req.params.collection) {
+      if (hidden.collectionName === req.params.collection) {
         _.extend(fields.all, hidden.fields);
       }
     });
   }
 
-  var hidden = req.storage.db.collection('hidden');
-
-  // Find documents for the given query and convert them to an array.
-  function hiddenFind(query, callback) {
-    hidden.find(query, function(err, hiddenDocs) {
-      if (err) {
-        return callback(err);
-      }
-      hiddenDocs.toArray(callback);
-    });
-  }
+  var hidden = req.db.model('Hidden');
 
   async.map([
-    {collection: req.params.collection, doc: null},
-    {collection: req.params.collection, doc: {'$ne': null}}
-  ], hiddenFind, function(err, results) {
+    {collectionName: req.params.collection, doc: null},
+    {collectionName: req.params.collection, doc: {'$ne': null}}
+  ], hidden.find.bind(hidden), function(err, results) {
     if (err) {
       return next(err);
     }
@@ -74,7 +72,8 @@ function hiddenFields(req, res, next) {
       fields[doc.doc] = doc.fields;
     });
 
-    req.storage.fields = fields;
+    // Expose hidden fields as an option to the schema's toJSON method.
+    schema.options.toJSON.fields = fields;
 
     next();
   });

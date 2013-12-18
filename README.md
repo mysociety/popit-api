@@ -172,7 +172,7 @@ var apiApp = popitApi({
   apiKey: 'secret' // This could come from an environment variable or similar
   fieldSpec: [
     {
-      collection: 'persons',
+      collectionName: 'persons',
       fields: {
         email: false
       }
@@ -205,14 +205,14 @@ document to mongo from the command line:
 
 ```
 mongo mp-contacts
-> db.hidden.insert({collection: 'persons', fields: {email: false}})
+> db.hidden.insert({collectionName: 'persons', fields: {email: false}})
 ```
 
 Or to hide an individual document's fields
 
 ```
 mongo mp-contacts
-> db.hidden.insert({collection: 'persons', doc: 'david-cameron', fields: {email: false}})
+> db.hidden.insert({collectionName: 'persons', doc: 'david-cameron', fields: {email: false}})
 ```
 
 ## REST actions
@@ -273,6 +273,9 @@ Replaces the current document with the one provided, if valid. Returns the docum
 
 Deletes the document. Returns `204` (even if the document did not exist).
 
+### GET `/api/search/:collection?q=<search-query>`
+
+Searches for a document in the named collection which matches the `q` parameter.
 
 ## Deployment
 

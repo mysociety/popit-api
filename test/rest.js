@@ -6,7 +6,8 @@ var request       = require("supertest"),
     fixture       = require("./fixture"),
     defaults      = require("./defaults"),
     packageJSON   = require("../package"),
-    serverApp     = require("../test-server-app");
+    serverApp     = require("../test-server-app"),
+    person        = require('./util').person;
 
 request = request(serverApp);
 
@@ -57,63 +58,93 @@ describe("REST", function () {
           }, done);
       });
 
-      it("should return created entries", function (done) {
-        fixture.loadFixtures(function(err) {
-          assert.ifError(err);
-          async.series([
-            function(callback) {
-              request
-                .get("/api/persons")
-                .expect(200)
-                .expect({
-                  result: [
-                    { id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' },
-                    { id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' },
-                  ],
-                })
-                .end(callback);
-            },
-            function(callback) {
-              request
-                .get("/api/organizations")
-                .expect(200)
-                .expect({
-                  result: [
-                    { id: 'parliament', name: 'Houses of Parliament' },
-                    { id: 'commons', name: 'House of Commons', parent_id: "parliament" },
-                  ],
-                })
-                .end(callback);
-            },
-            function(callback) {
-              request
-                .get("/api/memberships")
-                .expect(200)
-                .expect({
-                  result: [
-                    { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                      person_id: 'fred-bloggs', start_date: '2000', end_date: '2004' },
-                    { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                        person_id: 'fred-bloggs', start_date: '2011' },
-                  ],
-                })
-                .end(callback);
-            },
-            function(callback) {
-              request
-                .get("/api/posts")
-                .expect(200)
-                .expect({
-                  result: [
-                    { id: 'annapolis', organization_id: 'commons', label: 'MP for Annapolis', role: 'Member of Parliament',
-                      area: { name: 'Annapolis', id: 'http://mapit.example.org/area/1' } },
-                    { id: 'avalon', organization_id: 'commons', label: 'MP for Avalon', role: 'Member of Parliament',
-                      area: { name: 'Avalon', id: 'http://mapit.example.org/area/2' } },
-                  ],
-                })
-                .end(callback);
-            }
-          ], done);
+      describe("should return created", function () {
+        beforeEach(fixture.loadFixtures);
+
+        it('persons', function(done) {
+          request
+            .get("/api/persons")
+            .expect(200)
+            .expect({
+              result: [{
+                id: 'fred-bloggs',
+                name: 'Fred Bloggs',
+                email: 'fbloggs@example.org',
+                memberships: [],
+                links: [],
+                contact_details: [],
+                identifiers: [],
+                other_names: []
+              },
+              {
+                id: 'joe-bloggs',
+                name: 'Joe Bloggs',
+                email: 'jbloggs@example.org',
+                memberships: [],
+                links: [],
+                contact_details: [],
+                identifiers: [],
+                other_names: []
+              }]
+            })
+            .end(done);
+        });
+
+        it('organizations', function(done) {
+          request
+            .get("/api/organizations")
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'parliament', name: 'Houses of Parliament',
+                  posts: [],
+                  memberships: [],
+                  links: [],
+                  contact_details: [],
+                  identifiers: [],
+                  other_names: []
+                },
+                { id: 'commons', name: 'House of Commons', parent_id: "parliament",
+                  posts: [],
+                  memberships: [],
+                  links: [],
+                  contact_details: [],
+                  identifiers: [],
+                  other_names: []
+                },
+              ],
+            })
+            .end(done);
+        });
+
+        it('memberships', function(done) {
+          request
+            .get("/api/memberships")
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
+                  person_id: 'fred-bloggs', start_date: '2000', end_date: '2004', links: [], contact_details: [] },
+                { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
+                    person_id: 'fred-bloggs', start_date: '2011', links: [], contact_details: [] },
+              ],
+            })
+            .end(done);
+        });
+
+        it('posts', function(done) {
+          request
+            .get("/api/posts")
+            .expect(200)
+            .expect({
+              result: [
+                { id: 'annapolis', organization_id: 'commons', label: 'MP for Annapolis', role: 'Member of Parliament',
+                  area: { name: 'Annapolis', id: 'http://mapit.example.org/area/1' }, memberships: [], links: [], contact_details: [] },
+                { id: 'avalon', organization_id: 'commons', label: 'MP for Avalon', role: 'Member of Parliament',
+                  area: { name: 'Avalon', id: 'http://mapit.example.org/area/2' }, memberships: [], links: [], contact_details: [] },
+              ],
+            })
+            .end(done);
         });
       });
 
@@ -131,7 +162,7 @@ describe("REST", function () {
               .end(function (err, res) {
                 var id = res.body.result.id;
                 assert(id);
-                assert.deepEqual(res.body.result, { id: id, name: "Joe Bloggs"});
+                assert.deepEqual(res.body.result, person({ id: id, name: "Joe Bloggs"}));
                 callback(err, res.body.result.id);
               });
           },
@@ -139,7 +170,7 @@ describe("REST", function () {
             request
               .get("/api/persons/" + id)
               .expect(200)
-              .expect({ result: { id: id, name: "Joe Bloggs" }})
+              .expect({ result: person({ id: id, name: "Joe Bloggs" })})
               .end(callback);
           },
         ], done);
@@ -149,7 +180,7 @@ describe("REST", function () {
         async.series([
           function(callback){
 
-            var personDoc = { id: 'test', name: "Joe Bloggs" };
+            var personDoc = person({ id: 'test', name: "Joe Bloggs" });
             request
               .post("/api/persons")
               .send(personDoc)
@@ -161,7 +192,7 @@ describe("REST", function () {
             request
               .get('/api/persons/test')
               .expect(200)
-              .expect({ result: { id: 'test', name: "Joe Bloggs" } })
+              .expect({ result: person({ id: 'test', name: "Joe Bloggs" }) })
               .end(callback);
           },
         ], done);
@@ -189,6 +220,16 @@ describe("REST", function () {
             errors: [ "Error 'Property is required' with 'http://popoloproject.com/schemas/person.json#/properties/name'." ]
           })
           .end(done);
+      });
+
+      it("should accept arbitrary fields and save them", function(done) {
+        request
+          .post("/api/persons")
+          .send({id: 'test', name: 'Test', meme: 'Harlem Shake', tags: ['music', 'shaking']})
+          .expect(200)
+          .expect({
+            result: person({id: 'test', name: 'Test', meme: 'Harlem Shake', tags: ['music', 'shaking']})
+          }, done);
       });
 
     });
@@ -225,11 +266,11 @@ describe("REST", function () {
           .get("/api/persons/fred-bloggs")
           .expect(200)
           .expect({
-            result: {
+            result: person({
               id: 'fred-bloggs',
               name: 'Fred Bloggs',
               email: 'fbloggs@example.org',
-            }
+            })
           })
           .end(done);
       });
@@ -265,14 +306,14 @@ describe("REST", function () {
               .put("/api/persons/test")
               .send({ name: "Joe Bloggs" })
               .expect(200)
-              .expect({ result: { id: "test", name: "Joe Bloggs" } })
+              .expect({ result: person({ id: "test", name: "Joe Bloggs" }) })
               .end(callback);
           },
           function(callback){
             request
               .get("/api/persons/test")
               .expect(200)
-              .expect({ result: { id: "test", name: "Joe Bloggs" } })
+              .expect({ result: person({ id: "test", name: "Joe Bloggs" }) })
               .end(callback);
           },
           function(callback){
@@ -280,14 +321,14 @@ describe("REST", function () {
               .put("/api/persons/test")
               .send({ id: 'test', name: "Fred Smith" })
               .expect(200)
-              .expect({ result: { id: "test", name: "Fred Smith" } })
+              .expect({ result: person({ id: "test", name: "Fred Smith" }) })
               .end(callback);
           },
           function(callback){
             request
               .get("/api/persons/test")
               .expect(200)
-              .expect({ result: { id: "test", name: "Fred Smith" } })
+              .expect({ result: person({ id: "test", name: "Fred Smith" }) })
               .end(callback);
           },
         ], done);
@@ -345,5 +386,48 @@ describe("REST", function () {
 
   });
 
+  describe("GET /search/:collection", function() {
+    beforeEach(function(done) {
+      request.post('/api/persons')
+      .send({id: 'foo', name: 'Test', email: 'test@example.org'})
+      .expect(200, done);
+    });
+
+    it("returns a 400 when there is no q param", function(done) {
+      request.get('/api/search/persons')
+      .expect(400, done);
+    });
+
+    it("returns names when searching", function(done) {
+      request.get('/api/search/persons?q=test')
+      .expect(200)
+      .expect({result: [
+        person({id: 'foo', name: 'Test', email: 'test@example.org'})
+      ]}, done);
+    });
+  });
+
+  describe("deduplicating slugs", function() {
+    beforeEach(function(done) {
+      request.post('/api/persons')
+      .send({id: 'foo', name: 'Test', slug: 'test'})
+      .expect(200, done);
+    });
+
+    it("appends a number for a duplicate slug", function(done) {
+      request.post('/api/persons')
+      .send({id: 'bar', name: 'Test', slug: 'test'})
+      .expect({result: person({id: 'bar', name: 'Test', slug: 'test-1'})})
+      .expect(200, function(err) {
+        if (err) {
+          return done(err);
+        }
+        request.post('/api/persons')
+        .send({id: 'baz', name: 'Test', slug: 'test'})
+        .expect({result: person({id: 'baz', name: 'Test', slug: 'test-2'})})
+        .expect(200, done);
+      });
+    });
+  });
 
 });

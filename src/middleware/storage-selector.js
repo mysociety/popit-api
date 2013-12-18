@@ -2,23 +2,28 @@
 
 var assert = require('assert');
 var slugify = require('underscore.string').slugify;
-var Storage = require('../storage');
+var mongoose = require('mongoose');
 var slugToDb = require('../slug-to-database');
+
+var connections = {};
 
 /**
  * The are the various storage selectors which define what the database is called
  * and how that name is derived.
  *
  * Each selector takes an options object and returns an object with a `selector`
- * property, which should be a piece of middleware that sets `req.storage` to be
- * and instance of the Storage class configured to use a certain database.
+ * property, which should be a piece of middleware that sets `req.db` to be
+ * a mongoose connection object.
  */
 var storageSelectors = {
   fixedName: function(options) {
     return {
       selector: function (req, res, next) {
         var databaseName = options.databaseName;
-        req.storage = new Storage(databaseName);
+        if (!connections[databaseName]) {
+          connections[databaseName] = mongoose.createConnection('mongodb://localhost/' + databaseName);
+        }
+        req.db = connections[databaseName];
         next();
       },
       optionsCheck: function (options) {
@@ -31,7 +36,10 @@ var storageSelectors = {
       selector: function (req, res, next) {
         var host = req.host.replace(/\./g, '-');
         var databaseName = slugToDb('popit-api-' + slugify(host));
-        req.storage = new Storage(databaseName);
+        if (!connections[databaseName]) {
+          connections[databaseName] = mongoose.createConnection('mongodb://localhost/' + databaseName);
+        }
+        req.db = connections[databaseName];
         next();
       }
     };

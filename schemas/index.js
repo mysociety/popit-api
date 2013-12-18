@@ -44,9 +44,8 @@ _.each( allSchemas, function (schema) {
 // go through all the url schemas and make sure that any $refs are replaced with
 // the schema they refer to. This is a workaround for
 // https://github.com/garycourt/JSV/issues/68
-_.each( popoloSchemas, function (schema) {
-  swapOutDollarRefs(schema);
-});
+_.each(popoloSchemas, swapOutDollarRefs);
+_.each(mySocietySchemas, swapOutDollarRefs);
 
 function swapOutDollarRefs (data) {
   

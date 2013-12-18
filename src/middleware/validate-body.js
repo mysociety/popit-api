@@ -2,7 +2,12 @@
 
 var util = require('util');
 var validate = require('../validate');
-var Storage = require('../storage');
+var mongoose = require('mongoose');
+
+function generateID() {
+  var objectId = new mongoose.Types.ObjectId();
+  return objectId.toHexString();
+}
 
 function validateBody (req, res, next) {
 
@@ -11,8 +16,10 @@ function validateBody (req, res, next) {
 
   // If there is no id create one
   if (!body.id) {
-    body.id = req.params.id || Storage.generateID();
+    body.id = req.params.id || generateID();
   }
+
+  body._id = body.id;
 
   validate(collectionName, body, function (err, errors) {
 
