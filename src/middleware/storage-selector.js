@@ -8,6 +8,19 @@ var slugToDb = require('../slug-to-database');
 var connections = {};
 
 /**
+ * Get or create a mongoose connection for the given name and return it
+ *
+ * @param {String} databaseName Name of the database to connect to
+ * @return {mongoose.Connection} Database connection
+ */
+function connection(databaseName) {
+  if (!connections[databaseName]) {
+    connections[databaseName] = mongoose.createConnection('mongodb://localhost/' + databaseName);
+  }
+  return connections[databaseName];
+}
+
+/**
  * The are the various storage selectors which define what the database is called
  * and how that name is derived.
  *
@@ -20,10 +33,7 @@ var storageSelectors = {
     return {
       selector: function (req, res, next) {
         var databaseName = options.databaseName;
-        if (!connections[databaseName]) {
-          connections[databaseName] = mongoose.createConnection('mongodb://localhost/' + databaseName);
-        }
-        req.db = connections[databaseName];
+        req.db = connection(databaseName);
         next();
       },
       optionsCheck: function (options) {
@@ -36,10 +46,7 @@ var storageSelectors = {
       selector: function (req, res, next) {
         var host = req.host.replace(/\./g, '-');
         var databaseName = slugToDb('popit-api-' + slugify(host));
-        if (!connections[databaseName]) {
-          connections[databaseName] = mongoose.createConnection('mongodb://localhost/' + databaseName);
-        }
-        req.db = connections[databaseName];
+        req.db = connection(databaseName);
         next();
       }
     };
