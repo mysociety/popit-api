@@ -1,10 +1,6 @@
 "use strict";
 
-var util = require('util');
-var JSV = require('JSV').JSV;
 var schemas = require('../../schemas');
-
-var env = JSV.createEnvironment();
 
 module.exports = mongooseJsonSchema;
 
@@ -33,6 +29,9 @@ function mongooseJsonSchema(schema, options) {
   // Validation at this level breaks the popit tests, commenting out
   // for now until there is better test coverage for this.
   /*
+  var util = require('util');
+  var JSV = require('JSV').JSV;
+  var env = JSV.createEnvironment();
   schema.pre('save', function(next) {
     var report = env.validate(this, jsonSchema);
 
