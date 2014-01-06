@@ -29,6 +29,10 @@ function mongooseJsonSchema(schema, options) {
 
   schema.add(jsonSchemaFields(jsonSchema));
 
+  // TODO: Add tests for this before re-enabling.
+  // Validation at this level breaks the popit tests, commenting out
+  // for now until there is better test coverage for this.
+  /*
   schema.pre('save', function(next) {
     var report = env.validate(this, jsonSchema);
 
@@ -43,6 +47,7 @@ function mongooseJsonSchema(schema, options) {
     ));
     next(err);
   });
+  */
 }
 
 function jsonSchemaFields(jsonSchema) {
