@@ -69,14 +69,14 @@ module.exports = function (options) {
   app.param('collection', hiddenFields);
 
   app.get('/search/:collection', function(req, res, next) {
-    var query = req.param('q');
-    if (!query) {
-      return res.send(400, {error: ["Please provide a 'query' parameter"]});
-    }
-    req.collection.search(query, function(err, docs) {
+    req.collection.search(req.query, function(err, result) {
       if (err) {
         return next(err);
       }
+
+      var docs = result.hits.hits.map(function(doc) {
+        return doc._source;
+      });
 
       res.jsonp({ result: docs });
     });

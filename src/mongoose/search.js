@@ -1,9 +1,17 @@
 "use strict";
 
+/**
+ * Legacy double-metaphone name search.
+ *
+ * This indexes documents when they enter the API so they can be searched
+ * using double metaphone. Currently this is used in the popit search
+ * and autocompletion, eventually that should use the new elasticsearch
+ * interface, at which time this can be removed.
+ */
+
 var _ = require('underscore');
 var unorm = require('unorm');
 var DoubleMetaphone = require('doublemetaphone');
-var regexpQuote = require('regexp-quote');
 
 var dm = new DoubleMetaphone();
 
@@ -16,46 +24,6 @@ module.exports = function(schema) {
     }
     next();
   });
-
-  schema.statics.search = function(search, cb) {
-    var self = this;
-    if (!search) {
-      return cb( null, [] );
-    }
-
-    var search_words = search.split(/\s+/);
-    var search_words_re = search_words.map( function(word) { return new RegExp( regexpQuote(word), 'i' ); } );
-
-    // First do a simple search using regex of search words.
-    self.find({'_internal.name_words': {'$all': search_words_re}}, function(err, docs) {
-      if (err) {
-        return cb(err);
-      }
-
-      if ( docs.length > 0 ) {
-        return cb(null, docs);
-      }
-
-      // TODO Secondary metaphone results...
-      var or = [];
-      function perm(s, o) {
-        if (s.length) {
-          o.push( new RegExp(regexpQuote(s[0]), 'i') );
-          perm(s.slice(1), o);
-          o.pop();
-          o.push( dm.doubleMetaphone(s[0]).primary );
-          perm(s.slice(1), o);
-          o.pop();
-        } else {
-          or.push( { '_internal.name_dm': { '$all': o.slice(0) } } );
-        }
-      }
-      perm(search_words, []);
-
-      // Perform a double metaphone search.
-      self.find({'$or': or}, cb);
-    });
-  };
 };
 
 function indexNameWords(doc, v) {
