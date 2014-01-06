@@ -7,11 +7,15 @@ var request       = require("supertest"),
     defaults      = require("./defaults"),
     packageJSON   = require("../package"),
     serverApp     = require("../test-server-app"),
-    person        = require('./util').person;
+    person        = require('./util').person,
+    dropElasticsearchIndex = require('./util').dropElasticsearchIndex,
+    refreshElasticsearchIndex = require('./util').refreshElasticsearchIndex;
 
 request = request(serverApp);
 
 describe("REST", function () {
+
+  before(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
   beforeEach(fixture.clearDatabase);
 
@@ -387,22 +391,19 @@ describe("REST", function () {
   });
 
   describe("GET /search/:collection", function() {
-    beforeEach(function(done) {
+    before(function(done) {
       request.post('/api/persons')
-      .send({id: 'foo', name: 'Test', email: 'test@example.org'})
+      .send({id: 'bby', name: 'Barnaby', email: 'barnaby@example.org'})
       .expect(200, done);
     });
 
-    it("returns a 400 when there is no q param", function(done) {
-      request.get('/api/search/persons')
-      .expect(400, done);
-    });
+    before(refreshElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
     it("returns names when searching", function(done) {
-      request.get('/api/search/persons?q=test')
+      request.get('/api/search/persons?q=Barnaby')
       .expect(200)
       .expect({result: [
-        person({id: 'foo', name: 'Test', email: 'test@example.org'})
+        person({id: 'bby', name: 'Barnaby', email: 'barnaby@example.org'})
       ]}, done);
     });
   });

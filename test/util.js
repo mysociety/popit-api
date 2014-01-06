@@ -3,6 +3,7 @@
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var defaults = require('./defaults');
+var elasticsearch = require('../src/mongoose/elasticsearch').client;
 
 exports.person = person;
 
@@ -16,6 +17,8 @@ function person(attrs) {
 }
 
 exports.loadFixture = loadFixture;
+exports.dropElasticsearchIndex = dropElasticsearchIndex;
+exports.refreshElasticsearchIndex = refreshElasticsearchIndex;
 
 /**
  * Populate collection using the json at fixturePath. The json file
@@ -46,5 +49,25 @@ function loadFixture(collection, fixturePath) {
     mongoimport.on('close', function(code) {
       done(null, code);
     });
+  };
+}
+
+function dropElasticsearchIndex(indexName) {
+  return function(done) {
+    elasticsearch.indices.delete({
+      index: indexName
+    }, function() {
+      elasticsearch.indices.create({
+        index: indexName
+      }, done);
+    });
+  };
+}
+
+function refreshElasticsearchIndex(indexName) {
+  return function(done) {
+    elasticsearch.indices.refresh({
+      index: indexName
+    }, done);
   };
 }

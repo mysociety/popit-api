@@ -11,9 +11,11 @@
 
 var elasticsearch = require('elasticsearch');
 
-var client = new elasticsearch.Client();
+module.exports = elasticsearchPlugin;
 
-module.exports = function(schema) {
+var client = elasticsearchPlugin.client = new elasticsearch.Client();
+
+function elasticsearchPlugin(schema) {
 
   /**
    * After the document has been saved, index it in elasticsearch.
@@ -84,4 +86,4 @@ module.exports = function(schema) {
     });
 
   };
-};
+}
