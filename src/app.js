@@ -94,7 +94,7 @@ module.exports = function (options) {
   app.get('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
 
-    req.collection.findOne({_id: id}, function (err, doc) {
+    req.collection.findById(id, function (err, doc) {
       if (err) {
         return next(err);
       }
@@ -114,11 +114,19 @@ module.exports = function (options) {
   app.del('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
 
-    req.collection.remove({_id: id}, function (err) {
+    req.collection.findById(id, function (err, doc) {
       if (err) {
         return next(err);
       }
-      res.send(204);
+      if (!doc) {
+        return res.send(204);
+      }
+      doc.remove(function(err) {
+        if (err) {
+          return next(err);
+        }
+        res.send(204);
+      });
     });
   });
 
@@ -147,14 +155,21 @@ module.exports = function (options) {
 
     }
 
-    // Upsert won't work with an _id attribute in the body.
-    delete body._id;
-
-    req.collection.findByIdAndUpdate(id, body, {upsert: true}, function (err, doc) {
+    req.collection.findById(id, function (err, doc) {
       if (err) {
         return next(err);
       }
-      res.jsonp({ result: doc });
+      if (!doc) {
+        doc = new req.collection();
+      }
+      delete body.__v;
+      doc.set(body);
+      doc.save(function(err) {
+        if (err) {
+          return next(err);
+        }
+        res.jsonp({ result: doc });
+      });
     });
 
   });
