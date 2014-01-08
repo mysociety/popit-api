@@ -8,14 +8,15 @@ var request       = require("supertest"),
     packageJSON   = require("../package"),
     serverApp     = require("../test-server-app"),
     person        = require('./util').person,
+    mongoose      = require('mongoose'),
     dropElasticsearchIndex = require('./util').dropElasticsearchIndex,
     refreshElasticsearchIndex = require('./util').refreshElasticsearchIndex;
+
+require('../src/models');
 
 request = request(serverApp);
 
 describe("REST", function () {
-
-  before(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
   beforeEach(fixture.clearDatabase);
 
@@ -391,10 +392,26 @@ describe("REST", function () {
   });
 
   describe("GET /search/:collection", function() {
+
+    before(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
+
     before(function(done) {
-      request.post('/api/persons')
-      .send({id: 'bby', name: 'Barnaby', email: 'barnaby@example.org'})
-      .expect(200, done);
+      mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+      mongoose.model('Person').create({
+        _id: 'bby',
+        id: 'bby',
+        name: 'Barnaby',
+        email: 'barnaby@example.org'
+      }, function(err, doc) {
+        if (err) {
+          return done(err);
+        }
+        doc.on('es-indexed', done);
+      });
+    });
+
+    after(function(done) {
+      mongoose.connection.close(done);
     });
 
     before(refreshElasticsearchIndex(defaults.databaseName.toLowerCase()));

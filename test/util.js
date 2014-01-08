@@ -54,10 +54,16 @@ function loadFixture(collection, fixturePath) {
 
 function dropElasticsearchIndex(indexName) {
   return function(done) {
-    elasticsearch.indices.delete({
+    elasticsearch.indices.exists({
       index: indexName
-    }, function() {
-      elasticsearch.indices.create({
+    }, function(err, exists) {
+      if (err) {
+        return done(err);
+      }
+      if (!exists) {
+        return done();
+      }
+      elasticsearch.indices.delete({
         index: indexName
       }, done);
     });
