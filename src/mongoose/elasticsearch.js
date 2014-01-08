@@ -20,13 +20,24 @@ function elasticsearchPlugin(schema) {
   /**
    * After the document has been saved, index it in elasticsearch.
    */
-  schema.post('save', function(next) {
+  schema.post('save', function(doc) {
     client.index({
-      index: this.constructor.indexName(),
-      type: this.constructor.typeName(),
-      id: this.id,
-      body: this.toJSON()
-    }, next);
+      index: doc.constructor.indexName(),
+      type: doc.constructor.typeName(),
+      id: doc.id,
+      body: doc.toJSON()
+    });
+  });
+
+  /**
+   * After the document is removed, delete it from elasticsearch.
+   */
+  schema.post('remove', function(doc) {
+    client.delete({
+      index: doc.constructor.indexName(),
+      type: doc.constructor.typeName(),
+      id: doc.id
+    });
   });
 
   /**
