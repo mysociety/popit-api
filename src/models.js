@@ -13,7 +13,7 @@ var filter = require('./filter');
  *
  * - options.fieldSpec The fields to show/hide
  */
-function toJSON(doc, ret, options) {
+function filterFields(doc, ret, options) {
   return filter(ret, options.fields);
 }
 
@@ -30,7 +30,7 @@ for (var key in collections) {
     var spec = collections[key];
     var Schema = new mongoose.Schema({_id: String}, {collection: key, strict: false});
 
-    Schema.set('toJSON', {transform: toJSON});
+    Schema.set('toJSON', {transform: filterFields});
 
     Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
     Schema.plugin(deduplicateSlug);
