@@ -100,6 +100,7 @@ function elasticsearchPlugin(schema) {
         return done(err);
       }
 
+      var indexed = 0;
       var body = [];
 
       docs.forEach(function(doc) {
@@ -108,15 +109,22 @@ function elasticsearchPlugin(schema) {
           index: {
             _index: self.indexName(),
             _type: self.typeName(),
-            _id: doc.id,
+            _id: doc._id,
           }
         });
 
         body.push(doc.toJSON());
+        indexed++;
       });
 
+      if (body.length === 0) {
+        return done(null, 0);
+      }
+
       // Send the commands and content docs to the bulk API.
-      client.bulk({body: body}, done);
+      client.bulk({body: body}, function(err) {
+        done(err, indexed);
+      });
     });
 
   };
