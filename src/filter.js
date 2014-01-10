@@ -13,6 +13,8 @@ function filter(doc, fields) {
     return;
   }
 
+  fields = fields || {};
+
   var newDoc = {};
 
   if (doc._id) {
@@ -29,7 +31,7 @@ function filter(doc, fields) {
     }
 
     // Skip any fields that have been hidden for all docs.
-    if (fields.all[field] === false) {
+    if (fields.all && fields.all[field] === false) {
       continue;
     }
 

@@ -14,9 +14,7 @@ var filter = require('./filter');
  * - options.fieldSpec The fields to show/hide
  */
 function toJSON(doc, ret, options) {
-  if (options.fields) {
-    return filter(ret, options.fields);
-  }
+  return filter(ret, options.fields);
 }
 
 /**
