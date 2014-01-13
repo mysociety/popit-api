@@ -7,11 +7,17 @@ var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
 var validateBody = require('./middleware/validate-body');
+var reIndex = require('./reindex');
 
 // Make sure models are defined (they are accessed through req.collection).
 require('./models');
 
-module.exports = function (options) {
+module.exports = popitApiApp;
+
+// Expose the reIndex function so popit UI can use it.
+popitApiApp.reIndex = reIndex;
+
+function popitApiApp(options) {
   options.storageSelector = options.storageSelector || 'fixedName';
 
   var app = express();
@@ -183,4 +189,4 @@ module.exports = function (options) {
   });
 
   return app;
-};
+}
