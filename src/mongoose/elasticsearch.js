@@ -26,8 +26,8 @@ function elasticsearchPlugin(schema) {
       type: doc.constructor.typeName(),
       id: doc.id,
       body: doc.toJSON()
-    }, function() {
-      doc.emit('es-indexed');
+    }, function(err) {
+      doc.emit('es-indexed', err);
     });
   });
 
@@ -39,8 +39,8 @@ function elasticsearchPlugin(schema) {
       index: doc.constructor.indexName(),
       type: doc.constructor.typeName(),
       id: doc.id
-    }, function() {
-      doc.emit('es-removed');
+    }, function(err) {
+      doc.emit('es-removed', err);
     });
   });
 
