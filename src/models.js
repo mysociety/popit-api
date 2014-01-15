@@ -27,18 +27,28 @@ function filterFields(doc, ret, options) {
  */
 for (var key in collections) {
   if (collections.hasOwnProperty(key)) {
-    var spec = collections[key];
-    var Schema = new mongoose.Schema({_id: String}, {collection: key, strict: false});
-
-    Schema.set('toJSON', {transform: filterFields});
-
-    Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
-    Schema.plugin(deduplicateSlug);
-    Schema.plugin(search);
-    Schema.plugin(elasticsearch);
-
-    mongoose.model(spec.model, Schema);
+    createPopoloModel(collections[key]);
   }
+}
+
+function createPopoloModel(spec) {
+  var Schema = new mongoose.Schema({_id: String}, {collection: key, strict: false});
+
+  Schema.set('toJSON', {transform: filterFields});
+
+  Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
+  Schema.plugin(deduplicateSlug);
+  Schema.plugin(search);
+  Schema.plugin(elasticsearch);
+
+  // Collection specific plugins
+  if (spec.plugins) {
+    spec.plugins.forEach(function(plugin) {
+      Schema.plugin.apply(Schema, plugin);
+    });
+  }
+
+  mongoose.model(spec.model, Schema);
 }
 
 /**
