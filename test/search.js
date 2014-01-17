@@ -22,6 +22,10 @@ describe("Search", function() {
 
   beforeEach(fixture.clearDatabase);
 
+  after(function(done) {
+    mongoose.connection.close(done);
+  });
+
   it("indexes documents after saving", function(done) {
     var person = new Person();
     person._id = person.id = "jsmith";
