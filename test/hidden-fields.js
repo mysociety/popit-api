@@ -1,5 +1,6 @@
 "use strict";
 
+var assert = require('assert');
 var fixture = require('./fixture');
 var defaults = require('./defaults');
 var serverApp = require('../test-server-app');
@@ -41,12 +42,16 @@ function showsAllFieldsForAuthenticatedRequests() {
       api
       .get('/persons?apiKey=' + apiKey)
       .expect(200)
-      .expect({
-        result: [
-          person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' }),
-          person({ id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' }),
-        ]
-      }, done);
+      .end(function(err, res) {
+        if (err) {
+          return done(err);
+        }
+
+        res.body.result.forEach(function(result) {
+          assert(result.email);
+        });
+        done();
+      });
     });
 
   });
@@ -74,21 +79,28 @@ describe("hidden fields", function () {
       api
       .get('/persons')
       .expect(200)
-      .expect({
-        result: [
-          person({ id: 'fred-bloggs', name: 'Fred Bloggs'}),
-          person({ id: 'joe-bloggs', name: 'Joe Bloggs'})
-        ]
-      }, done);
+      .end(function(err, res) {
+        if (err) {
+          return done(err);
+        }
+        res.body.result.forEach(function(result) {
+          assert(!result.email);
+        });
+        done();
+      });
     });
 
     it("hides fields on individual documents", function(done) {
       api
       .get('/persons/fred-bloggs')
       .expect(200)
-      .expect({
-        result: person({ id: 'fred-bloggs', name: 'Fred Bloggs' })
-      }, done);
+      .end(function(err, res) {
+        if (err) {
+          return done(err);
+        }
+        assert(!res.body.result.email);
+        done();
+      });
     });
 
     describe("when apiKey is provided", function() {
@@ -97,21 +109,28 @@ describe("hidden fields", function () {
         api
         .get('/persons?apiKey=secret')
         .expect(200)
-        .expect({
-          result: [
-            person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' }),
-            person({ id: 'joe-bloggs', name: 'Joe Bloggs', email: 'jbloggs@example.org' })
-          ]
-        }, done);
+        .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          res.body.result.forEach(function(result) {
+            assert(result.email);
+          });
+          done();
+        });
       });
 
       it("shows all fields on individual documents", function(done) {
         api
         .get('/persons/fred-bloggs?apiKey=secret')
         .expect(200)
-        .expect({
-          result: person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' })
-        }, done);
+        .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          assert(res.body.result.email);
+          done();
+        });
       });
 
     });
@@ -139,19 +158,28 @@ describe("hidden fields", function () {
         request
         .get("/api/persons/joe-bloggs")
         .expect(200)
-        .expect({ result: person({ id: 'joe-bloggs', name: 'Joe Bloggs' }) }, done);
+        .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          assert(!res.body.result.email);
+          done();
+        });
       });
 
       it("doesn't return the hidden field on /:collection", function(done) {
         request
         .get('/api/persons')
         .expect(200)
-        .expect({
-          result: [
-            person({ id: 'fred-bloggs', name: 'Fred Bloggs'}),
-            person({ id: 'joe-bloggs', name: 'Joe Bloggs'})
-          ]
-        }, done);
+        .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          res.body.result.forEach(function(result) {
+            assert(!result.email);
+          });
+          done();
+        });
       });
 
     });
@@ -180,26 +208,40 @@ describe("hidden fields", function () {
         request
         .get("/api/persons/joe-bloggs")
         .expect(200)
-        .expect({ result: person({ id: 'joe-bloggs', name: 'Joe Bloggs' }) }, done);
+        .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          assert(!res.body.result.email);
+          done();
+        });
       });
 
       it("includes the hidden field for other documents", function(done) {
         request
         .get("/api/persons/fred-bloggs")
         .expect(200)
-        .expect({ result: person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org' }) }, done);
+        .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          assert(res.body.result.email);
+          done();
+        });
       });
 
       it("doesn't include fields on hidden documents for /:collection", function(done) {
         request
         .get('/api/persons')
         .expect(200)
-        .expect({
-          result: [
-            person({ id: 'fred-bloggs', name: 'Fred Bloggs', email: 'fbloggs@example.org'}),
-            person({ id: 'joe-bloggs', name: 'Joe Bloggs'})
-          ]
-        }, done);
+        .end(function(err, res) {
+          if (err) {
+            return done(err);
+          }
+          assert(res.body.result[0].email);
+          assert(!res.body.result[1].email);
+          done();
+        });
       });
 
     });
