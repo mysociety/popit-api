@@ -8,6 +8,8 @@ var elasticsearch = require('./mongoose/elasticsearch');
 var jsonTransform = require('./mongoose/json-transform');
 var collections = require('./collections');
 
+mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
+
 /**
  * Generate mongoose models from the collections module.
  *
