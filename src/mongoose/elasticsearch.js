@@ -61,13 +61,16 @@ function elasticsearchPlugin(schema) {
   /**
    * Add a search method to models that use this plugin.
    *
-   * This takes params that are passed through to elasticsearch directly,
-   * if no index is given then it defaults to the models indexName method.
+   * @param {Object} params An object containing search params
+   * @param {String} params.q The elasticsearch query to perform
+   * @param {Function} cb Function to call when search is complete
    */
   schema.statics.search = function(params, cb) {
-    params.index = params.index || this.indexName();
-    params.type = params.type || this.typeName();
-    client.search(params, cb);
+    client.search({
+      index: this.indexName(),
+      type: this.typeName(),
+      q: params.q
+    }, cb);
   };
 
   /**
