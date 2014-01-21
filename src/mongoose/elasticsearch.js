@@ -63,14 +63,30 @@ function elasticsearchPlugin(schema) {
    *
    * @param {Object} params An object containing search params
    * @param {String} params.q The elasticsearch query to perform
+   * @param {String} params.page Page of results to return
+   * @param {String} params.per_page Number of results per page
    * @param {Function} cb Function to call when search is complete
    */
   schema.statics.search = function(params, cb) {
+    var page = parseInt(params.page, 10) || 1;
+    var perPage = parseInt(params.per_page, 10) || 30;
+
+    if (page < 1 || page > 1000) {
+      page = 1;
+    }
+
+    if (perPage < 1 || perPage > 100) {
+      perPage = 30;
+    }
+
     client.search({
       index: this.indexName(),
       type: this.typeName(),
-      q: params.q
+      q: params.q,
+      from: (page - 1) * perPage,
+      size: perPage
     }, cb);
+
   };
 
   /**

@@ -419,9 +419,12 @@ describe("REST", function () {
     it("returns names when searching", function(done) {
       request.get('/api/search/persons?q=Barnaby')
       .expect(200)
-      .expect({result: [
-        person({id: 'bby', name: 'Barnaby', email: 'barnaby@example.org'})
-      ]}, done);
+      .expect({
+        total: 1,
+        result: [
+          person({id: 'bby', name: 'Barnaby', email: 'barnaby@example.org'})
+        ]
+      }, done);
     });
   });
 

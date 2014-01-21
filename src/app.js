@@ -78,7 +78,7 @@ module.exports = function (options) {
         return doc._source;
       });
 
-      res.jsonp({ result: docs });
+      res.jsonp({ total: result.hits.total, result: docs });
     });
   });
 
