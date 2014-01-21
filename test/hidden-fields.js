@@ -7,7 +7,15 @@ var request = require('supertest')(serverApp);
 var person = require('./util').person;
 var mongoose = require('mongoose');
 
-var connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
+var connection;
+
+before(function() {
+  connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
+});
+
+after(function(done) {
+  connection.close(done);
+});
 
 function showsAllFieldsForAuthenticatedRequests() {
   var apiKey = 'secret';
