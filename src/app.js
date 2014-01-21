@@ -7,11 +7,17 @@ var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
 var validateBody = require('./middleware/validate-body');
+var reIndex = require('./reindex');
 
 // Make sure models are defined (they are accessed through req.collection).
 require('./models');
 
-module.exports = function (options) {
+module.exports = popitApiApp;
+
+// Expose the reIndex function so popit UI can use it.
+popitApiApp.reIndex = reIndex;
+
+function popitApiApp(options) {
   options.storageSelector = options.storageSelector || 'fixedName';
 
   var app = express();
@@ -69,16 +75,16 @@ module.exports = function (options) {
   app.param('collection', hiddenFields);
 
   app.get('/search/:collection', function(req, res, next) {
-    var query = req.param('q');
-    if (!query) {
-      return res.send(400, {error: ["Please provide a 'query' parameter"]});
-    }
-    req.collection.search(query, function(err, docs) {
+    req.collection.search(req.query, function(err, result) {
       if (err) {
         return next(err);
       }
 
-      res.jsonp({ result: docs });
+      var docs = result.hits.hits.map(function(doc) {
+        return doc._source;
+      });
+
+      res.jsonp({ total: result.hits.total, result: docs });
     });
   });
 
@@ -94,7 +100,7 @@ module.exports = function (options) {
   app.get('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
 
-    req.collection.findOne({_id: id}, function (err, doc) {
+    req.collection.findById(id, function (err, doc) {
       if (err) {
         return next(err);
       }
@@ -114,11 +120,19 @@ module.exports = function (options) {
   app.del('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
 
-    req.collection.remove({_id: id}, function (err) {
+    req.collection.findById(id, function (err, doc) {
       if (err) {
         return next(err);
       }
-      res.send(204);
+      if (!doc) {
+        return res.send(204);
+      }
+      doc.remove(function(err) {
+        if (err) {
+          return next(err);
+        }
+        res.send(204);
+      });
     });
   });
 
@@ -147,14 +161,21 @@ module.exports = function (options) {
 
     }
 
-    // Upsert won't work with an _id attribute in the body.
-    delete body._id;
-
-    req.collection.findByIdAndUpdate(id, body, {upsert: true}, function (err, doc) {
+    req.collection.findById(id, function (err, doc) {
       if (err) {
         return next(err);
       }
-      res.jsonp({ result: doc });
+      if (!doc) {
+        doc = new req.collection();
+      }
+      delete body.__v;
+      doc.set(body);
+      doc.save(function(err) {
+        if (err) {
+          return next(err);
+        }
+        res.jsonp({ result: doc });
+      });
     });
 
   });
@@ -168,4 +189,4 @@ module.exports = function (options) {
   });
 
   return app;
-};
+}

@@ -25,9 +25,15 @@ We ([mySociety](http://www.mysociety.org/)) are using this project to help
 develop the standard in the light of requirements from our own projects. The
 eventual aim is to be Popolo compliant.
 
-## Installation
+## Prerequisites
 
-- Install [MongoDB](http://www.mongodb.org/) using your package manager
+Install these dependencies using your package manager:
+
+- [MongoDB](http://docs.mongodb.org/manual/installation/)
+- [Elasticsearch](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/setup.html#setup-installation)
+
+
+## Installation
 
 ``` bash
 npm install popit-api

@@ -7,7 +7,12 @@ var request       = require("supertest"),
     defaults      = require("./defaults"),
     packageJSON   = require("../package"),
     serverApp     = require("../test-server-app"),
-    person        = require('./util').person;
+    person        = require('./util').person,
+    mongoose      = require('mongoose'),
+    dropElasticsearchIndex = require('./util').dropElasticsearchIndex,
+    refreshElasticsearchIndex = require('./util').refreshElasticsearchIndex;
+
+require('../src/models');
 
 request = request(serverApp);
 
@@ -387,23 +392,39 @@ describe("REST", function () {
   });
 
   describe("GET /search/:collection", function() {
-    beforeEach(function(done) {
-      request.post('/api/persons')
-      .send({id: 'foo', name: 'Test', email: 'test@example.org'})
-      .expect(200, done);
+
+    before(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
+
+    before(function(done) {
+      mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+      mongoose.model('Person').create({
+        _id: 'bby',
+        id: 'bby',
+        name: 'Barnaby',
+        email: 'barnaby@example.org'
+      }, function(err, doc) {
+        if (err) {
+          return done(err);
+        }
+        doc.on('es-indexed', done);
+      });
     });
 
-    it("returns a 400 when there is no q param", function(done) {
-      request.get('/api/search/persons')
-      .expect(400, done);
+    after(function(done) {
+      mongoose.connection.close(done);
     });
+
+    before(refreshElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
     it("returns names when searching", function(done) {
-      request.get('/api/search/persons?q=test')
+      request.get('/api/search/persons?q=Barnaby')
       .expect(200)
-      .expect({result: [
-        person({id: 'foo', name: 'Test', email: 'test@example.org'})
-      ]}, done);
+      .expect({
+        total: 1,
+        result: [
+          person({id: 'bby', name: 'Barnaby', email: 'barnaby@example.org'})
+        ]
+      }, done);
     });
   });
 

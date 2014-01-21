@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 var mongooseJsonSchema = require('./mongoose/json-schema');
 var deduplicateSlug = require('./mongoose/deduplicate-slug');
 var search = require('./mongoose/search');
+var elasticsearch = require('./mongoose/elasticsearch');
 var collections = require('./collections');
 var filter = require('./filter');
 
@@ -12,10 +13,8 @@ var filter = require('./filter');
  *
  * - options.fieldSpec The fields to show/hide
  */
-function toJSON(doc, ret, options) {
-  if (options.fields) {
-    return filter(ret, options.fields);
-  }
+function filterFields(doc, ret, options) {
+  return filter(ret, options.fields);
 }
 
 /**
@@ -31,11 +30,12 @@ for (var key in collections) {
     var spec = collections[key];
     var Schema = new mongoose.Schema({_id: String}, {collection: key, strict: false});
 
-    Schema.set('toJSON', {transform: toJSON});
+    Schema.set('toJSON', {transform: filterFields});
 
     Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
     Schema.plugin(deduplicateSlug);
     Schema.plugin(search);
+    Schema.plugin(elasticsearch);
 
     mongoose.model(spec.model, Schema);
   }
