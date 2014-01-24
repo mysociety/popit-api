@@ -7,6 +7,7 @@ var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
 var validateBody = require('./middleware/validate-body');
+var apiLinks = require('./middleware/api-links');
 var reIndex = require('./reindex');
 
 // Make sure models are defined (they are accessed through req.collection).
@@ -73,6 +74,8 @@ function popitApiApp(options) {
    * Handle hidden fields on collections.
    */
   app.param('collection', hiddenFields);
+  app.param('collection', apiLinks(options));
+
 
   app.get('/search/:collection', function(req, res, next) {
     req.collection.search(req.query, function(err, result) {
