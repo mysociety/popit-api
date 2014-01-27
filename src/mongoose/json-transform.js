@@ -14,7 +14,7 @@ function jsonTransformPlugin(schema) {
  * - options.fieldSpec The fields to show/hide
  */
 function filterFields(doc, ret, options) {
-  ret = filter(ret, options.fields);
+  ret = filter(doc, ret, options);
   ret = addLinks(doc, ret, options);
   return ret;
 }
