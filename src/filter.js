@@ -8,12 +8,12 @@ module.exports = filter;
  * removing any fields that start with an underscore, which are considered
  * internal.
  */
-function filter(doc, fields) {
+function filter(doc, ret, options) {
   if (!doc) {
     return;
   }
 
-  fields = fields || {};
+  var fields = options.fields || {};
 
   var newDoc = {};
 
@@ -21,10 +21,10 @@ function filter(doc, fields) {
     newDoc.id = doc._id;
   }
 
-  for (var field in doc) {
+  for (var field in ret) {
     // Skip any fields that have been hidden on this doc.
-    if (fields[doc._id]) {
-      var value = fields[doc._id][field];
+    if (fields[ret._id]) {
+      var value = fields[ret._id][field];
       if (value === false) {
         continue;
       }
@@ -41,7 +41,7 @@ function filter(doc, fields) {
     }
 
     // If we've made it this far then copy the field to the new doc.
-    newDoc[field] = doc[field];
+    newDoc[field] = ret[field];
   }
   return newDoc;
 }

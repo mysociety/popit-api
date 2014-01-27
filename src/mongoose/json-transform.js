@@ -14,5 +14,27 @@ function jsonTransformPlugin(schema) {
  * - options.fieldSpec The fields to show/hide
  */
 function filterFields(doc, ret, options) {
-  return filter(ret, options.fields);
+  ret = filter(doc, ret, options);
+  ret = addLinks(doc, ret, options);
+  return ret;
+}
+
+function addLinks(doc, ret, options) {
+  if (doc.constructor.collection) {
+    if (options.apiBaseUrl) {
+      ret.url = [
+        options.apiBaseUrl,
+        doc.constructor.collection.name.toLowerCase(),
+        doc.id
+      ].join('/');
+    }
+    if (options.baseUrl) {
+      ret.html_url = [
+        options.baseUrl,
+        doc.constructor.collection.name.toLowerCase(),
+        doc.slug
+      ].join('/');
+    }
+  }
+  return ret;
 }
