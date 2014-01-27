@@ -84,7 +84,7 @@ function popitApiApp(options) {
       }
 
       var docs = result.hits.hits.map(function(doc) {
-        return doc._source;
+        return new req.collection(doc._source);
       });
 
       res.jsonp({ total: result.hits.total, result: docs });
