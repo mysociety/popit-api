@@ -10,6 +10,7 @@
  */
 
 var elasticsearch = require('elasticsearch');
+var filter = require('../filter');
 
 module.exports = elasticsearchPlugin;
 
@@ -20,14 +21,20 @@ function elasticsearchPlugin(schema) {
   /**
    * Convert the document into a format suitable for indexing in
    * Elasticsearch. This uses the toJSON transform option to remove
-   * the memberships field.
+   * fields we don't want to index.
    *
    * TODO: Make this more generalised rather than hard-coding memberships
    */
   schema.methods.toElasticsearch = function toElasticsearch() {
     return this.toJSON({
-      transform: true,
-      fields: {all: ['memberships']}
+      transform: filter,
+      fields: {
+        all: {
+          memberships: false,
+          url: false,
+          html_url: false
+        }
+      }
     });
   };
 
