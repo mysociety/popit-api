@@ -1,0 +1,72 @@
+#!/usr/bin/env node
+"use strict";
+
+/**
+ * The migration tool in popit creates records with and ObjectId _id field,
+ * but popit-api (this repo) is expecting them to be strings. This converts
+ * existing documents to have a string _id field. It does this by looping
+ * though all the records, copying existing documents into new documents
+ * with string _ids and then removing the original document.
+ */
+
+var mongoose = require('mongoose');
+var async = require('async');
+var log = require('util').log;
+require('../src/models');
+
+var databaseName = process.argv[2];
+var modelName = process.argv[3];
+
+if (!databaseName || !modelName) {
+  console.error("Usage:", process.argv[1], "<database-name> <modelName>");
+  process.exit(1);
+}
+
+mongoose.connect('mongodb://localhost/' + databaseName);
+
+var Model = mongoose.model(modelName);
+
+Model.collection.find(function(err, docs) {
+  if (err) {
+    throw err;
+  }
+  docs.toArray(function(err, docs) {
+    if (err) {
+      throw err;
+    }
+    async.eachSeries(docs, changeDocId, onComplete);
+  });
+});
+
+function changeDocId(doc, next) {
+  log("Converting " + modelName + ' ' + doc._id);
+  if ('string' === typeof doc._id) {
+    return next();
+  }
+  var originalId = doc._id;
+  doc._id = '' + doc._id;
+
+  Model.collection.insert(doc, onInsert);
+
+  function onInsert(err) {
+    if (err) {
+      return next(err);
+    }
+    Model.collection.remove({_id: originalId}, onRemove);
+  }
+
+  function onRemove(err) {
+    if (err) {
+      return next(err);
+    }
+    next();
+  }
+}
+
+function onComplete(err) {
+  if (err) {
+    throw err;
+  }
+  log("Finished");
+  process.exit();
+}
