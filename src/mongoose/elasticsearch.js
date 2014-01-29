@@ -18,6 +18,20 @@ var client = elasticsearchPlugin.client = new elasticsearch.Client();
 function elasticsearchPlugin(schema) {
 
   /**
+   * Convert the document into a format suitable for indexing in
+   * Elasticsearch. This uses the toJSON transform option to remove
+   * the memberships field.
+   *
+   * TODO: Make this more generalised rather than hard-coding memberships
+   */
+  schema.methods.toElasticsearch = function toElasticsearch() {
+    return this.toJSON({
+      transform: true,
+      fields: {all: ['memberships']}
+    });
+  };
+
+  /**
    * After the document has been saved, index it in elasticsearch.
    */
   schema.post('save', function(doc) {
@@ -25,7 +39,7 @@ function elasticsearchPlugin(schema) {
       index: doc.constructor.indexName(),
       type: doc.constructor.typeName(),
       id: doc.id,
-      body: doc.toJSON()
+      body: doc.toElasticsearch()
     }, function(err) {
       doc.emit('es-indexed', err);
     });
@@ -113,7 +127,7 @@ function elasticsearchPlugin(schema) {
           }
         });
 
-        body.push(doc.toJSON());
+        body.push(doc.toElasticsearch());
         indexed++;
       });
 

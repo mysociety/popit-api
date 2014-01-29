@@ -5,17 +5,10 @@ var mongooseJsonSchema = require('./mongoose/json-schema');
 var deduplicateSlug = require('./mongoose/deduplicate-slug');
 var search = require('./mongoose/search');
 var elasticsearch = require('./mongoose/elasticsearch');
+var jsonTransform = require('./mongoose/json-transform');
 var collections = require('./collections');
-var filter = require('./filter');
 
-/**
- * Transform a document to a json doc.
- *
- * - options.fieldSpec The fields to show/hide
- */
-function filterFields(doc, ret, options) {
-  return filter(ret, options.fields);
-}
+mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
 
 /**
  * Generate mongoose models from the collections module.
@@ -27,18 +20,27 @@ function filterFields(doc, ret, options) {
  */
 for (var key in collections) {
   if (collections.hasOwnProperty(key)) {
-    var spec = collections[key];
-    var Schema = new mongoose.Schema({_id: String}, {collection: key, strict: false});
-
-    Schema.set('toJSON', {transform: filterFields});
-
-    Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
-    Schema.plugin(deduplicateSlug);
-    Schema.plugin(search);
-    Schema.plugin(elasticsearch);
-
-    mongoose.model(spec.model, Schema);
+    createPopoloModel(collections[key]);
   }
+}
+
+function createPopoloModel(spec) {
+  var Schema = new mongoose.Schema({_id: String}, {collection: key, strict: false});
+
+  Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
+  Schema.plugin(jsonTransform);
+  Schema.plugin(deduplicateSlug);
+  Schema.plugin(search);
+  Schema.plugin(elasticsearch);
+
+  // Collection specific plugins
+  if (spec.plugins) {
+    spec.plugins.forEach(function(plugin) {
+      Schema.plugin.apply(Schema, plugin);
+    });
+  }
+
+  mongoose.model(spec.model, Schema);
 }
 
 /**
