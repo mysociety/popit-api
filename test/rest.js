@@ -70,56 +70,32 @@ describe("REST", function () {
           request
             .get("/api/persons")
             .expect(200)
-            .expect({
-              result: [{
-                id: 'fred-bloggs',
-                name: 'Fred Bloggs',
-                email: 'fbloggs@example.org',
-                memberships: [],
-                links: [],
-                contact_details: [],
-                identifiers: [],
-                other_names: []
-              },
-              {
-                id: 'joe-bloggs',
-                name: 'Joe Bloggs',
-                email: 'jbloggs@example.org',
-                memberships: [],
-                links: [],
-                contact_details: [],
-                identifiers: [],
-                other_names: []
-              }]
-            })
-            .end(done);
+            .end(function(err, res) {
+              if (err) {
+                return done(err);
+              }
+              assert.equal('fred-bloggs', res.body.result[0].id);
+              assert.equal('Fred Bloggs', res.body.result[0].name);
+              assert.equal('joe-bloggs', res.body.result[1].id);
+              assert.equal('Joe Bloggs', res.body.result[1].name);
+              done();
+            });
         });
 
         it('organizations', function(done) {
           request
             .get("/api/organizations")
             .expect(200)
-            .expect({
-              result: [
-                { id: 'parliament', name: 'Houses of Parliament',
-                  posts: [],
-                  memberships: [],
-                  links: [],
-                  contact_details: [],
-                  identifiers: [],
-                  other_names: []
-                },
-                { id: 'commons', name: 'House of Commons', parent_id: "parliament",
-                  posts: [],
-                  memberships: [],
-                  links: [],
-                  contact_details: [],
-                  identifiers: [],
-                  other_names: []
-                },
-              ],
-            })
-            .end(done);
+            .end(function(err, res) {
+              if (err) {
+                return done(err);
+              }
+              assert.equal('parliament', res.body.result[0].id);
+              assert.equal('Houses of Parliament', res.body.result[0].name);
+              assert.equal('commons', res.body.result[1].id);
+              assert.equal('House of Commons', res.body.result[1].name);
+              done();
+            });
         });
 
         it('memberships', function(done) {
@@ -141,15 +117,16 @@ describe("REST", function () {
           request
             .get("/api/posts")
             .expect(200)
-            .expect({
-              result: [
-                { id: 'annapolis', organization_id: 'commons', label: 'MP for Annapolis', role: 'Member of Parliament',
-                  area: { name: 'Annapolis', id: 'http://mapit.example.org/area/1' }, memberships: [], links: [], contact_details: [] },
-                { id: 'avalon', organization_id: 'commons', label: 'MP for Avalon', role: 'Member of Parliament',
-                  area: { name: 'Avalon', id: 'http://mapit.example.org/area/2' }, memberships: [], links: [], contact_details: [] },
-              ],
-            })
-            .end(done);
+            .end(function(err, res) {
+              if (err) {
+                return done(err);
+              }
+
+              assert.equal(2, res.body.result.length);
+              assert.equal(2, res.body.result[1].memberships.length);
+
+              done();
+            });
         });
       });
 
@@ -165,9 +142,8 @@ describe("REST", function () {
               .send({ name: "Joe Bloggs" })
               .expect(200)
               .end(function (err, res) {
-                var id = res.body.result.id;
-                assert(id);
-                assert.deepEqual(res.body.result, person({ id: id, name: "Joe Bloggs"}));
+                assert(res.body.result.id);
+                assert(res.body.result.name);
                 callback(err, res.body.result.id);
               });
           },
@@ -175,8 +151,11 @@ describe("REST", function () {
             request
               .get("/api/persons/" + id)
               .expect(200)
-              .expect({ result: person({ id: id, name: "Joe Bloggs" })})
-              .end(callback);
+              .end(function (err, res) {
+                assert(res.body.result.id);
+                assert(res.body.result.name);
+                callback(err);
+              });
           },
         ], done);
       });
@@ -269,15 +248,7 @@ describe("REST", function () {
       it("should 200 when doc exists", function (done) {
         request
           .get("/api/persons/fred-bloggs")
-          .expect(200)
-          .expect({
-            result: person({
-              id: 'fred-bloggs',
-              name: 'Fred Bloggs',
-              email: 'fbloggs@example.org',
-            })
-          })
-          .end(done);
+          .expect(200, done);
       });
 
       it("should 404 when doc does not exist", function (done) {
