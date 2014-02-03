@@ -30,6 +30,8 @@ function reIndex(databaseName, callback) {
     var total = counts.reduce(function(previous, current) {
       return previous + current;
     });
-    callback(null, total);
+    connection.close(function(err) {
+      callback(err, total);
+    });
   });
 }
