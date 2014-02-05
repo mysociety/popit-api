@@ -9,6 +9,7 @@ var hiddenFields = require('./middleware/hidden-fields');
 var validateBody = require('./middleware/validate-body');
 var apiLinks = require('./middleware/api-links');
 var reIndex = require('./reindex');
+var paginate = require('./paginate');
 
 // Make sure models are defined (they are accessed through req.collection).
 require('./models');
@@ -92,7 +93,7 @@ function popitApiApp(options) {
   });
 
   app.get('/:collection', function (req, res, next) {
-    req.collection.find(function (err, docs) {
+    req.collection.find({}, null, paginate(req.query), function (err, docs) {
       if (err) {
         return next(err);
       }
