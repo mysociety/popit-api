@@ -28,7 +28,7 @@ function addLinks(doc, ret, options) {
         doc.id
       ].join('/');
     }
-    if (options.baseUrl) {
+    if (options.baseUrl && doc.slug) {
       ret.html_url = [
         options.baseUrl,
         doc.constructor.collection.name.toLowerCase(),
