@@ -9,6 +9,7 @@ var dropElasticsearchIndex = require('./util').dropElasticsearchIndex;
 require('../src/models');
 
 describe("Search", function() {
+  this.timeout(5000);
   var Person;
 
   before(function() {

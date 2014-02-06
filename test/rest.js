@@ -364,6 +364,7 @@ describe("REST", function () {
   });
 
   describe("GET /search/:collection", function() {
+    this.timeout(5000);
 
     before(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
