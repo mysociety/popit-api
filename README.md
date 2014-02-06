@@ -146,6 +146,15 @@ var apiApp = popitApi({
 });
 ```
 
+If you want to include `url` properties in the API output then you'll need to configure the API with an `apiBaseUrl` to use.
+
+```javascript
+var apiApp = popitApi({
+  databaseName: 'name-of-mongodb-to-use',
+  apiBaseUrl: 'http://example.org/api'
+});
+```
+
 Expect the configuration to change significantly as we work out what we actually
 need.
 
