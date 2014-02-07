@@ -1,6 +1,6 @@
 "use strict";
 
-var request       = require("supertest"),
+var supertest     = require("supertest"),
     async         = require('async'),
     assert        = require('assert'),
     fixture       = require("./fixture"),
@@ -10,11 +10,12 @@ var request       = require("supertest"),
     person        = require('./util').person,
     mongoose      = require('mongoose'),
     dropElasticsearchIndex = require('./util').dropElasticsearchIndex,
-    refreshElasticsearchIndex = require('./util').refreshElasticsearchIndex;
+    refreshElasticsearchIndex = require('./util').refreshElasticsearchIndex,
+    apiApp = require('..');
 
 require('../src/models');
 
-request = request(serverApp);
+var request = supertest(serverApp);
 
 describe("REST", function () {
 
@@ -363,6 +364,7 @@ describe("REST", function () {
   });
 
   describe("GET /search/:collection", function() {
+    this.timeout(5000);
 
     before(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
@@ -420,6 +422,75 @@ describe("REST", function () {
         .expect(200, done);
       });
     });
+  });
+
+  describe("api links", function() {
+    beforeEach(fixture.loadFixtures);
+
+    describe("without correct configuration", function() {
+      it("doesn't include links", function(done) {
+        request.get('/api/persons/joe-bloggs')
+        .expect(200)
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert(!res.body.result.url);
+          assert(!res.body.result.html_url);
+          done();
+        });
+      });
+    });
+
+    describe("with correct configuration", function() {
+      var app;
+
+      beforeEach(function() {
+        app = supertest(apiApp({
+          databaseName: defaults.databaseName,
+          apiBaseUrl: 'http://example.com/api',
+          baseUrl: 'http://example.com'
+        }));
+      });
+
+      it("includes 'url' links when configured correctly", function(done) {
+        app.get('/persons/joe-bloggs')
+        .expect(200)
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.url, 'http://example.com/api/persons/joe-bloggs');
+          done();
+        });
+      });
+
+      describe("html_url", function() {
+        beforeEach(function(done) {
+          app.post('/persons')
+          .send({id: 'test', name: 'Test', slug: 'test-person'})
+          .expect(200)
+          .end(done);
+        });
+
+        it("doesn't include 'html_url' when doc has no slug", function(done) {
+          app.get('/persons/joe-bloggs')
+          .expect(200)
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert(!res.body.result.html_url);
+            done();
+          });
+        });
+
+        it("is included for documents with a slug", function(done) {
+          app.get('/persons/test')
+          .expect(200)
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.html_url, 'http://example.com/persons/test-person');
+            done();
+          });
+        });
+      });
+    });
+
   });
 
 });
