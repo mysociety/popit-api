@@ -25,7 +25,7 @@ function addLinks(doc, ret, options) {
       ret.url = [
         options.apiBaseUrl,
         doc.constructor.collection.name.toLowerCase(),
-        doc.id
+        doc._id
       ].join('/');
     }
     if (options.baseUrl && doc.slug) {
