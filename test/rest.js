@@ -399,6 +399,26 @@ describe("REST", function () {
         ]
       }, done);
     });
+
+    describe("'url' property", function() {
+      var apiRequest;
+      before(function() {
+        apiRequest = supertest(apiApp({
+          databaseName: defaults.databaseName,
+          apiBaseUrl: 'http://example.org'
+        }));
+      });
+
+      it("is formatted correctly", function(done) {
+        apiRequest.get('/search/persons?q=Barnaby')
+        .expect(200)
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result[0].url, 'http://example.org/persons/bby');
+          done();
+        });
+      });
+    });
   });
 
   describe("deduplicating slugs", function() {
