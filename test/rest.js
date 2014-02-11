@@ -509,6 +509,18 @@ describe("REST", function () {
           });
         });
       });
+
+      describe("embedded documents 'url' property", function() {
+        it("is correct", function(done) {
+          app.get('/persons/fred-bloggs')
+          .expect(200)
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.memberships[0].url, 'http://example.com/api/memberships/oldMP');
+            done();
+          });
+        });
+      });
     });
 
   });
