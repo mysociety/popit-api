@@ -399,6 +399,26 @@ describe("REST", function () {
         ]
       }, done);
     });
+
+    describe("'url' property", function() {
+      var apiRequest;
+      before(function() {
+        apiRequest = supertest(apiApp({
+          databaseName: defaults.databaseName,
+          apiBaseUrl: 'http://example.org'
+        }));
+      });
+
+      it("is formatted correctly", function(done) {
+        apiRequest.get('/search/persons?q=Barnaby')
+        .expect(200)
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result[0].url, 'http://example.org/persons/bby');
+          done();
+        });
+      });
+    });
   });
 
   describe("deduplicating slugs", function() {
@@ -485,6 +505,18 @@ describe("REST", function () {
           .end(function(err, res) {
             assert.ifError(err);
             assert.equal(res.body.result.html_url, 'http://example.com/persons/test-person');
+            done();
+          });
+        });
+      });
+
+      describe("embedded documents 'url' property", function() {
+        it("is correct", function(done) {
+          app.get('/persons/fred-bloggs')
+          .expect(200)
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.memberships[0].url, 'http://example.com/api/memberships/oldMP');
             done();
           });
         });
