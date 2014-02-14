@@ -108,16 +108,11 @@ function popitApiApp(options) {
       if (err) {
         return next(err);
       }
-
-      if (doc) {
-        res.jsonp({ result: doc });
-      } else {
-        res
-          .status(404)
-          .jsonp({
-            errors: ["id '" + id + "' not found"]
-          });
+      if (!doc) {
+        return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
+
+      res.jsonp({ result: doc });
     });
   });
 
