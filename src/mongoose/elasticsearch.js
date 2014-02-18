@@ -11,6 +11,7 @@
 
 var elasticsearch = require('elasticsearch');
 var filter = require('../filter');
+var paginate = require('../paginate');
 
 module.exports = elasticsearchPlugin;
 
@@ -89,23 +90,14 @@ function elasticsearchPlugin(schema) {
    * @param {Function} cb Function to call when search is complete
    */
   schema.statics.search = function(params, cb) {
-    var page = parseInt(params.page, 10) || 1;
-    var perPage = parseInt(params.per_page, 10) || 30;
-
-    if (page < 1 || page > 1000) {
-      page = 1;
-    }
-
-    if (perPage < 1 || perPage > 100) {
-      perPage = 30;
-    }
+    var skipLimit = paginate(params);
 
     client.search({
       index: this.indexName(),
       type: this.typeName(),
       q: params.q,
-      from: (page - 1) * perPage,
-      size: perPage
+      from: skipLimit.skip,
+      size: skipLimit.limit
     }, cb);
 
   };

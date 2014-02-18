@@ -21,6 +21,14 @@ describe("REST", function () {
 
   beforeEach(fixture.clearDatabase);
 
+  before(function() {
+    mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+  });
+
+  after(function(done) {
+    mongoose.connection.close(done);
+  });
+
   describe("malformed requests", function () {
     describe("Content-Type of 'json' but no body", function () {
       it("should not 400", function (done) {
@@ -366,10 +374,9 @@ describe("REST", function () {
   describe("GET /search/:collection", function() {
     this.timeout(5000);
 
-    before(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
+    beforeEach(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
-    before(function(done) {
-      mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+    beforeEach(function(done) {
       mongoose.model('Person').create({
         _id: 'bby',
         id: 'bby',
@@ -383,11 +390,7 @@ describe("REST", function () {
       });
     });
 
-    after(function(done) {
-      mongoose.connection.close(done);
-    });
-
-    before(refreshElasticsearchIndex(defaults.databaseName.toLowerCase()));
+    beforeEach(refreshElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
     it("returns names when searching", function(done) {
       request.get('/api/search/persons?q=Barnaby')
@@ -522,7 +525,64 @@ describe("REST", function () {
         });
       });
     });
+  });
 
+  describe("pagination", function() {
+
+    beforeEach(function(done) {
+      var Person = mongoose.model('Person');
+      async.times(40, function(n, next) {
+        Person.create({_id: n, name: "Person " + n}, next);
+      }, done);
+    });
+
+    it("defaults to 30 results", function(done) {
+      request.get('/api/persons')
+      .expect(200)
+      .end(function(err, res) {
+        if (err) {
+          return done(err);
+        }
+        assert.equal(res.body.result.length, 30);
+        done();
+      });
+    });
+
+    it("allows specifying a 'per_page' parameter", function(done) {
+      request.get('/api/persons?per_page=10')
+      .expect(200)
+      .end(function(err, res) {
+        if (err) {
+          return done(err);
+        }
+        assert.equal(res.body.result.length, 10);
+        done();
+      });
+    });
+
+    it("allows specifying a 'page' parameter", function(done) {
+      request.get('/api/persons?page=2')
+      .expect(200)
+      .end(function(err, res) {
+        if (err) {
+          return done(err);
+        }
+        assert.equal(res.body.result.length, 10);
+        done();
+      });
+    });
+
+    it("allows specifying both pagination parameters", function(done) {
+      request.get('/api/persons?per_page=39&page=2')
+      .expect(200)
+      .end(function(err, res) {
+        if (err) {
+          return done(err);
+        }
+        assert.equal(res.body.result.length, 1);
+        done();
+      });
+    });
   });
 
 });
