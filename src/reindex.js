@@ -30,7 +30,8 @@ function reIndex(databaseName, callback) {
     var total = counts.reduce(function(previous, current) {
       return previous + current;
     });
-    console.log("Re-indexed " + total + " docs from " + databaseName);
-    callback();
+    connection.close(function(err) {
+      callback(err, total);
+    });
   });
 }
