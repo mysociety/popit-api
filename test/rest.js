@@ -434,29 +434,6 @@ describe("REST", function () {
     });
   });
 
-  describe("deduplicating slugs", function() {
-    beforeEach(function(done) {
-      request.post('/api/persons')
-      .send({id: 'foo', name: 'Test', slug: 'test'})
-      .expect(200, done);
-    });
-
-    it("appends a number for a duplicate slug", function(done) {
-      request.post('/api/persons')
-      .send({id: 'bar', name: 'Test', slug: 'test'})
-      .expect({result: person({id: 'bar', name: 'Test', slug: 'test-1'})})
-      .expect(200, function(err) {
-        if (err) {
-          return done(err);
-        }
-        request.post('/api/persons')
-        .send({id: 'baz', name: 'Test', slug: 'test'})
-        .expect({result: person({id: 'baz', name: 'Test', slug: 'test-2'})})
-        .expect(200, done);
-      });
-    });
-  });
-
   describe("api links", function() {
     beforeEach(fixture.loadFixtures);
 
