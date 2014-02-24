@@ -31,11 +31,11 @@ function addLinks(doc, ret, options) {
         doc._id || doc.id
       ].join('/');
     }
-    if (options.baseUrl && doc.slug) {
+    if (options.baseUrl && (doc._id || doc.id)) {
       ret.html_url = [
         options.baseUrl,
         doc.constructor.collection.name.toLowerCase(),
-        doc.slug
+        doc._id || doc.id
       ].join('/');
     }
   }
