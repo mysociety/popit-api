@@ -17,6 +17,20 @@
       "description": "The role that the holder of the post fulfills",
       "type": ["string", "null"]
     },
+    "member": {
+      "description": "A reference to the person or organization that is a party to the relationship",
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "required": true
+        },
+        "id": {
+          "type": "string",
+          "required": true
+        }
+      }
+    },
     "person_id": {
       "description": "The ID of the person who is a party to the relationship",
       "type": ["string", "null"]
