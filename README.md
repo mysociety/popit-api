@@ -83,7 +83,7 @@ You can add a person to the database using curl.
 ```bash
 curl \
 -H 'Content-Type: application/json' \
--d '{"id": "david-cameron", "name": "David Cameron", "email": "camerond@example.com"}' \
+-d '{"id": "uk.org.publicwhip/member/40665", "name": "David Cameron", "email": "camerond@example.com"}' \
 http://127.0.0.1:3000/api/persons
 ```
 
@@ -92,7 +92,7 @@ Which should give the following response.
 ```
 {
   "result": {
-    "id": "david-cameron",
+    "id": "uk.org.publicwhip/member/40665",
     "name": "David Cameron",
     "email": "camerond@example.com"
   }
@@ -227,7 +227,7 @@ Or to hide an individual document's fields
 
 ```
 mongo mp-contacts
-> db.hidden.insert({collectionName: 'persons', doc: 'david-cameron', fields: {email: false}})
+> db.hidden.insert({collectionName: 'persons', doc: 'uk.org.publicwhip/member/40665', fields: {email: false}})
 ```
 
 ## REST actions
