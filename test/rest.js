@@ -404,6 +404,9 @@ describe("REST", function () {
       .expect(200)
       .expect({
         total: 1,
+        page: 1,
+        per_page: 30,
+        has_more: false,
         result: [
           person({id: 'bby', name: 'Barnaby', email: 'barnaby@example.org'})
         ]
@@ -609,8 +612,7 @@ describe("REST", function () {
       beforeEach(function() {
         app = supertest(apiApp({
           databaseName: defaults.databaseName,
-          apiBaseUrl: 'http://example.com/api',
-          baseUrl: 'http://example.com'
+          apiBaseUrl: 'http://example.com'
         }));
       });
 
@@ -621,7 +623,7 @@ describe("REST", function () {
           assert.ifError(err);
           assert(res.body.has_more);
           assert(!res.body.prev_url);
-          assert.equal(res.body.next_url, 'http://example.com/api/persons?page=2');
+          assert.equal(res.body.next_url, 'http://example.com/persons?page=2');
           done();
         });
       });
@@ -632,7 +634,7 @@ describe("REST", function () {
         .end(function(err, res) {
           assert.ifError(err);
           assert(!res.body.has_more);
-          assert.equal(res.body.prev_url, 'http://example.com/api/persons?page=1');
+          assert.equal(res.body.prev_url, 'http://example.com/persons?page=1');
           assert(!res.body.next_url);
           done();
         });
@@ -644,7 +646,7 @@ describe("REST", function () {
         .end(function(err, res) {
           assert.ifError(err);
           assert(res.body.has_more);
-          assert.equal(res.body.next_url, 'http://example.com/api/persons?per_page=10&page=2');
+          assert.equal(res.body.next_url, 'http://example.com/persons?per_page=10&page=2');
           assert(!res.body.prev_url);
           done();
         });

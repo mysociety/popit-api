@@ -1,6 +1,5 @@
 "use strict";
 
-var url = require('url');
 var express = require('express');
 var packageJSON = require("../package");
 var collections = require('./collections');
@@ -12,6 +11,7 @@ var apiLinks = require('./middleware/api-links');
 var reIndex = require('./reindex');
 var paginate = require('./paginate');
 var withBody = require('./middleware/with-body');
+var currentUrl = require('./middleware/current-url');
 
 // Make sure models are defined (they are accessed through req.collection).
 require('./models');
@@ -48,6 +48,8 @@ function popitApiApp(options) {
 
   app.use(withBody);
 
+  app.use(currentUrl(options.apiBaseUrl));
+
   app.get('/', function (req, res) {
     res.jsonp({
       info: {
@@ -83,6 +85,7 @@ function popitApiApp(options) {
 
 
   app.get('/search/:collection', function(req, res, next) {
+    var pagination = paginate(req.query);
     req.collection.search(req.query, function(err, result) {
       if (err) {
         return next(err);
@@ -92,7 +95,9 @@ function popitApiApp(options) {
         return new req.collection(doc._source);
       });
 
-      res.jsonp({ total: result.hits.total, result: docs });
+      var body = pagination.metadata(result.hits.total, req.currentUrl);
+      body.result = docs;
+      res.jsonp(body);
     });
   });
 
@@ -102,32 +107,13 @@ function popitApiApp(options) {
       if (err) {
         return next(err);
       }
+
       req.collection.count(function(err, count) {
-        var hasMore = pagination.hasMore(count);
-        var body = {
-          total: count,
-          page: pagination.page,
-          per_page: pagination.limit,
-          has_more: hasMore,
-          result: docs
-        };
-
-        if (options.apiBaseUrl) {
-          var parsedUrl = url.parse(options.apiBaseUrl, true);
-          parsedUrl.pathname = parsedUrl.pathname + '/' + req.param('collection');
-          parsedUrl.query = req.query;
-
-          if (hasMore) {
-            parsedUrl.query.page = (pagination.page + 1);
-            body.next_url = url.format(parsedUrl);
-          }
-
-          if (pagination.page > 1) {
-            parsedUrl.query.page = (pagination.page - 1);
-            body.prev_url = url.format(parsedUrl);
-          }
+        if (err) {
+          return next(err);
         }
-
+        var body = pagination.metadata(count, req.currentUrl);
+        body.result = docs;
         res.jsonp(body);
       });
     });

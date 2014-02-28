@@ -1,5 +1,7 @@
 "use strict";
 
+var url = require('url');
+
 module.exports = paginate;
 
 /**
@@ -26,16 +28,36 @@ function paginate(options) {
   var skip = (page - 1) * perPage;
   var limit = perPage;
 
-  // Takes the total number of docs and returns true if there are more
-  // pages of results.
-  function hasMore(total) {
-    return (skip + limit) < total;
+  function metadata(total, currentUrl) {
+    var hasMore = (skip + limit) < total;
+    var body = {
+      total: total,
+      page: page,
+      per_page: perPage,
+      has_more: hasMore
+    };
+
+    if (currentUrl) {
+      var parsedUrl = url.parse(currentUrl, true);
+      delete parsedUrl.search;
+
+      if (hasMore) {
+        parsedUrl.query.page = (page + 1);
+        body.next_url = url.format(parsedUrl);
+      }
+
+      if (page > 1) {
+        parsedUrl.query.page = (page - 1);
+        body.prev_url = url.format(parsedUrl);
+      }
+    }
+
+    return body;
   }
 
   return {
-    page: page,
+    metadata: metadata,
     skip: skip,
-    limit: limit,
-    hasMore: hasMore
+    limit: limit
   };
 }
