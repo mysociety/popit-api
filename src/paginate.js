@@ -26,9 +26,16 @@ function paginate(options) {
   var skip = (page - 1) * perPage;
   var limit = perPage;
 
+  // Takes the total number of docs and returns true if there are more
+  // pages of results.
+  function hasMore(total) {
+    return (skip + limit) < total;
+  }
+
   return {
     page: page,
     skip: skip,
-    limit: limit
+    limit: limit,
+    hasMore: hasMore
   };
 }

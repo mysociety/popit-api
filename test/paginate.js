@@ -49,4 +49,14 @@ describe("paginate", function() {
       assert.equal(paginate({page: -1}).skip, 0);
     });
   });
+
+  describe("hasMore()", function() {
+    it("returns false if there are no more results pages", function() {
+      assert.equal(paginate({page: 1}).hasMore(30), false);
+      assert.equal(paginate({page: 1}).hasMore(31), true);
+      assert.equal(paginate({page: 1, per_page: 31}).hasMore(31), false);
+      assert.equal(paginate({page: 1}).hasMore(40), true);
+      assert.equal(paginate({page: 2}).hasMore(40), false);
+    });
+  });
 });

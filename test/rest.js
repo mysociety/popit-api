@@ -118,6 +118,7 @@ describe("REST", function () {
               total: 2,
               page: 1,
               per_page: 30,
+              has_more: false,
               result: [
                 { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
                   person_id: 'fred-bloggs', start_date: '2000', end_date: '2004', links: [], contact_details: [] },
@@ -552,6 +553,8 @@ describe("REST", function () {
         assert.equal(res.body.result.length, 30);
         assert.equal(res.body.total, 40);
         assert.equal(res.body.per_page, 30);
+        assert.equal(res.body.page, 1);
+        assert.equal(res.body.has_more, true);
         done();
       });
     });
@@ -566,6 +569,8 @@ describe("REST", function () {
         assert.equal(res.body.result.length, 10);
         assert.equal(res.body.total, 40);
         assert.equal(res.body.per_page, 10);
+        assert.equal(res.body.page, 1);
+        assert.equal(res.body.has_more, true);
         done();
       });
     });
@@ -580,6 +585,8 @@ describe("REST", function () {
         assert.equal(res.body.result.length, 10);
         assert.equal(res.body.total, 40);
         assert.equal(res.body.per_page, 30);
+        assert.equal(res.body.page, 2);
+        assert.equal(res.body.has_more, false);
 
         done();
       });
@@ -594,6 +601,53 @@ describe("REST", function () {
         }
         assert.equal(res.body.result.length, 1);
         done();
+      });
+    });
+
+    describe("next_url/prev_url", function() {
+      var app;
+      beforeEach(function() {
+        app = supertest(apiApp({
+          databaseName: defaults.databaseName,
+          apiBaseUrl: 'http://example.com/api',
+          baseUrl: 'http://example.com'
+        }));
+      });
+
+      it("adds next_url when there are more results", function(done) {
+        app.get('/persons')
+        .expect(200)
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert(res.body.has_more);
+          assert(!res.body.prev_url);
+          assert.equal(res.body.next_url, 'http://example.com/api/persons?page=2');
+          done();
+        });
+      });
+
+      it("adds prev_url when not on the first page", function(done) {
+        app.get('/persons?page=2')
+        .expect(200)
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert(!res.body.has_more);
+          assert.equal(res.body.prev_url, 'http://example.com/api/persons?page=1');
+          assert(!res.body.next_url);
+          done();
+        });
+      });
+
+      it("preserves the rest of the query string", function(done) {
+        app.get('/persons?per_page=10')
+        .expect(200)
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert(res.body.has_more);
+          assert.equal(res.body.next_url, 'http://example.com/api/persons?per_page=10&page=2');
+          assert(!res.body.prev_url);
+          done();
+        });
       });
     });
   });

@@ -1,5 +1,6 @@
 "use strict";
 
+var url = require('url');
 var express = require('express');
 var packageJSON = require("../package");
 var collections = require('./collections');
@@ -96,18 +97,38 @@ function popitApiApp(options) {
   });
 
   app.get('/:collection', function (req, res, next) {
-    var skipLimit = paginate(req.query);
-    req.collection.find({}, null, skipLimit, function (err, docs) {
+    var pagination = paginate(req.query);
+    req.collection.find({}, null, pagination, function (err, docs) {
       if (err) {
         return next(err);
       }
       req.collection.count(function(err, count) {
-        res.jsonp({
+        var hasMore = pagination.hasMore(count);
+        var body = {
           total: count,
-          page: skipLimit.page,
-          per_page: skipLimit.limit,
+          page: pagination.page,
+          per_page: pagination.limit,
+          has_more: hasMore,
           result: docs
-        });
+        };
+
+        if (options.apiBaseUrl) {
+          var parsedUrl = url.parse(options.apiBaseUrl, true);
+          parsedUrl.pathname = parsedUrl.pathname + '/' + req.param('collection');
+          parsedUrl.query = req.query;
+
+          if (hasMore) {
+            parsedUrl.query.page = (pagination.page + 1);
+            body.next_url = url.format(parsedUrl);
+          }
+
+          if (pagination.page > 1) {
+            parsedUrl.query.page = (pagination.page - 1);
+            body.prev_url = url.format(parsedUrl);
+          }
+        }
+
+        res.jsonp(body);
       });
     });
   });
