@@ -67,8 +67,11 @@ describe("REST", function () {
             request
               .get("/api/" + type)
               .expect(200)
-              .expect({result: []})
-              .end(callback);
+              .end(function(err, res) {
+                assert.ifError(err);
+                assert.equal(res.body.result.length, 0);
+                callback();
+              });
           }, done);
       });
 
@@ -112,6 +115,9 @@ describe("REST", function () {
             .get("/api/memberships")
             .expect(200)
             .expect({
+              total: 2,
+              page: 1,
+              per_page: 30,
               result: [
                 { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
                   person_id: 'fred-bloggs', start_date: '2000', end_date: '2004', links: [], contact_details: [] },
@@ -544,6 +550,8 @@ describe("REST", function () {
           return done(err);
         }
         assert.equal(res.body.result.length, 30);
+        assert.equal(res.body.total, 40);
+        assert.equal(res.body.per_page, 30);
         done();
       });
     });
@@ -556,6 +564,8 @@ describe("REST", function () {
           return done(err);
         }
         assert.equal(res.body.result.length, 10);
+        assert.equal(res.body.total, 40);
+        assert.equal(res.body.per_page, 10);
         done();
       });
     });
@@ -568,6 +578,9 @@ describe("REST", function () {
           return done(err);
         }
         assert.equal(res.body.result.length, 10);
+        assert.equal(res.body.total, 40);
+        assert.equal(res.body.per_page, 30);
+
         done();
       });
     });

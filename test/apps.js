@@ -77,9 +77,6 @@ describe("Apps", function () {
           .get('/persons')
           .set('Host', 'cores-por-antartica-chilena-con-mucho-frio.popit.votainteligente.org')
           .expect(200)
-          .expect({
-            result: []
-          })
           .end(done);
       });
     });

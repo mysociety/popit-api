@@ -96,11 +96,19 @@ function popitApiApp(options) {
   });
 
   app.get('/:collection', function (req, res, next) {
-    req.collection.find({}, null, paginate(req.query), function (err, docs) {
+    var skipLimit = paginate(req.query);
+    req.collection.find({}, null, skipLimit, function (err, docs) {
       if (err) {
         return next(err);
       }
-      res.jsonp({ result: docs });
+      req.collection.count(function(err, count) {
+        res.jsonp({
+          total: count,
+          page: skipLimit.page,
+          per_page: skipLimit.limit,
+          result: docs
+        });
+      });
     });
   });
 

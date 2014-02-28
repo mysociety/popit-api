@@ -27,6 +27,7 @@ function paginate(options) {
   var limit = perPage;
 
   return {
+    page: page,
     skip: skip,
     limit: limit
   };
