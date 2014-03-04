@@ -11,6 +11,7 @@ var apiLinks = require('./middleware/api-links');
 var reIndex = require('./reindex');
 var paginate = require('./paginate');
 var withBody = require('./middleware/with-body');
+var currentUrl = require('./middleware/current-url');
 
 // Make sure models are defined (they are accessed through req.collection).
 require('./models');
@@ -47,6 +48,8 @@ function popitApiApp(options) {
 
   app.use(withBody);
 
+  app.use(currentUrl(options.apiBaseUrl));
+
   app.get('/', function (req, res) {
     res.jsonp({
       info: {
@@ -82,6 +85,7 @@ function popitApiApp(options) {
 
 
   app.get('/search/:collection', function(req, res, next) {
+    var pagination = paginate(req.query);
     req.collection.search(req.query, function(err, result) {
       if (err) {
         return next(err);
@@ -91,16 +95,27 @@ function popitApiApp(options) {
         return new req.collection(doc._source);
       });
 
-      res.jsonp({ total: result.hits.total, result: docs });
+      var body = pagination.metadata(result.hits.total, req.currentUrl);
+      body.result = docs;
+      res.jsonp(body);
     });
   });
 
   app.get('/:collection', function (req, res, next) {
-    req.collection.find({}, null, paginate(req.query), function (err, docs) {
+    var pagination = paginate(req.query);
+    req.collection.find({}, null, pagination, function (err, docs) {
       if (err) {
         return next(err);
       }
-      res.jsonp({ result: docs });
+
+      req.collection.count(function(err, count) {
+        if (err) {
+          return next(err);
+        }
+        var body = pagination.metadata(count, req.currentUrl);
+        body.result = docs;
+        res.jsonp(body);
+      });
     });
   });
 

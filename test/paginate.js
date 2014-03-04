@@ -49,4 +49,33 @@ describe("paginate", function() {
       assert.equal(paginate({page: -1}).skip, 0);
     });
   });
+
+  describe("metadata()", function() {
+    var pagination;
+    var metadata;
+
+    it("returns expected results for page 1", function() {
+      pagination = paginate({page: 1});
+      metadata = pagination.metadata(42, 'http://example.org/api/persons');
+
+      assert.equal(metadata.total, 42);
+      assert.equal(metadata.page, 1);
+      assert.equal(metadata.per_page, 30);
+      assert.equal(metadata.has_more, true);
+      assert.equal(metadata.next_url, 'http://example.org/api/persons?page=2');
+      assert(!metadata.prev_url);
+    });
+
+    it("returns expected results for page 2", function() {
+      pagination = paginate({page: 2});
+      metadata = pagination.metadata(42, 'http://example.org/api/persons?page=2');
+
+      assert.equal(metadata.total, 42);
+      assert.equal(metadata.page, 2);
+      assert.equal(metadata.per_page, 30);
+      assert.equal(metadata.has_more, false);
+      assert.equal(metadata.prev_url, 'http://example.org/api/persons?page=1');
+      assert(!metadata.next_url);
+    });
+  });
 });
