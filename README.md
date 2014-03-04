@@ -244,11 +244,23 @@ will be something like:
 { "result": [ { "id": "123", "name": "Joe Bloggs" }, ... ] }
 ```
 
+If you don't want the `result` wrapper at the root of the returned JSON then set the `include_root` query parameter to `false`.
+
+```json
+GET /api/persons/123?include_root=false
+
+{ "id": "123", "name": "Joe Bloggs" }
+```
+
+Note this only works for responses that return a single records, so it won't work for `/api/persons`.
+
 Errors will also return JSON:
 
 ```json
 { "errors": [ "Error message - hopefully helpful...", ... ] }
 ```
+
+Note that the structure of the errors response is not affected by the `include_root` parameter described above. To detect if an error has occurred check the status code of the response, if it's not 200 then check the body for an `errors` key.
 
 ### GET `/api/:collection`
 

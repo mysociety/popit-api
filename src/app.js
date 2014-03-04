@@ -10,6 +10,7 @@ var validateBody = require('./middleware/validate-body');
 var apiLinks = require('./middleware/api-links');
 var reIndex = require('./reindex');
 var paginate = require('./paginate');
+var withBody = require('./middleware/with-body');
 
 // Make sure models are defined (they are accessed through req.collection).
 require('./models');
@@ -43,6 +44,8 @@ function popitApiApp(options) {
   if (options.apiKey) {
     app.use(authCheck(options.apiKey));
   }
+
+  app.use(withBody);
 
   app.get('/', function (req, res) {
     res.jsonp({
@@ -108,16 +111,11 @@ function popitApiApp(options) {
       if (err) {
         return next(err);
       }
-
-      if (doc) {
-        res.jsonp({ result: doc });
-      } else {
-        res
-          .status(404)
-          .jsonp({
-            errors: ["id '" + id + "' not found"]
-          });
+      if (!doc) {
+        return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
+
+      res.withBody(doc);
     });
   });
 
@@ -145,7 +143,7 @@ function popitApiApp(options) {
       if (err) {
         return next(err);
       }
-      res.jsonp({ result: doc });
+      res.withBody(doc);
     });
 
   });
@@ -178,7 +176,7 @@ function popitApiApp(options) {
         if (err) {
           return next(err);
         }
-        res.jsonp({ result: doc });
+        res.withBody(doc);
       });
     });
 

@@ -585,4 +585,41 @@ describe("REST", function () {
     });
   });
 
+  describe("removing the API's root wrapper", function() {
+    beforeEach(fixture.loadFixtures);
+
+    it("works for GET /:collection/:id", function(done) {
+      request.get('/api/persons/fred-bloggs?include_root=false')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.name, "Fred Bloggs");
+        done();
+      });
+    });
+
+    it("works for PUT /:collection/:id", function(done) {
+      request.put('/api/persons/fred-bloggs?include_root=false')
+      .send({name: 'Fred Bloggs'})
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.name, "Fred Bloggs");
+        done();
+      });
+    });
+
+    it("works for POST /:collection", function(done) {
+      request.post('/api/persons?include_root=false')
+      .send({name: 'Bob Example'})
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.name, "Bob Example");
+        done();
+      });
+    });
+
+  });
+
 });
