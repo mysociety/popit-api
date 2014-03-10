@@ -60,5 +60,9 @@ function filterDates(doc, ret, options) {
     ret.other_names = doc.other_names.filter(checkDates);
   }
 
+  if (doc.memberships) {
+    ret.memberships = doc.memberships.filter(checkDates);
+  }
+
   return ret;
 }

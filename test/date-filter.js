@@ -23,6 +23,25 @@ describe("Filter by date", function() {
             {name: 'Mr Bloggs', start_date: '2008-12-12', end_date: '2009-01-01'}
           ]
         }
+      ],
+      organizations: [
+        {_id: 'foo', name: 'Foo'},
+        {_id: 'bar', name: 'Bar'}
+      ],
+      memberships: [
+        {
+          _id: 'fred-at-foo',
+          organization_id: 'foo',
+          person_id: 'fred-bloggs',
+          start_date: '2009-10-10',
+          end_date: '2010-10-10'
+        },
+        {
+          _id: 'fred-at-bar',
+          organization_id: 'bar',
+          person_id: 'fred-bloggs',
+          start_date: '2010-10-11'
+        }
       ]
     }, done);
   });
@@ -35,6 +54,17 @@ describe("Filter by date", function() {
       assert.deepEqual(res.body.result.other_names, [
         {name: 'Fred'},
         {name: 'Alfred Bloggs', start_date: '2009-10-12'}
+      ]);
+      assert.deepEqual(res.body.result.memberships, [
+        {
+          id: 'fred-at-foo',
+          organization_id: 'foo',
+          person_id: 'fred-bloggs',
+          start_date: '2009-10-10',
+          end_date: '2010-10-10',
+          links: [],
+          contact_details: []
+        }
       ]);
       done();
     });
