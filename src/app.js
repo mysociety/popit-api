@@ -12,6 +12,7 @@ var reIndex = require('./reindex');
 var paginate = require('./paginate');
 var withBody = require('./middleware/with-body');
 var currentUrl = require('./middleware/current-url');
+var dateFilter = require('./middleware/date-filter');
 
 // Make sure models are defined (they are accessed through req.collection).
 require('./models');
@@ -49,6 +50,8 @@ function popitApiApp(options) {
   app.use(withBody);
 
   app.use(currentUrl(options.apiBaseUrl));
+
+  app.use(dateFilter);
 
   app.get('/', function (req, res) {
     res.jsonp({
