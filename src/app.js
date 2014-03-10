@@ -106,7 +106,18 @@ function popitApiApp(options) {
 
   app.get('/:collection', function (req, res, next) {
     var pagination = paginate(req.query);
-    req.collection.find({}, null, pagination, function (err, docs) {
+    var query = {};
+    if (req.query.at) {
+      var at = new Date(req.query.at);
+      var dateQuery = {};
+      var dateQueryNull = {};
+      dateQuery[req.collection.startDateField()] = {'$lt': at};
+      dateQuery[req.collection.endDateField()] = {'$gte': at};
+      dateQueryNull[req.collection.startDateField()] = null;
+      dateQueryNull[req.collection.endDateField()] = null;
+      query.$or = [dateQuery, dateQueryNull];
+    }
+    req.collection.find(query, null, pagination, function (err, docs) {
       if (err) {
         return next(err);
       }

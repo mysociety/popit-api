@@ -30,6 +30,8 @@ module.exports = {
     plugins: [
       [membershipFinder, {field: 'person_id'}]
     ],
+    startDateField: 'birth_date',
+    endDateField: 'death_date',
   },
   organizations: {
     model: 'Organization',
@@ -37,6 +39,8 @@ module.exports = {
     plugins: [
       [membershipFinder, {field: 'organization_id'}]
     ],
+    startDateField: 'founding_date',
+    endDateField: 'dissolution_date',
   },
   posts: {
     model: 'Post',
@@ -44,9 +48,13 @@ module.exports = {
     plugins: [
       [membershipFinder, {field: 'post_id'}]
     ],
+    startDateField: 'start_date',
+    endDateField: 'end_date',
   },
   memberships: {
     model: 'Membership',
     popoloSchemaUrl: 'http://popoloproject.com/schemas/membership.json#',
+    startDateField: 'start_date',
+    endDateField: 'end_date',
   },
 };

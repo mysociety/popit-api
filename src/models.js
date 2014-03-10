@@ -40,6 +40,14 @@ function createPopoloModel(spec) {
     });
   }
 
+  Schema.statics.startDateField = function() {
+    return spec.startDateField;
+  };
+
+  Schema.statics.endDateField = function() {
+    return spec.endDateField;
+  };
+
   mongoose.model(spec.model, Schema);
 }
 

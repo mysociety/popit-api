@@ -22,6 +22,17 @@ describe("Filter by date", function() {
             {name: 'Alfred Bloggs', start_date: '2009-10-12'},
             {name: 'Mr Bloggs', start_date: '2008-12-12', end_date: '2009-01-01'}
           ]
+        },
+        {
+          _id: 'john-doe',
+          name: 'John Doe',
+          birth_date: '1900-01-01',
+          death_date: '1999-01-01'
+        },
+        {
+          _id: 'jane-doe',
+          name: 'Jane Doe',
+          birth_date: '1999-01-01'
         }
       ],
       organizations: [
@@ -66,6 +77,16 @@ describe("Filter by date", function() {
           contact_details: []
         }
       ]);
+      done();
+    });
+  });
+
+  it("removes documents that wouldn't have existed on the given date", function(done) {
+    request.get('/api/persons?at=2010-02-01')
+    .expect(200)
+    .end(function(err, res) {
+      assert.ifError(err);
+      assert.equal(res.body.result.length, 2);
       done();
     });
   });
