@@ -16,6 +16,7 @@ function jsonTransformPlugin(schema) {
 function filterFields(doc, ret, options) {
   ret = filter(doc, ret, options);
   ret = addLinks(doc, ret, options);
+  ret = filterDates(doc, ret, options);
   return ret;
 }
 
@@ -36,5 +37,28 @@ function addLinks(doc, ret, options) {
       ].join('/');
     }
   }
+  return ret;
+}
+
+function filterDates(doc, ret, options) {
+  if (!options.at) {
+    return ret;
+  }
+
+  function checkDates(field) {
+    if (!field.start_date && !field.end_date) {
+      return true;
+    }
+    var start = new Date(field.start_date);
+    var end = new Date(field.end_date);
+    var at = options.at;
+
+    return start < at && (!field.end_date || end > at);
+  }
+
+  if (doc.other_names) {
+    ret.other_names = doc.other_names.filter(checkDates);
+  }
+
   return ret;
 }
