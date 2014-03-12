@@ -12,12 +12,14 @@
  */
 function membershipFinder(schema, options) {
   schema.pre('init', function(next, data) {
+    var Membership = this.model('Membership');
+    var modelName = this.constructor.modelName;
     var queries = [];
     var query = {};
     query[options.field] = data._id;
     queries.push(query);
-    queries.push({'member.@type': this.constructor.modelName, 'member.id': data._id});
-    this.model('Membership').find({$or: queries}, function(err, docs) {
+    queries.push({'member.@type': modelName, 'member.id': data._id});
+    Membership.find({$or: queries}, function(err, docs) {
       if (err) {
         return next(err);
       }
