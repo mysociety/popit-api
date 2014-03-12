@@ -21,7 +21,7 @@ function paginate(options) {
     page = 1;
   }
 
-  if (perPage < 1 || perPage > 100) {
+  if (perPage < 1 || perPage > 200) {
     perPage = 30;
   }
 
