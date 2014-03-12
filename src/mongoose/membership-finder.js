@@ -1,5 +1,15 @@
 "use strict";
 
+/**
+ * Find memberships that are associated with the current object and
+ * populate them. This is necessary because memberships are stored in
+ * a separate collections to people and organizations, but it makes
+ * sense to return them inline.
+ *
+ * @param {mongoose.Schema} schema The schema to augment with this plugin
+ * @param {Object} options
+ * @param {String} options.field The field to query against
+ */
 function membershipFinder(schema, options) {
   schema.pre('init', function(next, data) {
     var queries = [];
