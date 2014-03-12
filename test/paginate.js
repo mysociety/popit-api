@@ -14,9 +14,9 @@ describe("paginate", function() {
       assert.equal(paginate({per_page: 86}).limit, 86);
     });
 
-    it("allows a maximum of 100 items", function() {
-      assert.equal(paginate({per_page: 100}).limit, 100);
-      assert.equal(paginate({per_page: 101}).limit, 30);
+    it("allows a maximum of 200 items", function() {
+      assert.equal(paginate({per_page: 200}).limit, 200);
+      assert.equal(paginate({per_page: 201}).limit, 30);
     });
 
     it("allows a minimum of 1 item", function() {
