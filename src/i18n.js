@@ -1,6 +1,11 @@
 "use strict";
 
 var _ = require('underscore');
+var tags = require('language-tags');
+
+function isValidLanguage(language) {
+  return tags.check(language);
+}
 
 /**
  * Takes an object and a language and flattens any language keys of
@@ -16,10 +21,8 @@ function i18n(objectWithLanguages, lang, defaultLang) {
       return;
     }
     var keys = Object.keys(value);
-    if (keys.indexOf(lang) !== -1) {
-      obj[key] = value[lang];
-    } else if (keys.indexOf(defaultLang) !== -1) {
-      obj[key] = value[defaultLang];
+    if (keys.every(isValidLanguage)) {
+      obj[key] = value[lang] || value[defaultLang] || '';
     } else {
       obj[key] = value;
     }

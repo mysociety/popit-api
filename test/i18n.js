@@ -20,4 +20,8 @@ describe("internationalization", function() {
     assert.equal(i18n(json, 'es', 'en').name, 'Chris');
     assert.equal(i18n(json, 'es', 'ru').name, 'Крис');
   });
+
+  it("returns an empty string when no languages match", function() {
+    assert.equal(i18n(json, 'es', 'de').name, '');
+  });
 });
