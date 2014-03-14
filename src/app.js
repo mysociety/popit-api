@@ -13,6 +13,7 @@ var paginate = require('./paginate');
 var withBody = require('./middleware/with-body');
 var currentUrl = require('./middleware/current-url');
 var dateFilter = require('./middleware/date-filter');
+var i18n = require('./middleware/i18n');
 
 // Make sure models are defined (they are accessed through req.collection).
 require('./models');
@@ -52,6 +53,7 @@ function popitApiApp(options) {
   app.use(currentUrl(options.apiBaseUrl));
 
   app.use(dateFilter);
+  app.use(i18n);
 
   app.get('/', function (req, res) {
     res.jsonp({
