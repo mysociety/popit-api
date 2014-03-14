@@ -1,6 +1,7 @@
 "use strict";
 
 var schemas = require('../../schemas');
+var mongoose = require('mongoose');
 
 module.exports = mongooseJsonSchema;
 
@@ -65,7 +66,7 @@ function jsonSchemaFields(jsonSchema) {
         fields[name] = [jsonSchemaFields(field.items)];
       } else {
         fields[name] = {
-          type: typeof field.type === 'string' ? field.type : field.type[0],
+          type: mongoose.Schema.Types.Mixed,
         };
       }
 
