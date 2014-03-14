@@ -1,6 +1,7 @@
 "use strict";
 
 var filter = require('../filter');
+var i18n = require('../i18n');
 
 module.exports = jsonTransformPlugin;
 
@@ -17,6 +18,7 @@ function filterFields(doc, ret, options) {
   ret = filter(doc, ret, options);
   ret = addLinks(doc, ret, options);
   ret = filterDates(doc, ret, options);
+  ret = translateDoc(doc, ret, options);
   return ret;
 }
 
@@ -65,4 +67,8 @@ function filterDates(doc, ret, options) {
   }
 
   return ret;
+}
+
+function translateDoc(doc, ret, options) {
+  return i18n(ret, options.lang, options.defaultLang);
 }
