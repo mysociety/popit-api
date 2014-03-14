@@ -2,6 +2,10 @@
 
 var i18n = require('../src/i18n');
 var assert = require('assert');
+var fixtures = require('pow-mongodb-fixtures');
+var defaults = require('./defaults');
+var supertest = require('supertest');
+var popitApp = require('../test-server-app');
 
 describe("internationalization", function() {
   var json = {
@@ -23,5 +27,28 @@ describe("internationalization", function() {
 
   it("returns an empty string when no languages match", function() {
     assert.equal(i18n(json, 'es', 'de').name, '');
+  });
+
+  describe("translating documents in the API", function() {
+    var fixture = fixtures.connect(defaults.databaseName);
+    var request = supertest(popitApp);
+    beforeEach(function(done) {
+      fixture.clearAllAndLoad({
+        persons: [
+          { _id: 'fred-bloggs', name: { en: 'Fred Bloggs', ru: 'Фред Влоггс' } }
+        ]
+      }, done);
+    });
+
+    it("returns the document in the requested language", function(done) {
+      request.get('/api/persons/fred-bloggs')
+      .set('Accept-Language', 'en')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.name, 'Fred Bloggs');
+        done();
+      });
+    });
   });
 });
