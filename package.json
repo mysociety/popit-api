@@ -29,7 +29,8 @@
     "regexp-quote": "0.0.0",
     "mongoose": "~3.8.5",
     "elasticsearch": "~1.5.1",
-    "language-tags": "~1.0.2"
+    "language-tags": "~1.0.2",
+    "http-accept": "~0.1.6"
   },
   "devDependencies": {
     "mocha": "~1.8.2",
