@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "id": "http://popoloproject.com/schemas/person.json#",
+  "title": "Person",
+  "description": "A real person, alive or dead",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The person's unique identifier",
+      "type": ["string", "object", "null"]
+    },
+    "name": {
+      "description": "A person's preferred full name",
+      "type": ["string", "object"],
+      "required": true
+    },
+    "other_names": {
+      "description": "Alternate or former names",
+      "type": "array",
+      "items": {
+        "$ref": "http://popoloproject.com/schemas/other_name.json#"
+      }
+    },
+    "identifiers": {
+      "description": "Issued identifiers",
+      "type": "array",
+      "items": {
+        "$ref": "http://popoloproject.com/schemas/identifier.json#"
+      }
+    },
+    "family_name": {
+      "description": "One or more family names",
+      "type": ["string", "object", "null"]
+    },
+    "given_name": {
+      "description": "One or more primary given names",
+      "type": ["string", "object", "null"]
+    },
+    "additional_name": {
+      "description": "One or more secondary given names",
+      "type": ["string", "object", "null"]
+    },
+    "honorific_prefix": {
+      "description": "One or more honorifics preceding a person's name",
+      "type": ["string", "object", "null"]
+    },
+    "honorific_suffix": {
+      "description": "One or more honorifics following a person's name",
+      "type": ["string", "object", "null"]
+    },
+    "patronymic_name": {
+      "description": "One or more patronymic names",
+      "type": ["string", "object", "null"]
+    },
+    "sort_name": {
+      "description": "A name to use in an lexicographically ordered list",
+      "type": ["string", "object", "null"]
+    },
+    "email": {
+      "description": "A preferred email address",
+      "type": ["string", "object", "null"],
+      "format": "email"
+    },
+    "gender": {
+      "description": "A gender",
+      "type": ["string", "object", "null"]
+    },
+    "birth_date": {
+      "description": "A date of birth",
+      "type": ["string", "object", "null"],
+      "pattern": "^[0-9]{4}(-[0-9]{2}){0,2}$"
+    },
+    "death_date": {
+      "description": "A date of death",
+      "type": ["string", "object", "null"],
+      "pattern": "^[0-9]{4}(-[0-9]{2}){0,2}$"
+    },
+    "image": {
+      "description": "A URL of a head shot",
+      "type": ["string", "object", "null"],
+      "format": "uri"
+    },
+    "summary": {
+      "description": "A one-line account of a person's life",
+      "type": ["string", "object", "null"]
+    },
+    "biography": {
+      "description": "An extended account of a person's life",
+      "type": ["string", "object", "null"]
+    },
+    "contact_details": {
+      "description": "Means of contacting the person",
+      "type": "array",
+      "items": {
+        "$ref": "http://popoloproject.com/schemas/contact_detail.json#"
+      }
+    },
+    "links": {
+      "description": "URLs to documents about the person",
+      "type": "array",
+      "items": {
+        "$ref": "http://popoloproject.com/schemas/link.json#"
+      }
+    },
+    "memberships": {
+      "description": "The relationships to which the person is a party",
+      "type": "array",
+      "items": {
+        "$ref": "http://popoloproject.com/schemas/membership.json#"
+      }
+    }
+  }
+}
