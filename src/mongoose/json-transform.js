@@ -70,5 +70,5 @@ function filterDates(doc, ret, options) {
 }
 
 function translateDoc(doc, ret, options) {
-  return i18n(ret, options.lang, options.defaultLang);
+  return i18n(ret, options.langs, options.defaultLang);
 }

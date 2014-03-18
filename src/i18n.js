@@ -11,9 +11,9 @@ function isValidLanguage(language) {
  * Takes an object and a language and flattens any language keys of
  * that object to use the specified language, or the default one.
  */
-function i18n(objectWithLanguages, lang, defaultLang) {
+function i18n(objectWithLanguages, langs, defaultLang) {
+  langs = langs || [];
   var obj = {};
-  defaultLang = defaultLang || lang;
   // Detect keys that need translating
   _.each(objectWithLanguages, function(value, key) {
     if (!_.isObject(value) || _.isArray(value)) {
@@ -22,7 +22,15 @@ function i18n(objectWithLanguages, lang, defaultLang) {
     }
     var keys = Object.keys(value);
     if (keys.every(isValidLanguage)) {
-      obj[key] = value[lang] || value[defaultLang] || '';
+      langs.forEach(function(lang) {
+        if (value[lang]) {
+          obj[key] = value[lang];
+          return false;
+        }
+      });
+      if (!obj[key]) {
+        obj[key] = value[defaultLang] || '';
+      }
     } else {
       obj[key] = value;
     }

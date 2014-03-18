@@ -6,8 +6,7 @@ function i18nMiddleware(req, res, next) {
   for (var key in collections) {
     var schema = req.db.model(collections[key].model).schema;
 
-    // TODO: Use the Accept-Language header to decide this.
-    schema.options.toJSON.lang = 'en';
+    schema.options.toJSON.langs = (req.accept && req.accept.languages);
 
     // TODO: Make this configurable.
     schema.options.toJSON.defaultLang = 'en';

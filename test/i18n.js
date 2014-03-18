@@ -16,17 +16,17 @@ describe("internationalization", function() {
   };
 
   it("converts translated documents to popolo", function() {
-    assert.equal(i18n(json, 'en').name, 'Chris');
-    assert.equal(i18n(json, 'ru').name, 'Крис');
+    assert.equal(i18n(json, ['en']).name, 'Chris');
+    assert.equal(i18n(json, ['ru']).name, 'Крис');
   });
 
   it("uses the default language when there is no match", function() {
-    assert.equal(i18n(json, 'es', 'en').name, 'Chris');
-    assert.equal(i18n(json, 'es', 'ru').name, 'Крис');
+    assert.equal(i18n(json, ['es'], 'en').name, 'Chris');
+    assert.equal(i18n(json, ['es'], 'ru').name, 'Крис');
   });
 
   it("returns an empty string when no languages match", function() {
-    assert.equal(i18n(json, 'es', 'de').name, '');
+    assert.equal(i18n(json, ['es'], 'de').name, '');
   });
 
   describe("translating documents in the API", function() {
