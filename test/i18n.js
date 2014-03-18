@@ -40,6 +40,26 @@ describe("internationalization", function() {
       }, done);
     });
 
+    it("allows documents to be created over the API", function(done) {
+      request.post('/api/persons')
+      .send({
+        name: {
+          en: 'Chris',
+          ru: 'Крис'
+        },
+        links: [
+          {url: 'http://example.org', note: {en: 'Example', es: 'Ejemplo'}}
+        ]
+      })
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.name, 'Chris');
+        assert.equal(res.body.result.links[0].note, 'Example');
+        done();
+      });
+    });
+
     it("returns the document in the requested language", function(done) {
       request.get('/api/persons/fred-bloggs')
       .set('Accept-Language', 'en')

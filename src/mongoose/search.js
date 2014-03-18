@@ -19,7 +19,7 @@ module.exports = function(schema) {
   schema.add({_internal: Object});
 
   schema.pre('save', function(next) {
-    if (this.name) {
+    if (this.name && this.name.split) {
       indexNameWords(this, this.name);
     }
     next();
