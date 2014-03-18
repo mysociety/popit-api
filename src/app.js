@@ -55,7 +55,7 @@ function popitApiApp(options) {
 
   app.use(dateFilter);
   app.use(accept);
-  app.use(i18n);
+  app.use(i18n(options.defaultLanguage));
 
   app.get('/', function (req, res) {
     res.jsonp({
