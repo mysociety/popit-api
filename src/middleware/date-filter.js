@@ -1,16 +1,9 @@
 "use strict";
 
-var collections = require('../collections');
+var eachSchema = require('../utils').eachSchema;
 
 function dateFilterMiddleware(req, res, next) {
-  function eachSchema(callback) {
-    for (var key in collections) {
-      var schema = req.db.model(collections[key].model).schema;
-      callback(schema);
-    }
-  }
-
-  eachSchema(function(schema) {
+  eachSchema(req.db, function(schema) {
     schema.options.toJSON.at = null;
   });
 
@@ -19,7 +12,7 @@ function dateFilterMiddleware(req, res, next) {
   }
 
   var at = new Date(req.query.at);
-  eachSchema(function(schema) {
+  eachSchema(req.db, function(schema) {
     schema.options.toJSON.at = at;
   });
   next();

@@ -1,6 +1,6 @@
 "use strict";
 
-var collections = require('../collections');
+var eachSchema = require('../utils').eachSchema;
 
 module.exports = apiLinksMiddleware;
 
@@ -15,11 +15,10 @@ module.exports = apiLinksMiddleware;
  */
 function apiLinksMiddleware(options) {
   return function apiLinks(req, res, next) {
-    for (var key in collections) {
-      var schema = req.db.model(collections[key].model).schema;
+    eachSchema(req.db, function(schema) {
       schema.options.toJSON.baseUrl = options.baseUrl;
       schema.options.toJSON.apiBaseUrl = options.apiBaseUrl;
-    }
+    });
     next();
   };
 }
