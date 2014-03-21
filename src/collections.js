@@ -1,18 +1,6 @@
 "use strict";
 
-function membershipFinder(schema, options) {
-  schema.pre('init', function(next, data) {
-    var query = {};
-    query[options.field] = data._id;
-    this.model('Membership').find(query, function(err, docs) {
-      if (err) {
-        return next(err);
-      }
-      data.memberships = docs;
-      next();
-    });
-  });
-}
+var membershipFinder = require('./mongoose/membership-finder');
 
 /**
  * The various collections that the API will serve. This is intended to be

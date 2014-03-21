@@ -70,7 +70,10 @@ collections.memberships = {
     post_id: "avalon",
     organization_id: "commons",
     role: "Member of Parliament",
-    person_id: "fred-bloggs",
+    member: {
+      '@type': 'Person',
+      id: "fred-bloggs",
+    },
     start_date: "2000",
     end_date: "2004",
   },
@@ -79,7 +82,10 @@ collections.memberships = {
     post_id: "avalon",
     organization_id: "commons",
     role: "Member of Parliament",
-    person_id: "fred-bloggs",
+    member: {
+      '@type': 'Person',
+      id: "fred-bloggs",
+    },
     start_date: "2011",
   },
 };
