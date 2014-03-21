@@ -121,9 +121,9 @@ describe("REST", function () {
               has_more: false,
               result: [
                 { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                  person_id: 'fred-bloggs', start_date: '2000', end_date: '2004', links: [], contact_details: [] },
+                  member: {'@type': 'Person', id: 'fred-bloggs'}, start_date: '2000', end_date: '2004', links: [], contact_details: [] },
                 { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                    person_id: 'fred-bloggs', start_date: '2011', links: [], contact_details: [] },
+                  member: {'@type': 'Person', id: 'fred-bloggs'}, start_date: '2011', links: [], contact_details: [] },
               ],
             })
             .end(done);
