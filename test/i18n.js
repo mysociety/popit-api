@@ -6,6 +6,7 @@ var fixtures = require('pow-mongodb-fixtures');
 var defaults = require('./defaults');
 var supertest = require('supertest');
 var popitApp = require('../test-server-app');
+var mongoose = require('mongoose');
 
 describe("internationalization", function() {
   var json = {
@@ -68,6 +69,39 @@ describe("internationalization", function() {
         assert.ifError(err);
         assert.equal(res.body.result.name, 'Fred Bloggs');
         done();
+      });
+    });
+  });
+
+  describe("search", function() {
+    var Person;
+    before(function() {
+      mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+    });
+
+    after(function(done) {
+      mongoose.connection.close(done);
+    });
+
+    beforeEach(function(done) {
+      Person = mongoose.model('Person');
+      var person = new Person({_id: 'foo', id: 'foo', name: 'Foo'});
+      person.save(function(err) {
+        assert.ifError(err);
+        person.on('es-indexed', done);
+      });
+    });
+
+    it("doesn't give an error when indexing", function(done) {
+      var person = new Person();
+      person._id = person.id = 'chris';
+      person.name = {en: 'Chris', ru: 'Крис'};
+      person.save(function(err) {
+        assert.ifError(err);
+        person.on('es-indexed', function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
     });
   });

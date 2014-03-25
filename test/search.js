@@ -47,7 +47,7 @@ describe("Search", function() {
         if (err) {
           return done(err);
         }
-        assert.equal("John Smith", result._source.name);
+        assert.equal("John Smith", result._source.name.en);
         done();
       });
     }
