@@ -1,47 +1,41 @@
 "use strict";
 
 var mongoose = require('mongoose');
-var mongooseJsonSchema = require('./mongoose/json-schema');
-var deduplicateSlug = require('./mongoose/deduplicate-slug');
-var search = require('./mongoose/search');
-var elasticsearch = require('./mongoose/elasticsearch');
-var jsonTransform = require('./mongoose/json-transform');
-var collections = require('./collections');
+var popolo = require('./mongoose/popolo');
+var membershipFinder = require('./mongoose/membership-finder');
 
 mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
 
 /**
- * Generate mongoose models from the collections module.
- *
- * This creates a new Schema for each popolo collection that has
- * been defined in collections.js. It then augments the schemas
- * with plugins which allow the schema to infer their fields from
- * a json schema, as well as search and slug deduplication.
+ * Person
  */
-for (var key in collections) {
-  if (collections.hasOwnProperty(key)) {
-    createPopoloModel(collections[key]);
-  }
-}
+var PersonSchema = new mongoose.Schema({_id: String}, {collection: 'persons', strict: false});
+PersonSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/person.json#'});
+PersonSchema.plugin(membershipFinder, {field: 'person_id'});
+mongoose.model('Person', PersonSchema);
 
-function createPopoloModel(spec) {
-  var Schema = new mongoose.Schema({_id: String}, {collection: key, strict: false});
+/**
+ * Organization
+ */
+var OrganizationSchema = new mongoose.Schema({_id: String}, {collection: 'organizations', strict: false});
+OrganizationSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/organization.json#'});
+OrganizationSchema.plugin(membershipFinder, {field: 'organization_id'});
+mongoose.model('Organization', OrganizationSchema);
 
-  Schema.plugin(mongooseJsonSchema, {jsonSchemaUrl: spec.popoloSchemaUrl});
-  Schema.plugin(jsonTransform);
-  Schema.plugin(deduplicateSlug);
-  Schema.plugin(search);
-  Schema.plugin(elasticsearch);
+/**
+ * Post
+ */
+var PostSchema = new mongoose.Schema({_id: String}, {collection: 'posts', strict: false});
+PostSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/post.json#'});
+PostSchema.plugin(membershipFinder, {field: 'post_id'});
+mongoose.model('Post', PostSchema);
 
-  // Collection specific plugins
-  if (spec.plugins) {
-    spec.plugins.forEach(function(plugin) {
-      Schema.plugin.apply(Schema, plugin);
-    });
-  }
-
-  mongoose.model(spec.model, Schema);
-}
+/**
+ * Membership
+ */
+var MembershipSchema = new mongoose.Schema({_id: String}, {collection: 'memberships', strict: false});
+MembershipSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/membership.json#'});
+mongoose.model('Membership', MembershipSchema);
 
 /**
  * Hidden fields mongoose schema
@@ -51,5 +45,4 @@ var HiddenSchema = new mongoose.Schema({
   doc: String,
   fields: Object
 });
-
 mongoose.model('Hidden', HiddenSchema);
