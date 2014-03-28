@@ -12,6 +12,10 @@ function popoloPlugin(schema, options) {
   schema.plugin(deduplicateSlug);
   schema.plugin(search);
   schema.plugin(elasticsearch);
+
+  schema.statics.popoloSchemaUrl = function popoloSchemaUrl() {
+    return options.popoloSchemaUrl;
+  };
 }
 
 module.exports = popoloPlugin;

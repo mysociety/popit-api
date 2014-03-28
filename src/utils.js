@@ -1,11 +1,10 @@
 "use strict";
 
-var collections = require('./collections');
+var models = require('./models');
 
 function eachSchema(mongoose, callback) {
-  for (var key in collections) {
-    var schema = mongoose.model(collections[key].model).schema;
-    callback(schema);
+  for (var key in models) {
+    callback(models[key].schema);
   }
 }
 

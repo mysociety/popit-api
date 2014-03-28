@@ -2,7 +2,6 @@
 
 var express = require('express');
 var packageJSON = require("../package");
-var collections = require('./collections');
 var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
@@ -15,9 +14,7 @@ var currentUrl = require('./middleware/current-url');
 var dateFilter = require('./middleware/date-filter');
 var i18n = require('./middleware/i18n');
 var accept = require('http-accept');
-
-// Make sure models are defined (they are accessed through req.collection).
-require('./models');
+var models = require('./models');
 
 module.exports = popitApiApp;
 
@@ -73,13 +70,13 @@ function popitApiApp(options) {
    */
   app.param('collection', function (req, res, next, collection) {
     // If the collection exists, carry on.
-    if (!collections[collection]) {
+    if (!models[collection]) {
       return res.status(404).jsonp({
         errors: ["collection '" + collection + "' not found"]
       });
     }
 
-    req.collection = req.db.model(collections[collection].model);
+    req.collection = req.db.model(models[collection].modelName);
 
     next();
   });
