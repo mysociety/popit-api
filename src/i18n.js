@@ -32,7 +32,7 @@ function i18n(objectWithLanguages, langs, defaultLang) {
         obj[key] = value[defaultLang] || '';
       }
     } else {
-      obj[key] = value;
+      obj[key] = i18n(value, langs, defaultLang);
     }
   });
   return obj;

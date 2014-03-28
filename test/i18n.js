@@ -31,6 +31,10 @@ describe("internationalization", function() {
     assert.equal(i18n(json, ['es'], 'de').name, '');
   });
 
+  it("translates fields in nested custom objects", function() {
+    assert.deepEqual(i18n({foo: {name: {en: 'Foo', es: 'Fu'}}}, ['en'], 'en'), {foo: {name: 'Foo'}});
+  });
+
   describe("translating documents in the API", function() {
     var fixture = fixtures.connect(defaults.databaseName);
     var request = supertest(popitApp);
