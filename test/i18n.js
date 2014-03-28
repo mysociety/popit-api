@@ -7,6 +7,7 @@ var defaults = require('./defaults');
 var supertest = require('supertest');
 var popitApp = require('../test-server-app');
 var mongoose = require('mongoose');
+var dropElasticsearchIndex = require('./util').dropElasticsearchIndex;
 
 describe("internationalization", function() {
   var json = {
@@ -74,9 +75,16 @@ describe("internationalization", function() {
   });
 
   describe("search", function() {
+    this.timeout(5000);
     var Person;
+
     before(function() {
       mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+      Person = mongoose.model('Person');
+    });
+
+    before(function(done) {
+      dropElasticsearchIndex(Person.indexName())(done);
     });
 
     after(function(done) {
@@ -84,7 +92,6 @@ describe("internationalization", function() {
     });
 
     beforeEach(function(done) {
-      Person = mongoose.model('Person');
       var person = new Person({_id: 'foo', id: 'foo', name: 'Foo'});
       person.save(function(err) {
         assert.ifError(err);
