@@ -16,10 +16,22 @@ function i18n(objectWithLanguages, langs, defaultLang) {
   var obj = {};
   // Detect keys that need translating
   _.each(objectWithLanguages, function(value, key) {
-    if (!_.isObject(value) || _.isArray(value)) {
+    if (!_.isObject(value)) {
       obj[key] = value;
       return;
     }
+
+    if (_.isArray(value)) {
+      obj[key] = value.map(function(nestedValue) {
+        if (_.isObject(nestedValue) && !_.isArray(nestedValue)) {
+          return i18n(nestedValue, langs, defaultLang);
+        } else {
+          return nestedValue;
+        }
+      });
+      return;
+    }
+
     var keys = Object.keys(value);
     if (keys.every(isValidLanguage)) {
       langs.forEach(function(lang) {

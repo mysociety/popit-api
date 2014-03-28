@@ -32,7 +32,18 @@ describe("internationalization", function() {
   });
 
   it("translates fields in nested custom objects", function() {
-    assert.deepEqual(i18n({foo: {name: {en: 'Foo', es: 'Fu'}}}, ['en'], 'en'), {foo: {name: 'Foo'}});
+    var input = {foo: {name: {en: 'Foo', es: 'Fu'}}};
+    assert.deepEqual(i18n(input, ['en'], 'en'), {foo: {name: 'Foo'}});
+  });
+
+  it("translates fields in nested custom arrays", function() {
+    var input = {
+      foo: [
+        {name: {en: 'Foo', es: 'Fu'}, other: {en: 'Other', es: 'Othere'}}
+      ]
+    };
+    var expected = {foo: [{name: 'Foo', other: 'Other'}]};
+    assert.deepEqual(i18n(input, ['en'], 'en'), expected);
   });
 
   describe("translating documents in the API", function() {

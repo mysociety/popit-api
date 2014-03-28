@@ -17,8 +17,8 @@ function jsonTransformPlugin(schema) {
 function filterFields(doc, ret, options) {
   ret = filter(doc, ret, options);
   ret = addLinks(doc, ret, options);
-  ret = filterDates(doc, ret, options);
   ret = translateDoc(doc, ret, options);
+  ret = filterDates(doc, ret, options);
   return ret;
 }
 
