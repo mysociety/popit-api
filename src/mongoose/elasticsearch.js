@@ -13,6 +13,7 @@ var elasticsearch = require('elasticsearch');
 var filter = require('../filter');
 var paginate = require('../paginate');
 var i18n = require('../i18n');
+var async = require('async');
 
 module.exports = elasticsearchPlugin;
 
@@ -27,32 +28,38 @@ function elasticsearchPlugin(schema) {
    *
    * TODO: Make this more generalised rather than hard-coding memberships
    */
-  schema.methods.toElasticsearch = function toElasticsearch() {
-    var doc = this.toJSON({
-      transform: filter,
-      fields: {
-        all: {
-          memberships: false,
-          url: false,
-          html_url: false
+  schema.methods.toElasticsearch = function toElasticsearch(callback) {
+    process.nextTick(function() {
+      var doc = this.toJSON({
+        transform: filter,
+        fields: {
+          all: {
+            memberships: false,
+            url: false,
+            html_url: false
+          }
         }
-      }
-    });
-
-    return i18n(doc, [], schema.options.toJSON.defaultLanguage || 'en', true);
+      });
+      callback(null, i18n(doc, [], schema.options.toJSON.defaultLanguage || 'en', true));
+    }.bind(this));
   };
 
   /**
    * After the document has been saved, index it in elasticsearch.
    */
   schema.post('save', function(doc) {
-    client.index({
-      index: doc.constructor.indexName(),
-      type: doc.constructor.typeName(),
-      id: doc.id,
-      body: doc.toElasticsearch()
-    }, function(err) {
-      doc.emit('es-indexed', err);
+    doc.toElasticsearch(function(err, result) {
+      if (err) {
+        throw err;
+      }
+      client.index({
+        index: doc.constructor.indexName(),
+        type: doc.constructor.typeName(),
+        id: doc.id,
+        body: result
+      }, function(err) {
+        doc.emit('es-indexed', err);
+      });
     });
   });
 
@@ -117,29 +124,36 @@ function elasticsearchPlugin(schema) {
       }
 
       var indexed = 0;
-      var body = [];
+      var body;
 
-      docs.forEach(function(doc) {
-        // The bulk index API expects a command doc, then a content doc and so on.
-        body.push({
-          index: {
-            _index: self.indexName(),
-            _type: self.typeName(),
-            _id: doc._id,
+      async.concatSeries(docs, function(doc, callback) {
+        doc.toElasticsearch(function(err, result) {
+          if (err) {
+            return callback(err);
           }
+          indexed++;
+          callback(null, [{
+            index: {
+              _index: self.indexName(),
+              _type: self.typeName(),
+              _id: doc._id,
+            }
+          }, result]);
         });
+      }, function(err, results) {
+        if (err) {
+          return done(err);
+        }
+        body = results;
 
-        body.push(doc.toElasticsearch());
-        indexed++;
-      });
+        if (body.length === 0) {
+          return done(null, 0);
+        }
 
-      if (body.length === 0) {
-        return done(null, 0);
-      }
-
-      // Send the commands and content docs to the bulk API.
-      client.bulk({body: body}, function(err) {
-        done(err, indexed);
+        // Send the commands and content docs to the bulk API.
+        client.bulk({body: body}, function(err) {
+          done(err, indexed);
+        });
       });
     });
 

@@ -101,16 +101,16 @@ describe("Search", function() {
 
       person.save(function(err) {
         assert.ifError(err);
-        var doc = person.toElasticsearch();
+        person.toElasticsearch(function(err, doc) {
+          assert.equal(doc.name, 'One', "Should use the default language for name key");
+          assert.equal(doc.name_en, 'One', "Should store language translations");
+          assert.equal(doc.name_es, 'Uno', "Should store language translations");
 
-        assert.equal(doc.name, 'One', "Should use the default language for name key");
-        assert.equal(doc.name_en, 'One', "Should store language translations");
-        assert.equal(doc.name_es, 'Uno', "Should store language translations");
-
-        assert.equal(doc.foo[0].bar, 'Bar');
-        assert.equal(doc.foo[0].bar_en, 'Bar');
-        assert.equal(doc.foo[0].bar_es, 'Baro');
-        done();
+          assert.equal(doc.foo[0].bar, 'Bar');
+          assert.equal(doc.foo[0].bar_en, 'Bar');
+          assert.equal(doc.foo[0].bar_es, 'Baro');
+          done();
+        });
       });
     });
   });
