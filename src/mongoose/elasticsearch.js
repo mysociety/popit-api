@@ -44,23 +44,30 @@ function elasticsearchPlugin(schema) {
     }.bind(this));
   };
 
-  /**
-   * After the document has been saved, index it in elasticsearch.
-   */
-  schema.post('save', function(doc) {
-    doc.toElasticsearch(function(err, result) {
+  schema.methods.reIndex = function reIndex(callback) {
+    callback = callback || function() {};
+    var self = this;
+    self.toElasticsearch(function(err, result) {
       if (err) {
         throw err;
       }
       client.index({
-        index: doc.constructor.indexName(),
-        type: doc.constructor.typeName(),
-        id: doc.id,
+        index: self.constructor.indexName(),
+        type: self.constructor.typeName(),
+        id: self.id,
         body: result
       }, function(err) {
-        doc.emit('es-indexed', err);
+        self.emit('es-indexed', err);
+        callback(err);
       });
     });
+  };
+
+  /**
+   * After the document has been saved, index it in elasticsearch.
+   */
+  schema.post('save', function(doc) {
+    doc.reIndex();
   });
 
   /**
