@@ -3,6 +3,8 @@
 var mongoose = require('mongoose');
 var popolo = require('./mongoose/popolo');
 var membershipFinder = require('./mongoose/membership-finder');
+var async = require('async');
+var _ = require('underscore');
 
 mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
 
@@ -35,6 +37,42 @@ var Post = mongoose.model('Post', PostSchema);
  */
 var MembershipSchema = new mongoose.Schema({_id: String}, {collection: 'memberships', strict: false});
 MembershipSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/membership.json#'});
+
+var originalToElasticsearch = MembershipSchema.methods.toElasticsearch;
+
+/**
+ * Override Membership's toElasticsearch method so that we can also index
+ * related people, organizations and posts.
+ */
+MembershipSchema.methods.toElasticsearch = function(callback) {
+  var Person = this.model('Person');
+  var Organization = this.model('Organization');
+  var Post = this.model('Post');
+  var self = this;
+  originalToElasticsearch.call(this, function(err, doc) {
+    if (err) {
+      return callback(err);
+    }
+    async.parallel({
+      person: function(done) {
+        Person.findById(self.person_id, done);
+      },
+      organization: function(done) {
+        Organization.findById(self.organization_id, done);
+      },
+      post: function(done) {
+        Post.findById(self.post_id, done);
+      }
+    }, function(err, results) {
+      if (err) {
+        return callback(err);
+      }
+      _.extend(doc, results);
+      callback(null, doc);
+    });
+  });
+};
+
 var Membership = mongoose.model('Membership', MembershipSchema);
 
 /**

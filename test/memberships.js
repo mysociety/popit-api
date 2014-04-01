@@ -10,6 +10,7 @@ describe("memberships", function() {
   var fixture = fixtures.connect(defaults.databaseName);
   var Person = mongoose.model('Person');
   var Organization = mongoose.model('Organization');
+  var Membership = mongoose.model('Membership');
 
   before(function() {
     mongoose.connect('mongodb://localhost/' + defaults.databaseName);
@@ -30,9 +31,9 @@ describe("memberships", function() {
         {_id: 'bar-widgets', name: 'Bar Widgets'}
       ],
       memberships: [
-        {_id: fixtures.createObjectId(), organization_id: 'foo-widgets', member: {'@type': 'Person', 'id': 'joe-bloggs'}},
-        {_id: fixtures.createObjectId(), organization_id: 'foo-widgets', member: {'@type': 'Organization', 'id': 'bar-widgets'}},
-        {_id: fixtures.createObjectId(), organization_id: 'bar-widgets', member: {'@type': 'Person', 'id': 'jane-bloggs'}}
+        {_id: 'membership-1', organization_id: 'foo-widgets', member: {'@type': 'Person', 'id': 'joe-bloggs'}},
+        {_id: 'membership-2', organization_id: 'foo-widgets', member: {'@type': 'Organization', 'id': 'bar-widgets'}},
+        {_id: 'membership-3', organization_id: 'bar-widgets', member: {'@type': 'Person', 'id': 'jane-bloggs'}}
       ]
     }, done);
   });
@@ -57,6 +58,20 @@ describe("memberships", function() {
         assert.equal(person.memberships.length, 1);
         assert.equal(person.memberships[0].organization_id, 'bar-widgets');
         done();
+      });
+    });
+  });
+
+  describe("indexing in elasticsearch", function() {
+    it("populates related models", function(done) {
+      Membership.findById('membership-1', function(err, membership) {
+        assert.ifError(err);
+        membership.toElasticsearch(function(err, result) {
+          assert.ifError(err);
+          assert.equal(result.organization._id, 'foo-widgets');
+          assert.equal(result.organization.name, 'Foo Widgets');
+          done();
+        });
       });
     });
   });
