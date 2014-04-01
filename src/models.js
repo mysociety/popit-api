@@ -62,6 +62,12 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
       },
       post: function(done) {
         Post.findById(self.post_id, done);
+      },
+      member: function(done) {
+        if (!self.member) {
+          return done();
+        }
+        self.model(self.member['@type']).findById(self.member.id, done);
       }
     }, function(err, results) {
       if (err) {

@@ -70,6 +70,8 @@ describe("memberships", function() {
           assert.ifError(err);
           assert.equal(result.organization._id, 'foo-widgets');
           assert.equal(result.organization.name, 'Foo Widgets');
+          assert.equal(result.member._id, 'joe-bloggs');
+          assert.equal(result.member.name, 'Joe Bloggs');
           done();
         });
       });
