@@ -27,7 +27,7 @@ function elasticsearchPlugin(schema) {
    * TODO: Make this more generalised rather than hard-coding memberships
    */
   schema.methods.toElasticsearch = function toElasticsearch() {
-    return this.toJSON({
+    var doc = this.toJSON({
       transform: filter,
       fields: {
         all: {
@@ -37,6 +37,25 @@ function elasticsearchPlugin(schema) {
         }
       }
     });
+    for (var key in doc) {
+      if (!doc.hasOwnProperty(key)) {
+        continue;
+      }
+      var value = doc[key];
+      if (typeof value !== 'string') {
+        continue;
+      }
+
+      if (!schema.path(key) || key === 'id' || key === 'slug') {
+        continue;
+      }
+
+      // If we've got this far then we have a popolo string field, so we turn it into an object.
+      doc[key] = {};
+      doc[key][schema.options.toJSON.defaultLanguage || 'en'] = value;
+    }
+
+    return doc;
   };
 
   /**

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "id": "http://popoloproject.com/schemas/contact_detail.json#",
+  "title": "Contact detail",
+  "description": "A means of contacting an entity",
+  "type": "object",
+  "properties": {
+    "label": {
+      "description": "A human-readable label for the contact detail",
+      "type": ["string", "object", "null"]
+    },
+    "type": {
+      "description": "A type of medium, e.g. 'fax' or 'email'",
+      "type": ["string", "object"],
+      "required": true
+    },
+    "value": {
+      "description": "A value, e.g. a phone number or email address",
+      "type": ["string", "object"],
+      "required": true
+    },
+    "note": {
+      "description": "A note, e.g. for grouping contact details by physical location",
+      "type": ["string", "object", "null"]
+    }
+  }
+}

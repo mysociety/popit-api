@@ -20,8 +20,14 @@ var popoloSchemas = {
 };
 
 var mySocietySchemas = {
+  "organization":               require('./popolo+mysociety/organization.json'),
+  "person":                     require('./popolo+mysociety/person.json'),
   "membership":                 require('./popolo+mysociety/membership.json'),
   "post":                       require('./popolo+mysociety/post.json'),
+  "contact_detail":             require('./popolo+mysociety/contact_detail.json'),
+  "identifier":                 require('./popolo+mysociety/identifier.json'),
+  "link":                       require('./popolo+mysociety/link.json'),
+  "other_name":                 require('./popolo+mysociety/other_name.json'),
 };
 
 // Schemas for which it is okay to substitute in the workaround below
