@@ -21,6 +21,12 @@ function i18n(objectWithLanguages, langs, defaultLang) {
       return;
     }
 
+    // Don't translate id fields
+    if (key === 'id') {
+      obj[key] = value;
+      return;
+    }
+
     if (_.isArray(value)) {
       obj[key] = value.map(function(nestedValue) {
         if (_.isObject(nestedValue) && !_.isArray(nestedValue)) {
