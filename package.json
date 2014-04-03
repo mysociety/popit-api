@@ -33,7 +33,7 @@
     "http-accept": "~0.1.6"
   },
   "devDependencies": {
-    "mocha": "~1.8.2",
+    "mocha": "~1.18.2",
     "supertest": "~0.5.1",
     "jshint": "~1.1.0",
     "pow-mongodb-fixtures": "~0.8.1"
