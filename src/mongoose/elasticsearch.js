@@ -12,6 +12,7 @@
 var elasticsearch = require('elasticsearch');
 var filter = require('../filter');
 var paginate = require('../paginate');
+var i18n = require('../i18n');
 
 module.exports = elasticsearchPlugin;
 
@@ -37,25 +38,8 @@ function elasticsearchPlugin(schema) {
         }
       }
     });
-    for (var key in doc) {
-      if (!doc.hasOwnProperty(key)) {
-        continue;
-      }
-      var value = doc[key];
-      if (typeof value !== 'string') {
-        continue;
-      }
 
-      if (!schema.path(key) || key === 'id' || key === 'slug') {
-        continue;
-      }
-
-      // If we've got this far then we have a popolo string field, so we turn it into an object.
-      doc[key] = {};
-      doc[key][schema.options.toJSON.defaultLanguage || 'en'] = value;
-    }
-
-    return doc;
+    return i18n(doc, [], schema.options.toJSON.defaultLanguage || 'en', true);
   };
 
   /**
