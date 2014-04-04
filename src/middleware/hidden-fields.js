@@ -36,6 +36,11 @@ function hiddenFields(req, res, next) {
   var schema = req.collection.schema;
   schema.options.toJSON.fields = fields;
 
+  schema.options.toJSON.selectedFields = [];
+  if (req.query.fields) {
+    schema.options.toJSON.selectedFields = req.query.fields.split(',');
+  }
+
   // Admin can see any fields.
   if (req.isAdmin) {
     return next();

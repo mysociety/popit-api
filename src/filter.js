@@ -14,6 +14,7 @@ function filter(doc, ret, options) {
   }
 
   var fields = options.fields || {};
+  var selectedFields = options.selectedFields || [];
 
   var newDoc = {};
 
@@ -37,6 +38,11 @@ function filter(doc, ret, options) {
 
     // Skip 'hidden' fields starting with an underscore.
     if (field.substr(0, 1) === '_') {
+      continue;
+    }
+
+    // If selectedFields is not empty, then skip any fields not mentioned in there.
+    if (selectedFields.length > 0 && selectedFields.indexOf(field) === -1) {
       continue;
     }
 
