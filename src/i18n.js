@@ -10,9 +10,13 @@ function isValidLanguage(language) {
 /**
  * Takes an object and a language and flattens any language keys of
  * that object to use the specified language, or the default one.
+ *
+ * If includeTranslations is true then it will turn the other languages into
+ * keys like name_en, name_ru etc. (Default false)
  */
-function i18n(objectWithLanguages, langs, defaultLang) {
+function i18n(objectWithLanguages, langs, defaultLang, includeTranslations) {
   langs = langs || [];
+  includeTranslations = includeTranslations || false;
   var obj = {};
   // Detect keys that need translating
   _.each(objectWithLanguages, function(value, key) {
@@ -30,7 +34,7 @@ function i18n(objectWithLanguages, langs, defaultLang) {
     if (_.isArray(value)) {
       obj[key] = value.map(function(nestedValue) {
         if (_.isObject(nestedValue) && !_.isArray(nestedValue)) {
-          return i18n(nestedValue, langs, defaultLang);
+          return i18n(nestedValue, langs, defaultLang, includeTranslations);
         } else {
           return nestedValue;
         }
@@ -48,9 +52,14 @@ function i18n(objectWithLanguages, langs, defaultLang) {
       });
       if (!obj[key]) {
         obj[key] = value[defaultLang] || '';
+        if (includeTranslations) {
+          _.each(value, function(translation, language) {
+            obj[key + '_' + language] = translation;
+          });
+        }
       }
     } else {
-      obj[key] = i18n(value, langs, defaultLang);
+      obj[key] = i18n(value, langs, defaultLang, includeTranslations);
     }
   });
   return obj;

@@ -47,7 +47,7 @@ describe("Search", function() {
         if (err) {
           return done(err);
         }
-        assert.equal("John Smith", result._source.name.en);
+        assert.equal("John Smith", result._source.name);
         done();
       });
     }
@@ -84,6 +84,35 @@ describe("Search", function() {
         done();
       });
     }
+  });
+
+  describe("toElasticsearch", function() {
+    it("turns translated objects into multiple values", function(done) {
+      var person = new Person({
+        _id: 'test',
+        name: {
+          en: 'One',
+          es: 'Uno'
+        },
+        foo: [
+          {bar: {en: 'Bar', es: 'Baro'}}
+        ]
+      });
+
+      person.save(function(err) {
+        assert.ifError(err);
+        var doc = person.toElasticsearch();
+
+        assert.equal(doc.name, 'One', "Should use the default language for name key");
+        assert.equal(doc.name_en, 'One', "Should store language translations");
+        assert.equal(doc.name_es, 'Uno', "Should store language translations");
+
+        assert.equal(doc.foo[0].bar, 'Bar');
+        assert.equal(doc.foo[0].bar_en, 'Bar');
+        assert.equal(doc.foo[0].bar_es, 'Baro');
+        done();
+      });
+    });
   });
 
 });
