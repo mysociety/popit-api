@@ -2,7 +2,7 @@
 
 var _             = require('underscore'),
     schemas       = require('../schemas'),
-    collections   = require('./collections'),
+    models        = require('./models'),
     assert        = require('assert');
 
 
@@ -27,9 +27,9 @@ module.exports = function (name, data, callback) {
   if (/https?:\/\//.test(name)) {
     schemaUrl = name;
   } else {
-    collection = collections[name];
+    collection = models[name];
     assert(collection, "Could not load collection for '" + name + "'");
-    schemaUrl = collection.popoloSchemaUrl;
+    schemaUrl = collection.popoloSchemaUrl();
     assert(schemaUrl, "Could not get url from collection '" + name + "'");
   }
 
