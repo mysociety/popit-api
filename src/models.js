@@ -53,27 +53,34 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
     if (err) {
       return callback(err);
     }
+    Person.schema.set('skipMemberships', true);
+    Organization.schema.set('skipMemberships', true);
+    Post.schema.set('skipMemberships', true);
     async.parallel({
       person: function(done) {
-        Person.findById(self.person_id, done);
+        Person.findById(self.person_id, {memberships: 0}, done);
       },
       organization: function(done) {
-        Organization.findById(self.organization_id, done);
+        Organization.findById(self.organization_id, {memberships: 0}, done);
       },
       post: function(done) {
-        Post.findById(self.post_id, done);
+        Post.findById(self.post_id, {memberships: 0}, done);
       },
       member: function(done) {
         if (!self.member) {
           return done();
         }
-        self.model(self.member['@type']).findById(self.member.id, done);
+        self.model(self.member['@type']).findById(self.member.id, {memberships: 0}, done);
       }
     }, function(err, results) {
       if (err) {
         return callback(err);
       }
       _.extend(doc, results);
+
+      Person.schema.set('skipMemberships', false);
+      Organization.schema.set('skipMemberships', false);
+      Post.schema.set('skipMemberships', false);
       callback(null, doc);
     });
   });

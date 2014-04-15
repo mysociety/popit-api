@@ -21,6 +21,9 @@ function membershipFinder(schema, options) {
   }
 
   schema.pre('init', function(next, data) {
+    if (schema.get('skipMemberships')) {
+      return next();
+    }
     findMemberships(this.model('Membership'), this.constructor.modelName, data._id, function(err, docs) {
       if (err) {
         return next(err);
