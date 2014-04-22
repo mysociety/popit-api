@@ -434,29 +434,6 @@ describe("REST", function () {
     });
   });
 
-  describe("deduplicating slugs", function() {
-    beforeEach(function(done) {
-      request.post('/api/persons')
-      .send({id: 'foo', name: 'Test', slug: 'test'})
-      .expect(200, done);
-    });
-
-    it("appends a number for a duplicate slug", function(done) {
-      request.post('/api/persons')
-      .send({id: 'bar', name: 'Test', slug: 'test'})
-      .expect({result: person({id: 'bar', name: 'Test', slug: 'test-1'})})
-      .expect(200, function(err) {
-        if (err) {
-          return done(err);
-        }
-        request.post('/api/persons')
-        .send({id: 'baz', name: 'Test', slug: 'test'})
-        .expect({result: person({id: 'baz', name: 'Test', slug: 'test-2'})})
-        .expect(200, done);
-      });
-    });
-  });
-
   describe("api links", function() {
     beforeEach(fixture.loadFixtures);
 
@@ -497,27 +474,17 @@ describe("REST", function () {
       describe("html_url", function() {
         beforeEach(function(done) {
           app.post('/persons')
-          .send({id: 'test', name: 'Test', slug: 'test-person'})
+          .send({id: 'test', name: 'Test'})
           .expect(200)
           .end(done);
         });
 
-        it("doesn't include 'html_url' when doc has no slug", function(done) {
-          app.get('/persons/joe-bloggs')
-          .expect(200)
-          .end(function(err, res) {
-            assert.ifError(err);
-            assert(!res.body.result.html_url);
-            done();
-          });
-        });
-
-        it("is included for documents with a slug", function(done) {
+        it("is present", function(done) {
           app.get('/persons/test')
           .expect(200)
           .end(function(err, res) {
             assert.ifError(err);
-            assert.equal(res.body.result.html_url, 'http://example.com/persons/test-person');
+            assert.equal(res.body.result.html_url, 'http://example.com/persons/test');
             done();
           });
         });
