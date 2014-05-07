@@ -15,6 +15,7 @@ var dateFilter = require('./middleware/date-filter');
 var i18n = require('./middleware/i18n');
 var accept = require('http-accept');
 var models = require('./models');
+var eachSchema = require('./utils').eachSchema;
 
 module.exports = popitApiApp;
 
@@ -119,6 +120,29 @@ function popitApiApp(options) {
         var body = pagination.metadata(count, req.currentUrl);
         body.result = docs;
         res.jsonp(body);
+      });
+    });
+  });
+
+  app.get('/:collection/:id(*)/full', function (req, res, next) {
+    var id = req.params.id;
+
+    req.collection.findById(id, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+      if (!doc) {
+        return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
+      }
+
+      eachSchema(req.collection, function(schema) {
+        schema.options.toJSON.returnAllTranslations = true;
+      });
+
+      res.withBody(doc);
+
+      eachSchema(req.collection, function(schema) {
+        schema.options.toJSON.returnAllTranslations = false;
       });
     });
   });
