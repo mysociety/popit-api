@@ -87,6 +87,16 @@ describe("internationalization", function() {
         done();
       });
     });
+
+    it("returns all translations if requested", function(done) {
+      request.get('/api/persons/fred-bloggs/full')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.deepEqual(res.body.result.name, {"ru":"Фред Влоггс","en":"Fred Bloggs"});
+        done();
+      });
+    });
   });
 
   describe("search", function() {

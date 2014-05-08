@@ -70,5 +70,8 @@ function filterDates(doc, ret, options) {
 }
 
 function translateDoc(doc, ret, options) {
+  if (options.returnAllTranslations) {
+    return ret;
+  }
   return i18n(ret, options.langs, options.defaultLanguage);
 }
