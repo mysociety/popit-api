@@ -77,4 +77,23 @@ describe("memberships", function() {
       });
     });
   });
+
+  describe("remove memberships if delete member", function() {
+    it("deletes membership after member is deleted", function(done) {
+      Person.findById('jane-bloggs', function(err, person) {
+        assert.ifError(err);
+        person.remove( function(err) {
+          assert.ifError(err);
+          person.on('memberships-removed', function() {
+            assert.ifError(err);
+            Membership.findById('membership-3').count(function(err, count) {
+              assert.ifError(err);
+              assert.equal(count, 0, 'membership deleted');
+              done();
+            });
+          });
+        });
+      });
+    });
+  });
 });

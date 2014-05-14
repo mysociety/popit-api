@@ -1,5 +1,7 @@
 "use strict";
 
+var async = require("async");
+
 /**
  * Find memberships that are associated with the current object and
  * populate them. This is necessary because memberships are stored in
@@ -46,6 +48,30 @@ function membershipFinder(schema, options) {
       });
     });
   });
+
+  /*
+   * After removing, remove any memberships that are related to this doc.
+   */
+  schema.post('remove', function(doc) {
+    findMemberships(this.model('Membership'), this.constructor.modelName, doc._id, function(err, docs) {
+      if (err) {
+        return;
+      }
+      var parent = doc;
+      async.each(
+        docs,
+        function(doc, done) {
+          doc.remove( function(err) { done(err); } );
+        },
+        function(err) {
+          if (!err) {
+            parent.emit('memberships-removed');
+          }
+        }
+      );
+    });
+  });
+
 }
 
 module.exports = membershipFinder;
