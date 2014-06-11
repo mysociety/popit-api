@@ -16,6 +16,7 @@ var i18n = require('./middleware/i18n');
 var accept = require('http-accept');
 var models = require('./models');
 var eachSchema = require('./utils').eachSchema;
+var InvalidQueryError = require('./mongoose/elasticsearch').InvalidQueryError;
 
 module.exports = popitApiApp;
 
@@ -92,6 +93,10 @@ function popitApiApp(options) {
   app.get('/search/:collection', function(req, res, next) {
     var pagination = paginate(req.query);
     req.collection.search(req.query, function(err, result) {
+      if (err instanceof InvalidQueryError) {
+        // Send a 400 error to indicate the client needs to alter their request
+        return res.send(400, {errors: [err.message, err.explaination]});
+      }
       if (err) {
         return next(err);
       }

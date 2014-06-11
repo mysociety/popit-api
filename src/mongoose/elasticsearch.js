@@ -14,8 +14,18 @@ var filter = require('../filter');
 var paginate = require('../paginate');
 var i18n = require('../i18n');
 var async = require('async');
+var util = require('util');
 
-module.exports = elasticsearchPlugin;
+module.exports = exports = elasticsearchPlugin;
+
+function InvalidQueryError(message, explanation) {
+  this.name = 'InvalidQueryError';
+  this.message = message || "Invalid q parameter";
+  this.explaination = explanation;
+}
+util.inherits(InvalidQueryError, Error);
+
+exports.InvalidQueryError = InvalidQueryError;
 
 var client = elasticsearchPlugin.client = new elasticsearch.Client({
   apiVersion: '0.90'
@@ -111,13 +121,26 @@ function elasticsearchPlugin(schema) {
   schema.statics.search = function(params, cb) {
     var skipLimit = paginate(params);
 
-    client.search({
+    var query = {
       index: this.indexName(),
       type: this.typeName(),
       q: params.q,
       from: skipLimit.skip,
-      size: skipLimit.limit
-    }, cb);
+      size: skipLimit.limit,
+      explain: true
+    };
+
+    client.indices.validateQuery(query, function(err, res) {
+      if (err) {
+        return cb(err);
+      }
+      if (!res.valid) {
+        var message = "Invalid q parameter: " + query.q;
+        var error = new InvalidQueryError(message, res.explanations[0].error);
+        return cb(error);
+      }
+      client.search(query, cb);
+    });
 
   };
 
