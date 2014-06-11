@@ -61,10 +61,12 @@ var storageSelectors = {
  * @return {function} The middleware to add to express.
  */
 function storageSelector(options) {
-  // check that we have all the options that we need
-  var storage = storageSelectors[options.storageSelector];
-  assert(storage, "Could not load storage selector '"+options.storageSelector+"'");
-  storage = storage(options);
+  options.storageSelector = options.storageSelector || 'fixedName';
+  var storageFunction = storageSelectors[options.storageSelector];
+  if (!storageFunction) {
+    throw new Error("Could not load storageSelector '" + options.storageSelector + "'");
+  }
+  var storage = storageFunction(options);
   if (storage.optionsCheck) {
     storage.optionsCheck(options);
   }

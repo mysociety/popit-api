@@ -24,8 +24,6 @@ module.exports = popitApiApp;
 popitApiApp.reIndex = reIndex;
 
 function popitApiApp(options) {
-  options.storageSelector = options.storageSelector || 'fixedName';
-
   var app = express();
 
   // Expose globally fieldSpec option in the app config.

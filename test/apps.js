@@ -88,7 +88,7 @@ describe("Apps", function () {
           function () {
             apiApp({ storageSelector: 'unknownSelector' });
           },
-          /Could not load storage selector 'unknownSelector'/
+          /Could not load storageSelector 'unknownSelector'/
         );
       });
       
