@@ -17,7 +17,9 @@ var async = require('async');
 
 module.exports = elasticsearchPlugin;
 
-var client = elasticsearchPlugin.client = new elasticsearch.Client();
+var client = elasticsearchPlugin.client = new elasticsearch.Client({
+  apiVersion: '0.90'
+});
 
 function elasticsearchPlugin(schema) {
 
