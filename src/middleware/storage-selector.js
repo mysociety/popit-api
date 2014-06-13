@@ -50,6 +50,20 @@ var storageSelectors = {
         next();
       }
     };
+  },
+  popit: function(options) {
+    return {
+      selector: function(req, res, next) {
+        var databaseName = options.databasePrefix + req.subdomains[req.subdomains.length - 1];
+        req.db = connection(databaseName);
+        next();
+      },
+      optionsCheck: function(options) {
+        if (!options.databasePrefix) {
+          throw new Error("popit storageSelector requires a databasePrefix option");
+        }
+      }
+    };
   }
 };
 
