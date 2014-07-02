@@ -144,26 +144,18 @@ function elasticsearchPlugin(schema) {
 
   };
 
-  /**
-   * Reindex all the documents in this collection using the elasticsearch
-   * bulk API.
-   */
-  schema.statics.reIndex = function(done) {
+  function findForElasticsearchWithSkip(batchSize, skip, done) {
     var self = this;
-    self.find(function(err, docs) {
+    self.find({}, null, {limit: batchSize, skip: skip}, function(err, docs) {
       if (err) {
         return done(err);
       }
 
-      var indexed = 0;
-      var body;
-
-      async.concatSeries(docs, function(doc, callback) {
+      async.concat(docs, function(doc, callback) {
         doc.toElasticsearch(function(err, result) {
           if (err) {
             return callback(err);
           }
-          indexed++;
           callback(null, [{
             index: {
               _index: self.indexName(),
@@ -172,22 +164,48 @@ function elasticsearchPlugin(schema) {
             }
           }, result]);
         });
-      }, function(err, results) {
-        if (err) {
-          return done(err);
-        }
-        body = results;
+      }, done);
+    });
+  }
 
-        if (body.length === 0) {
-          return done(null, 0);
-        }
+  /**
+   * Reindex all the documents in this collection using the elasticsearch
+   * bulk API.
+   */
+  schema.statics.reIndex = function(done) {
+    var self = this;
+    self.count(function(err, count) {
+      if (err) {
+        return done(err);
+      }
+      if (count === 0) {
+        return done(null, 0);
+      }
 
-        // Send the commands and content docs to the bulk API.
+      // The version of mongo we're currently using (2.0.x) has a limit of 4MB
+      // for documents being returned from mongo. When there is a collection
+      // bigger than this limit an error will occur if we try and retrieve the
+      // whole collection at once, so instead we do it in batches of 'batchSize'.
+      //
+      // It's not entirely clear why this is necessary, since mongo *should* use
+      // a cursor to avoid limits like this, but we couldn't find an obvious way
+      // to work around this.
+      var batchSize = 2000;
+      var skip;
+      var skips = [];
+      for (skip = 0; skip < count; skip += batchSize) {
+        skips.push(skip);
+      }
+
+      async.concat(skips, function(skip, next) {
+        findForElasticsearchWithSkip.call(self, batchSize, skip, next);
+      }, function(err, body) {
         client.bulk({body: body}, function(err) {
-          done(err, indexed);
+          // There are 2 array elements for every document, so we divide the total by 2
+          done(err, body.length / 2);
         });
       });
     });
-
   };
+
 }
