@@ -183,7 +183,9 @@ function elasticsearchPlugin(schema) {
         }
 
         // Send the commands and content docs to the bulk API.
-        client.bulk({body: body}, function(err) {
+        // Set the requestTimeout to 5 minutes to hopefully prevent timeouts
+        // for large collections.
+        client.bulk({body: body, requestTimeout: 300000}, function(err) {
           done(err, indexed);
         });
       });
