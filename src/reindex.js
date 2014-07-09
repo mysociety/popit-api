@@ -21,7 +21,7 @@ function reIndex(databaseName, callback) {
   var Membership = connection.model('Membership');
   var Post = connection.model('Post');
 
-  async.map([Person, Organization, Membership, Post], function(Model, done) {
+  async.mapSeries([Person, Organization, Membership, Post], function(Model, done) {
     Model.reIndex(done);
   }, function(err, counts) {
     if (err) {
