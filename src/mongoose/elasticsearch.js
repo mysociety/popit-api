@@ -66,7 +66,7 @@ function elasticsearchPlugin(schema) {
       client.index({
         index: self.constructor.indexName(),
         type: self.constructor.typeName(),
-        id: self.id,
+        id: result.id,
         body: result
       }, function(err) {
         self.emit('es-indexed', err);
