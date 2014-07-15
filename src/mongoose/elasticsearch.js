@@ -79,7 +79,11 @@ function elasticsearchPlugin(schema) {
    * After the document has been saved, index it in elasticsearch.
    */
   schema.post('save', function(doc) {
-    doc.reIndex();
+    doc.reIndex(function(err) {
+      if (err) {
+        console.warn(err);
+      }
+    });
   });
 
   /**
