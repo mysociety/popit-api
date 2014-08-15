@@ -22,7 +22,12 @@ function reIndex(databaseName, callback) {
   var Post = connection.model('Post');
 
   async.mapSeries([Person, Organization, Membership, Post], function(Model, done) {
-    Model.reIndex(done);
+    Model.dropIndex(function(err) {
+      if (err) {
+        return done(err);
+      }
+      Model.reIndex(done);
+    });
   }, function(err, counts) {
     if (err) {
       return callback(err);

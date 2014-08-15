@@ -198,4 +198,10 @@ function elasticsearchPlugin(schema) {
     });
 
   };
+
+  schema.statics.dropIndex = function dropIndex(done) {
+    client.indices.delete({
+      index: this.indexName()
+    }, done);
+  };
 }
