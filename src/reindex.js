@@ -25,7 +25,7 @@ function reIndex(databaseName, callback) {
   // handy way to access the method).
   Person.dropIndex(function(err) {
     if (err) {
-      return done(err);
+      return callback(err);
     }
     async.mapSeries([Person, Organization, Membership, Post], function(Model, done) {
       Model.reIndex(done);
