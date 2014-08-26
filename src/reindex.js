@@ -21,7 +21,9 @@ function reIndex(databaseName, callback) {
   var Membership = connection.model('Membership');
   var Post = connection.model('Post');
 
-  Model.dropIndex(function(err) {
+  // Drop the index for the whole instance (Person model is just a
+  // handy way to access the method).
+  Person.dropIndex(function(err) {
     if (err) {
       return done(err);
     }
