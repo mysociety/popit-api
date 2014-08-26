@@ -21,22 +21,22 @@ function reIndex(databaseName, callback) {
   var Membership = connection.model('Membership');
   var Post = connection.model('Post');
 
-  async.mapSeries([Person, Organization, Membership, Post], function(Model, done) {
-    Model.dropIndex(function(err) {
-      if (err) {
-        return done(err);
-      }
-      Model.reIndex(done);
-    });
-  }, function(err, counts) {
+  Model.dropIndex(function(err) {
     if (err) {
-      return callback(err);
+      return done(err);
     }
-    var total = counts.reduce(function(previous, current) {
-      return previous + current;
-    });
-    connection.close(function(err) {
-      callback(err, total);
+    async.mapSeries([Person, Organization, Membership, Post], function(Model, done) {
+      Model.reIndex(done);
+    }, function(err, counts) {
+      if (err) {
+        return callback(err);
+      }
+      var total = counts.reduce(function(previous, current) {
+        return previous + current;
+      });
+      connection.close(function(err) {
+        callback(err, total);
+      });
     });
   });
 }
