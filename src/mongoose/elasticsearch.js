@@ -200,8 +200,19 @@ function elasticsearchPlugin(schema) {
   };
 
   schema.statics.dropIndex = function dropIndex(done) {
-    client.indices.delete({
-      index: this.indexName()
-    }, done);
+    var indexName = this.indexName();
+    client.indices.exists({
+      index: indexName,
+    }, function(err, exists) {
+      if (err) {
+        return done(err);
+      }
+      if (!exists) {
+        return done();
+      }
+      client.indices.delete({
+        index: indexName,
+      }, done);
+    });
   };
 }
