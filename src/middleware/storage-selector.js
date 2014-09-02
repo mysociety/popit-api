@@ -54,7 +54,7 @@ var storageSelectors = {
   popit: function(options) {
     return {
       selector: function(req, res, next) {
-        var databaseName = options.databasePrefix + req.subdomains[req.subdomains.length - 1];
+        var databaseName = options.databasePrefix + req.popit.dbname();
         req.db = connection(databaseName);
         next();
       },
