@@ -39,13 +39,13 @@ function membershipFinder(schema, options) {
    * After saving, update any memberships that are related to this doc.
    */
   schema.post('save', function(doc) {
+    var that = this;
     findMemberships(this.model('Membership'), this.constructor.modelName, doc._id, function(err, docs) {
       if (err) {
         return;
       }
-      docs.forEach(function(doc) {
-        doc.reIndex();
-      });
+      // TODO: better error handling
+      that.model('Membership').bulkReIndex(docs, function(err) { if (err) { console.log('bulk reindex error'); console.log(err); } });
     });
   });
 

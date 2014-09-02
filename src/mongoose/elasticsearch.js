@@ -215,4 +215,41 @@ function elasticsearchPlugin(schema) {
       }, done);
     });
   };
+
+  schema.statics.bulkReIndex = function(docs, done) {
+    var self = this;
+    var indexed = 0;
+    var body;
+    async.concatSeries(docs, function(doc, callback) {
+      doc.toElasticsearch(function(err, result) {
+        if (err) {
+          return callback(err);
+        }
+        indexed++;
+        callback(null, [{
+          index: {
+            _index: self.indexName(),
+            _type: self.typeName(),
+            _id: doc._id,
+          }
+        }, result]);
+      });
+    }, function(err, results) {
+      if (err) {
+        return done(err);
+      }
+      body = results;
+
+      if (body.length === 0) {
+        return done(null, 0);
+      }
+
+      // Send the commands and content docs to the bulk API.
+      // Set the requestTimeout to 5 minutes to hopefully prevent timeouts
+      // for large collections.
+      client.bulk({body: body, requestTimeout: 600000}, function(err) {
+        done(err, indexed);
+      });
+    });
+  };
 }
