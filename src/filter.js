@@ -40,6 +40,10 @@ function filter(doc, ret, options) {
       continue;
     }
 
+    if (field === 'memberships' && doc.schema.get('skipMemberships')) {
+      continue;
+    }
+
     // If we've made it this far then copy the field to the new doc.
     newDoc[field] = ret[field];
   }
