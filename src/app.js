@@ -1,6 +1,7 @@
 "use strict";
 
 var express = require('express');
+var _ = require('underscore');
 var packageJSON = require("../package");
 var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
@@ -76,6 +77,7 @@ function popitApiApp(options) {
       });
     }
 
+    req.model = models[collection];
     req.collection = req.db.model(models[collection].modelName);
 
     next();
@@ -86,7 +88,6 @@ function popitApiApp(options) {
    */
   app.param('collection', hiddenFields);
   app.param('collection', apiLinks(options));
-
 
   app.get('/search/:collection', function(req, res, next) {
     var pagination = paginate(req.query);
@@ -150,10 +151,61 @@ function popitApiApp(options) {
     });
   });
 
+  function populateJoins(req, res, doc, opts) {
+    var opt = opts.shift();
+    if ( opt ) {
+      req.collection.populate(doc, opt, function(err, out) {
+        populateJoins(req, res, out, opts);
+      });
+    } else {
+      res.withBody(doc);
+    }
+  }
+
   app.get('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
+    var embed = req.query.embed;
 
-    req.collection.findById(id, function (err, doc) {
+    if ( typeof embed != 'undefined' && embed === "" ) {
+      req.model.schema.set('skipMemberships', true);
+    }
+
+    var join_structure;
+    if ( embed && embed != 'membership' ) {
+      var target_re = /((?:membership.\w+)+)/g;
+      var targets = [];
+      var match;
+      while ( targets.length < 3 && ( match = target_re.exec(embed) ) ) {
+        targets.push(match[0]);
+      }
+      var target_map = {
+        'membership.person': {
+          path: 'memberships.person_id',
+          model: 'Person',
+          collection: 'persons'
+        },
+        'membership.organization': {
+          path: 'memberships.organization_id',
+          model: 'Organization',
+          collection: 'organizations'
+        }
+      };
+
+      if ( !_.all(targets, function(target) { return target_map[target]; }) ) {
+        return res.send(400, {errors: ['not a valid embed type', 'embed must be one of membership.person or membership.organization']});
+      }
+
+      join_structure = [];
+      var path = [];
+      _.each(targets, function(target) {
+        var this_map = target_map[target];
+        path.push( this_map.path );
+        join_structure.push({ path: path.join('.'), model: this_map.model, collection: this_map.collection });
+      });
+    }
+
+    req.collection.findById(id)
+      .exec(function (err, doc) {
       if (err) {
         return next(err);
       }
@@ -161,7 +213,12 @@ function popitApiApp(options) {
         return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
 
-      res.withBody(doc);
+      if ( join_structure ) {
+        populateJoins(req, res, doc, join_structure);
+      } else {
+        res.withBody(doc);
+        req.model.schema.set('skipMemberships', false);
+      }
     });
   });
 
