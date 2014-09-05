@@ -658,4 +658,30 @@ describe("REST", function () {
 
   });
 
+  describe("selecting fields", function() {
+    beforeEach(fixture.loadFixtures);
+
+    it("only returns the selected fields for collections", function(done) {
+      request.get('/api/persons?fields=id,name')
+      .expect(200)
+      .expect({
+        total: 2,
+        page: 1,
+        per_page: 30,
+        has_more: false,
+        result: [
+          { id: 'fred-bloggs', name: 'Fred Bloggs' },
+          { id: 'joe-bloggs', name: 'Joe Bloggs' }
+        ]
+      }, done);
+    });
+
+    it("only returns the selected fields on individual records", function(done) {
+      request.get('/api/persons/fred-bloggs?fields=id,name')
+      .expect(200)
+      .expect({result: {id: 'fred-bloggs', name: 'Fred Bloggs'}}, done);
+    });
+
+  });
+
 });
