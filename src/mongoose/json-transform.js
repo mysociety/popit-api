@@ -19,6 +19,7 @@ function filterFields(doc, ret, options) {
   ret = addLinks(doc, ret, options);
   ret = translateDoc(doc, ret, options);
   ret = filterDates(doc, ret, options);
+  ret = setImage(doc, ret, options);
   return ret;
 }
 
@@ -74,4 +75,33 @@ function translateDoc(doc, ret, options) {
     return ret;
   }
   return i18n(ret, options.langs, options.defaultLanguage);
+}
+
+function generateImageUrl(img, doc, options) {
+  var url = [
+    options.baseUrl,
+    doc.constructor.collection.name.toLowerCase(),
+    'images',
+    img._id,
+    doc._id || doc.id
+  ].join('/');
+
+  return url;
+}
+
+function setImage(doc, ret, options) {
+  var images = ret.images;
+
+  if ( images && images.length ) {
+    ret.images = [];
+    doc.get('images').forEach(function imageProcess(img) {
+      if (!img.url) {
+        img.url = generateImageUrl(img, doc, options);
+      }
+      ret.images.push(img);
+    });
+    ret.image = ret.images[0].url;
+  }
+
+  return ret;
 }

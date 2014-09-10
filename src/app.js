@@ -2,6 +2,7 @@
 
 var express = require('express');
 var _ = require('underscore');
+var mongoose = require('mongoose');
 var packageJSON = require("../package");
 var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
@@ -274,6 +275,20 @@ function popitApiApp(options) {
         doc = new req.collection();
       }
       delete body.__v;
+      /* this is to make sure that the _id property is the same for things added via
+       * the api and the front end. If not then elasticsearch doesn't index it as it
+       * confuses it's auto mapping.
+       */
+      if ( body.images ) {
+        var images = [];
+        body.images.forEach( function(img) {
+          if ( img._id ) {
+            img._id = new mongoose.Types.ObjectId(img._id);
+          }
+          images.push(img);
+        });
+        body.images = images;
+      }
       doc.set(body);
       doc.save(function(err) {
         if (err) {
