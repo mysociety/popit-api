@@ -185,7 +185,13 @@ function popitApiApp(options) {
   });
 
   app.post('/:collection', validateBody, function (req, res, next) {
-    req.collection.create(req.body, function (err, doc) {
+    var body = req.body;
+    // if there's an image and no body.images then add one as the popit front end uses
+    // that at the moment
+    if ( body.image && !body.images ) {
+      body.images = [ { url: body.image } ];
+    }
+    req.collection.create(body, function (err, doc) {
       if (err) {
         return next(err);
       }
@@ -217,6 +223,11 @@ function popitApiApp(options) {
         doc = new req.collection();
       }
       delete body.__v;
+      // if there's an image and no body.images then add one as the popit front end uses
+      // that at the moment
+      if ( body.image && !body.images ) {
+        body.images = [ { url: body.image } ];
+      }
       doc.set(body);
       doc.save(function(err) {
         if (err) {
