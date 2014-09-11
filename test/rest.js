@@ -232,6 +232,36 @@ describe("REST", function () {
           }, done);
       });
 
+      it("should return an image attribute when adding images", function(done) {
+        request
+          .post("/api/persons")
+          .send({id: 'test', name: 'Test', images: [ { url: 'http://example.com/image.png' }]})
+          .expect(200)
+          .expect({
+            result: person({id: 'test', name: 'Test', image: 'http://example.com/image.png', images: [ { url: 'http://example.com/image.png' }]})
+          }, done);
+      });
+
+      it("should return an set the image attribute to the first image from images", function(done) {
+        request
+          .post("/api/persons")
+          .send({id: 'test', name: 'Test', images: [ { url: 'http://example.com/image.png' }, { url: 'http://example.org/image2.png' } ]})
+          .expect(200)
+          .expect({
+            result: person({id: 'test', name: 'Test', image: 'http://example.com/image.png', images: [ { url: 'http://example.com/image.png' }, { url: 'http://example.org/image2.png' } ]})
+          }, done);
+      });
+
+      it("should add an image to the images array", function(done) {
+        request
+          .post("/api/persons")
+          .send({id: 'test', name: 'Test', image: 'http://example.com/image.png' })
+          .expect(200)
+          .expect({
+            result: person({id: 'test', name: 'Test', image: 'http://example.com/image.png', images: [ { url: 'http://example.com/image.png' }]})
+          }, done);
+      });
+
     });
 
     describe("PUT", function () {
