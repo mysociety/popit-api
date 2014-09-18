@@ -4,6 +4,9 @@ var express = require('express');
 var _ = require('underscore');
 var mongoose = require('mongoose');
 var packageJSON = require("../package");
+var path = require('path');
+var mkdirp = require('mkdirp');
+var fs = require('fs-extra');
 var storageSelector = require('./middleware/storage-selector');
 var authCheck = require('./middleware/auth-check');
 var hiddenFields = require('./middleware/hidden-fields');
@@ -258,6 +261,87 @@ function popitApiApp(options) {
 
   });
 
+
+  app.post('/:collection/:id/image', validateBody, function (req, res, next) {
+    var id = req.params.id;
+    var body = req.body;
+
+    var upload = {};
+    if ( req.files ) {
+      upload = req.files.image || {};
+    }
+
+    if ( !upload.size ) {
+      return res
+        .status(400)
+        .jsonp({
+          errors: ["No image sent"]
+        });
+    }
+
+    req.collection.findById(id, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+      if ( !doc ) {
+        return res
+          .status(400)
+          .jsonp({
+            errors: ["No doc found"]
+          });
+      }
+
+      var image = new (req.popit.model('Image'))({
+          mime_type: upload.type
+        });
+
+      var dest_path = req.popit.files_dir( image.local_path );
+
+      // copy the image to the right place
+      mkdirp( path.dirname(dest_path), function (err) {
+        if (err) {
+          throw err;
+        }
+        fs.move( upload.path, dest_path, function(err) {
+          if (err) {
+            throw err;
+          }
+
+          var images = doc.get('images');
+          if ( !images ) {
+            images = [];
+          }
+
+          /* This whole process here is to make sure mongoose sees this as
+           * JSON and not as a Mongoose document. If it does the latter then
+           * there are various circular references in there that cause a stack
+           * size exceeded error.
+           *
+           * Furthermore elasticsearch is fussy about date formats and the default
+           * format that is produced when parsing the created date to JSON upsets
+           * it so to be safe we force it to a known compatible
+           * format here.
+           */
+          image = image.toJSON();
+          image.created = image.created.toISOString();
+          images.push(image);
+
+          doc.set('images', images);
+          // mongoose has trouble working out if mixed object arrays have changed
+          // so make sure it knows otherwise the changes aren't saved
+          doc.markModified('images');
+
+          doc.save(function(err, newDoc) {
+            if (err) {
+              return next(err);
+            }
+
+            return res.withBody(newDoc);
+          });
+        });
+      });
+    });
+  });
 
   app.put('/:collection/:id(*)', validateBody, function (req, res, next) {
 
