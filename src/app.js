@@ -295,6 +295,15 @@ function popitApiApp(options) {
           mime_type: upload.type
         });
 
+      var fieldsToRemove = [ 'filename', 'name', 'content', 'id', '_id' ];
+      fieldsToRemove.forEach(function(field) {
+        delete body[field];
+      });
+
+      Object.keys(body).forEach(function(key) {
+        image.set(key, body[key]);
+      });
+
       var dest_path = req.popit.files_dir( image.local_path );
 
       // copy the image to the right place
