@@ -77,5 +77,15 @@ describe("paginate", function() {
       assert.equal(metadata.prev_url, 'http://example.org/api/persons?page=1');
       assert(!metadata.next_url);
     });
+
+    it("doesn't include unknown parameters in next_url/prev_url", function() {
+      pagination = paginate({ page: 1 });
+      metadata = pagination.metadata(42, 'http://example.org/api/persons?callback=jQuery999');
+      assert.equal(metadata.next_url, 'http://example.org/api/persons?page=2');
+
+      pagination = paginate({ page: 2 });
+      metadata = pagination.metadata(42, 'http://example.org/api/persons?page=2&callback=jQuery999');
+      assert.equal(metadata.prev_url, 'http://example.org/api/persons?page=1');
+    });
   });
 });

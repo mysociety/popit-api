@@ -40,6 +40,13 @@ function paginate(options) {
     if (currentUrl) {
       var parsedUrl = url.parse(currentUrl, true);
       delete parsedUrl.search;
+      var currentPerPage = parsedUrl.query.per_page;
+
+      parsedUrl.query = {};
+
+      if (currentPerPage) {
+        parsedUrl.query.per_page = currentPerPage;
+      }
 
       if (hasMore) {
         parsedUrl.query.page = (page + 1);
