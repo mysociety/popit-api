@@ -53,9 +53,6 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
     if (err) {
       return callback(err);
     }
-    Person.schema.set('skipMemberships', true);
-    Organization.schema.set('skipMemberships', true);
-    Post.schema.set('skipMemberships', true);
     async.parallel({
       person: function(done) {
         Person.findById(self.person_id, {memberships: 0}, done);
@@ -78,9 +75,6 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
       }
       _.extend(doc, results);
 
-      Person.schema.set('skipMemberships', false);
-      Organization.schema.set('skipMemberships', false);
-      Post.schema.set('skipMemberships', false);
       callback(null, doc);
     });
   });

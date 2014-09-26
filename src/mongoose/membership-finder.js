@@ -14,36 +14,23 @@ var async = require("async");
  */
 function membershipFinder(schema, options) {
 
-  schema.methods.findMemberships = function findMemberships(id, callback) {
+  schema.methods.findMemberships = function findMemberships(callback) {
     var Membership = this.model('Membership');
     var modelName = this.constructor.modelName;
     var queries = [];
     var query = {};
-    query[options.field] = id;
+    query[options.field] = this._id;
     queries.push(query);
-    queries.push({'member.@type': modelName, 'member.id': id});
+    queries.push({'member.@type': modelName, 'member.id': this._id});
     Membership.find({$or: queries}, callback);
   };
-
-  schema.pre('init', function(next, data) {
-    if (schema.get('skipMemberships')) {
-      return next();
-    }
-    this.findMemberships(data._id, function(err, docs) {
-      if (err) {
-        return next(err);
-      }
-      data.memberships = docs;
-      next();
-    });
-  });
 
   /**
    * After saving, update any memberships that are related to this doc.
    */
   schema.post('save', function() {
     var Membership = this.model('Membership');
-    this.findMemberships(this.id, function(err, docs) {
+    this.findMemberships(function(err, docs) {
       if (err) {
         return;
       }
@@ -56,7 +43,7 @@ function membershipFinder(schema, options) {
    * After removing, remove any memberships that are related to this doc.
    */
   schema.post('remove', function(doc) {
-    this.findMemberships(this.id, function(err, docs) {
+    this.findMemberships(function(err, docs) {
       if (err) {
         console.err("Problem removing memberships related to", doc);
         console.err(err);

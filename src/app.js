@@ -22,6 +22,7 @@ var accept = require('http-accept');
 var models = require('./models');
 var eachSchema = require('./utils').eachSchema;
 var InvalidQueryError = require('./mongoose/elasticsearch').InvalidQueryError;
+var async = require('async');
 
 module.exports = popitApiApp;
 
@@ -121,13 +122,27 @@ function popitApiApp(options) {
         return next(err);
       }
 
-      req.collection.count(function(err, count) {
+      async.each(docs, function(doc, done) {
+        doc.findMemberships(function(err, memberships) {
+          if (err) {
+            return done(err);
+          }
+          doc.memberships = memberships;
+          done();
+        });
+      }, function(err) {
         if (err) {
           return next(err);
         }
-        var body = pagination.metadata(count, req.currentUrl);
-        body.result = docs;
-        res.jsonp(body);
+
+        req.collection.count(function(err, count) {
+          if (err) {
+            return next(err);
+          }
+          var body = pagination.metadata(count, req.currentUrl);
+          body.result = docs;
+          res.jsonp(body);
+        });
       });
     });
   });
@@ -169,10 +184,6 @@ function popitApiApp(options) {
   app.get('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
     var embed = req.query.embed;
-
-    if ( typeof embed != 'undefined' && embed === "" ) {
-      req.model.schema.set('skipMemberships', true);
-    }
 
     var join_structure;
     if ( embed && embed != 'membership' ) {
@@ -217,12 +228,19 @@ function popitApiApp(options) {
         return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
 
-      if ( join_structure ) {
-        populateJoins(req, res, doc, join_structure);
-      } else {
-        res.withBody(doc);
-        req.model.schema.set('skipMemberships', false);
-      }
+      doc.findMemberships(function(err, memberships) {
+        if (err) {
+          return next(err);
+        }
+
+        doc.memberships = memberships;
+
+        if ( join_structure ) {
+          populateJoins(req, res, doc, join_structure);
+        } else {
+          res.withBody(doc);
+        }
+      });
     });
   });
 

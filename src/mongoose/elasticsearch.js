@@ -154,13 +154,11 @@ function elasticsearchPlugin(schema) {
    */
   schema.statics.reIndex = function(done) {
     var self = this;
-    schema.set('skipMemberships', true);
     self.find(function(err, docs) {
       if (err) {
         return done(err);
       }
 
-      schema.set('skipMemberships', false);
       var indexed = 0;
       var body;
 
