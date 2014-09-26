@@ -13,20 +13,23 @@ var async = require("async");
  * @param {String} options.field The field to query against
  */
 function membershipFinder(schema, options) {
-  function findMemberships(Membership, modelName, id, callback) {
+
+  schema.methods.findMemberships = function findMemberships(id, callback) {
+    var Membership = this.model('Membership');
+    var modelName = this.constructor.modelName;
     var queries = [];
     var query = {};
     query[options.field] = id;
     queries.push(query);
     queries.push({'member.@type': modelName, 'member.id': id});
     Membership.find({$or: queries}, callback);
-  }
+  };
 
   schema.pre('init', function(next, data) {
     if (schema.get('skipMemberships')) {
       return next();
     }
-    findMemberships(this.model('Membership'), this.constructor.modelName, data._id, function(err, docs) {
+    this.findMemberships(data._id, function(err, docs) {
       if (err) {
         return next(err);
       }
@@ -38,14 +41,14 @@ function membershipFinder(schema, options) {
   /**
    * After saving, update any memberships that are related to this doc.
    */
-  schema.post('save', function(doc) {
-    var that = this;
-    findMemberships(this.model('Membership'), this.constructor.modelName, doc._id, function(err, docs) {
+  schema.post('save', function() {
+    var Membership = this.model('Membership');
+    this.findMemberships(this.id, function(err, docs) {
       if (err) {
         return;
       }
       // TODO: better error handling
-      that.model('Membership').bulkReIndex(docs, function(err) { if (err) { console.log('bulk reindex error'); console.log(err); } });
+      Membership.bulkReIndex(docs, function(err) { if (err) { console.log('bulk reindex error'); console.log(err); } });
     });
   });
 
@@ -53,15 +56,17 @@ function membershipFinder(schema, options) {
    * After removing, remove any memberships that are related to this doc.
    */
   schema.post('remove', function(doc) {
-    findMemberships(this.model('Membership'), this.constructor.modelName, doc._id, function(err, docs) {
+    this.findMemberships(this.id, function(err, docs) {
       if (err) {
+        console.err("Problem removing memberships related to", doc);
+        console.err(err);
         return;
       }
       var parent = doc;
       async.each(
         docs,
-        function(doc, done) {
-          doc.remove( function(err) { done(err); } );
+        function(record, done) {
+          record.remove(done);
         },
         function(err) {
           if (!err) {
