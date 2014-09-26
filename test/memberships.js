@@ -39,13 +39,16 @@ describe("memberships", function() {
   });
 
   describe("organizations", function() {
-    it("populated memberships", function(done) {
+    it("populates memberships", function(done) {
       Organization.findById('foo-widgets', function(err, org) {
         assert.ifError(err);
-        assert.equal(org.memberships.length, 2);
-        assert.deepEqual(org.memberships[0].member, {'@type': 'Person', id: 'joe-bloggs'});
-        assert.deepEqual(org.memberships[1].member, {'@type': 'Organization', id: 'bar-widgets'});
-        done();
+        org.findMemberships(function(err, memberships) {
+          assert.ifError(err);
+          assert.equal(memberships.length, 2);
+          assert.deepEqual(memberships[0].member, {'@type': 'Person', id: 'joe-bloggs'});
+          assert.deepEqual(memberships[1].member, {'@type': 'Organization', id: 'bar-widgets'});
+          done();
+        });
       });
     });
   });
@@ -55,9 +58,12 @@ describe("memberships", function() {
     it("populates memberships", function(done) {
       Person.findById('jane-bloggs', function(err, person) {
         assert.ifError(err);
-        assert.equal(person.memberships.length, 1);
-        assert.equal(person.memberships[0].organization_id, 'bar-widgets');
-        done();
+        person.findMemberships(function(err, memberships) {
+          assert.ifError(err);
+          assert.equal(memberships.length, 1);
+          assert.equal(memberships[0].organization_id, 'bar-widgets');
+          done();
+        });
       });
     });
   });
