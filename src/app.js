@@ -109,9 +109,17 @@ function popitApiApp(options) {
         return new req.collection(doc._source);
       });
 
-      var body = pagination.metadata(result.hits.total, req.currentUrl);
-      body.result = docs;
-      res.jsonp(body);
+      async.each(docs, function(doc, done) {
+        doc.populateMemberships(done);
+      }, function(err) {
+        if (err) {
+          return next(err);
+        }
+
+        var body = pagination.metadata(result.hits.total, req.currentUrl);
+        body.result = docs;
+        res.jsonp(body);
+      });
     });
   });
 
