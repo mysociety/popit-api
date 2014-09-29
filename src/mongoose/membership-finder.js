@@ -19,9 +19,10 @@ function membershipFinder(schema, options) {
     var modelName = this.constructor.modelName;
     var queries = [];
     var query = {};
-    query[options.field] = this._id;
+    var id = this._id || this.id;
+    query[options.field] = id;
     queries.push(query);
-    queries.push({'member.@type': modelName, 'member.id': this._id});
+    queries.push({'member.@type': modelName, 'member.id': id});
     Membership.find({$or: queries}, callback);
   };
 
