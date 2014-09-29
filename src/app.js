@@ -123,13 +123,7 @@ function popitApiApp(options) {
       }
 
       async.each(docs, function(doc, done) {
-        doc.findMemberships(function(err, memberships) {
-          if (err) {
-            return done(err);
-          }
-          doc.memberships = memberships;
-          done();
-        });
+        doc.populateMemberships(done);
       }, function(err) {
         if (err) {
           return next(err);
@@ -228,12 +222,10 @@ function popitApiApp(options) {
         return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
 
-      doc.findMemberships(function(err, memberships) {
+      doc.populateMemberships(function(err) {
         if (err) {
           return next(err);
         }
-
-        doc.memberships = memberships;
 
         if ( join_structure ) {
           populateJoins(req, res, doc, join_structure);

@@ -25,6 +25,17 @@ function membershipFinder(schema, options) {
     Membership.find({$or: queries}, callback);
   };
 
+  schema.methods.populateMemberships = function populateMemberships(callback) {
+    var self = this;
+    this.findMemberships(function(err, memberships) {
+      if (err) {
+        return callback(err);
+      }
+      self.memberships = memberships;
+      callback();
+    });
+  };
+
   /**
    * After saving, update any memberships that are related to this doc.
    */
