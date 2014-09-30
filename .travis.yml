@@ -8,6 +8,10 @@ services:
   - mongodb
   - elasticsearch
 
+# see https://github.com/npm/npm/issues/4984
+before_install:
+  - npm install -g npm@1.4.4
+
 # blacklist
 branches:
   except:
