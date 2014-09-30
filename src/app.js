@@ -230,16 +230,25 @@ function popitApiApp(options) {
         return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
 
-      doc.populateMemberships(function(err) {
-        if (err) {
-          return next(err);
-        }
-
+      function completeRequest() {
         if ( join_structure ) {
           populateJoins(req, res, doc, join_structure);
         } else {
           res.withBody(doc);
         }
+      }
+
+      // Skip memberships if embed is provided but empty
+      if (embed === '') {
+        return completeRequest();
+      }
+
+      doc.populateMemberships(function(err) {
+        if (err) {
+          return next(err);
+        }
+
+        completeRequest();
       });
     });
   });
