@@ -226,6 +226,60 @@ function popitApiApp(options) {
     });
   });
 
+  app.delete('/:collection/:id/image/:image_id', function (req, res, next) {
+    var id = req.params.id;
+    var image_id = req.params.image_id;
+
+    req.collection.findById(id, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+      if (!doc) {
+        return res.send(204);
+      }
+
+      var images = doc.get('images');
+
+      if ( !images ) {
+        return res
+          .status(400)
+          .jsonp({
+            errors: ["Doc has no images"]
+          });
+      }
+
+      var imageIdx = getImageByIdx( image_id, images );
+
+      if ( imageIdx == -1 ) {
+        return res
+          .status(400)
+          .jsonp({
+            errors: ["No image with that id found"]
+          });
+      }
+
+      var image = new (req.popit.model('Image'))( images[imageIdx] );
+      var imagePath = req.popit.files_dir( image.local_path );
+
+      fs.remove( imagePath, function(err) {
+        if (err) {
+          throw err;
+        }
+
+        images.splice(imageIdx, 1);
+        doc.set('images', images);
+        doc.markModified('images');
+        doc.save(function(err, newDoc) {
+          if (err) {
+            return next(err);
+          }
+
+          return res.withBody(newDoc);
+        });
+      });
+    });
+  });
+
   app.delete('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
 
