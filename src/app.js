@@ -226,6 +226,40 @@ function popitApiApp(options) {
     });
   });
 
+  app.delete('/:collection/:id/image', function (req, res, next) {
+    var id = req.params.id;
+
+    req.collection.findById(id, function (err, doc) {
+      if (err) {
+        return next(err);
+      }
+      if (!doc) {
+        return res.send(204);
+      }
+
+      var images = doc.get('images');
+
+      images.forEach(function(img) {
+        if ( img._id ) {
+          var image = new (req.popit.model('Image'))( img );
+          var path = req.popit.files_dir( image.local_path );
+          fs.removeSync( path );
+        }
+      });
+
+      doc.set('image', null);
+      doc.set('images', []);
+      doc.markModified('images');
+      doc.save(function(err, newDoc) {
+        if (err) {
+          return next(err);
+        }
+
+        return res.withBody(newDoc);
+      });
+    });
+  });
+
   app.delete('/:collection/:id/image/:image_id', function (req, res, next) {
     var id = req.params.id;
     var image_id = req.params.image_id;
