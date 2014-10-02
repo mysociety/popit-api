@@ -22,7 +22,7 @@
     "async": "~0.2.6",
     "doublemetaphone": "~0.1.2",
     "elasticsearch": "~1.5.1",
-    "express": "~3.1.2",
+    "express": "~3.17.5",
     "glob": "~3.1.21",
     "http-accept": "~0.1.6",
     "language-tags": "~1.0.2",
