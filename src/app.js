@@ -223,7 +223,7 @@ function popitApiApp(options) {
     });
   });
 
-  app.del('/:collection/:id(*)', function (req, res, next) {
+  app.delete('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
 
     req.collection.findById(id, function (err, doc) {
