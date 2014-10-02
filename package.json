@@ -18,7 +18,6 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "JSV": "~4.0.2",
-    "assert": "~0.4.9",
     "async": "~0.2.6",
     "doublemetaphone": "~0.1.2",
     "elasticsearch": "~1.5.1",
