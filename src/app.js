@@ -23,6 +23,7 @@ var models = require('./models');
 var eachSchema = require('./utils').eachSchema;
 var InvalidQueryError = require('./mongoose/elasticsearch').InvalidQueryError;
 var async = require('async');
+var mpath = require('mpath');
 
 module.exports = popitApiApp;
 
@@ -175,8 +176,12 @@ function popitApiApp(options) {
   function populateJoins(req, res, doc, opts) {
     var opt = opts.shift();
     if ( opt ) {
-      req.collection.populate(doc, opt, function(err, out) {
-        populateJoins(req, res, out, opts);
+      req.collection.populate(doc, opt, function(err, doc) {
+        async.each(_.flatten(mpath.get(opt.path, doc, '_doc')), function(val, done) {
+          val.populateMemberships(done);
+        }, function(err) {
+          populateJoins(req, res, doc, opts);
+        });
       });
     } else {
       res.withBody(doc);
