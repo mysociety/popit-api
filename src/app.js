@@ -177,9 +177,15 @@ function popitApiApp(options) {
     var opt = opts.shift();
     if ( opt ) {
       req.collection.populate(doc, opt, function(err, doc) {
+        if (err) {
+          return req.next(err);
+        }
         async.each(_.flatten(mpath.get(opt.path, doc, '_doc')), function(val, done) {
           val.populateMemberships(done);
         }, function(err) {
+          if (err) {
+            return req.next(err);
+          }
           populateJoins(req, res, doc, opts);
         });
       });
