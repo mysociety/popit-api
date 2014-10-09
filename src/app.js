@@ -173,6 +173,26 @@ function popitApiApp(options) {
     });
   });
 
+  function populateMemberships(doc, path, callback) {
+    var modelsToPopulate = mpath.get(path, doc, '_doc');
+
+    // For a path like 'membership.person.membership.organization mpath will
+    // return an array of arrays. We don't need that level of nesting, so we
+    // flatten it here before iterating over it.
+    modelsToPopulate = _.flatten(modelsToPopulate);
+
+    // Remove any null values from the modelsToPopulate array and make sure all
+    // the members have the necessary method on them.
+    modelsToPopulate = _.compact(modelsToPopulate);
+    modelsToPopulate = _.filter(modelsToPopulate, function(model) {
+      return _.isObject(model) && _.isFunction(model.populateMemberships);
+    });
+
+    async.each(modelsToPopulate, function(val, done) {
+      val.populateMemberships(done);
+    }, callback);
+  }
+
   function populateJoins(req, res, doc, opts) {
     var opt = opts.shift();
     if ( opt ) {
@@ -180,9 +200,7 @@ function popitApiApp(options) {
         if (err) {
           return req.next(err);
         }
-        async.each(_.flatten(mpath.get(opt.path, doc, '_doc')), function(val, done) {
-          val.populateMemberships(done);
-        }, function(err) {
+        populateMemberships(doc, opt.path, function(err) {
           if (err) {
             return req.next(err);
           }
