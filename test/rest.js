@@ -688,4 +688,30 @@ describe("REST", function () {
 
   });
 
+  describe("embedding memberships", function() {
+    beforeEach(fixture.loadFixtures);
+
+    it("embeds memberships by default", function(done) {
+      request.get('/api/persons/fred-bloggs')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships.length, 2);
+        assert.equal(res.body.result.memberships[0].organization_id, 'commons');
+        done();
+      });
+    });
+
+    it("embeds organizations when requested", function(done) {
+      request.get('/api/persons/fred-bloggs?embed=membership.organization')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships[0].organization_id.name, 'House of Commons');
+        done();
+      });
+    });
+
+  });
+
 });

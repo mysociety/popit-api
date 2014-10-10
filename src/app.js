@@ -1,7 +1,6 @@
 "use strict";
 
 var express = require('express');
-var _ = require('underscore');
 var mongoose = require('mongoose');
 var packageJSON = require("../package");
 var path = require('path');
@@ -23,7 +22,7 @@ var models = require('./models');
 var eachSchema = require('./utils').eachSchema;
 var InvalidQueryError = require('./mongoose/elasticsearch').InvalidQueryError;
 var async = require('async');
-var mpath = require('mpath');
+var InvalidEmbedError = require('./mongoose/embed').InvalidEmbedError;
 
 module.exports = popitApiApp;
 
@@ -176,82 +175,8 @@ function popitApiApp(options) {
     });
   });
 
-  function populateMemberships(doc, path, callback) {
-    var modelsToPopulate = mpath.get(path, doc, '_doc');
-
-    // For a path like 'membership.person.membership.organization mpath will
-    // return an array of arrays. We don't need that level of nesting, so we
-    // flatten it here before iterating over it.
-    modelsToPopulate = _.flatten(modelsToPopulate);
-
-    // Remove any null values from the modelsToPopulate array and make sure all
-    // the members have the necessary method on them.
-    modelsToPopulate = _.compact(modelsToPopulate);
-    modelsToPopulate = _.filter(modelsToPopulate, function(model) {
-      return _.isObject(model) && _.isFunction(model.populateMemberships);
-    });
-
-    async.each(modelsToPopulate, function(val, done) {
-      val.populateMemberships(done);
-    }, callback);
-  }
-
-  function populateJoins(req, res, doc, opts) {
-    var opt = opts.shift();
-    if ( opt ) {
-      req.collection.populate(doc, opt, function(err, doc) {
-        if (err) {
-          return req.next(err);
-        }
-        populateMemberships(doc, opt.path, function(err) {
-          if (err) {
-            return req.next(err);
-          }
-          populateJoins(req, res, doc, opts);
-        });
-      });
-    } else {
-      res.withBody(doc);
-    }
-  }
-
   app.get('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
-    var embed = req.query.embed;
-
-    var join_structure;
-    if ( embed && embed != 'membership' ) {
-      var target_re = /((?:membership.\w+)+)/g;
-      var targets = [];
-      var match;
-      while ( targets.length < 3 && ( match = target_re.exec(embed) ) ) {
-        targets.push(match[0]);
-      }
-      var target_map = {
-        'membership.person': {
-          path: 'memberships.person_id',
-          model: 'Person',
-          collection: 'persons'
-        },
-        'membership.organization': {
-          path: 'memberships.organization_id',
-          model: 'Organization',
-          collection: 'organizations'
-        }
-      };
-
-      if ( !_.all(targets, function(target) { return target_map[target]; }) ) {
-        return res.send(400, {errors: ['not a valid embed type', 'embed must be one of membership.person or membership.organization']});
-      }
-
-      join_structure = [];
-      var path = [];
-      _.each(targets, function(target) {
-        var this_map = target_map[target];
-        path.push( this_map.path );
-        join_structure.push({ path: path.join('.'), model: this_map.model, collection: this_map.collection });
-      });
-    }
 
     req.collection.findById(id)
       .exec(function (err, doc) {
@@ -262,25 +187,15 @@ function popitApiApp(options) {
         return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
 
-      function completeRequest() {
-        if ( join_structure ) {
-          populateJoins(req, res, doc, join_structure);
-        } else {
-          res.withBody(doc);
+      doc.embedDocuments(req.query.embed, function(err) {
+        if (err instanceof InvalidEmbedError) {
+          // Send a 400 error to indicate the client needs to alter their request
+          return res.send(400, {errors: [err.message, err.explaination]});
         }
-      }
-
-      // Skip memberships if embed is provided but empty
-      if (embed === '') {
-        return completeRequest();
-      }
-
-      doc.populateMemberships(function(err) {
         if (err) {
           return next(err);
         }
-
-        completeRequest();
+        res.withBody(doc);
       });
     });
   });
