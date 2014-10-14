@@ -33,6 +33,9 @@ popitApiApp.reIndex = reIndex;
 function popitApiApp(options) {
   var app = express();
 
+  // Pretty print json in production as well as development
+  app.set('json spaces', 2);
+
   // Expose globally fieldSpec option in the app config.
   app.set('fieldSpec', options.fieldSpec);
 
