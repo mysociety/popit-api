@@ -515,6 +515,14 @@ function popitApiApp(options) {
     });
   });
 
+  // this doesn't make sense to do and we have to handle it
+  // explicitly otherwise documents with an id of :id/image
+  // are created which is almost certainly not what people
+  // want
+  app.put('/:collection/:id/image', function (req, res) {
+    res.status(405).jsonp({errors: ["unsupported method"] });
+  });
+
   function getImageByIdx( idx, images ) {
     for ( var i = 0; i < images.length; i++ ) {
       if ( images[i]._id == idx ) {

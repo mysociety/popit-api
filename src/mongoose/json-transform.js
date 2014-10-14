@@ -81,9 +81,9 @@ function generateImageUrl(img, doc, options) {
   var url = [
     options.baseUrl,
     doc.constructor.collection.name.toLowerCase(),
-    'images',
-    img._id,
-    doc._id || doc.id
+    doc._id || doc.id,
+    'image',
+    img._id
   ].join('/');
 
   return url;
