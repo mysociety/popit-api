@@ -97,7 +97,9 @@ function embedPlugin(schema) {
       },
     };
 
-    if ( !_.all(targets, function(target) { return target_map[target]; }) ) {
+    var invalidTargets = !_.all(targets, function(target) { return target_map[target]; });
+    var missingTargets = targets.join('.') !== embed;
+    if (invalidTargets || missingTargets) {
       var message = 'Invalid embed parameter ' + originalEmbed;
       var explaination = 'embed must be one of ' + Object.keys(target_map).join(', ');
       var error = new InvalidEmbedError(message, explaination);
