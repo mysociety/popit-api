@@ -5,6 +5,7 @@ var popolo = require('./mongoose/popolo');
 var membershipFinder = require('./mongoose/membership-finder');
 var async = require('async');
 var _ = require('underscore');
+var esFilterDatesOnly = require('./esfilter')().esFilterDatesOnly;
 
 mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
 
@@ -49,19 +50,36 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
   var Organization = this.model('Organization');
   var Post = this.model('Post');
   var self = this;
+
+  function applyToJSON(err, doc, done) {
+    if ( err ) {
+      done(err);
+    }
+
+    if (!doc) {
+      return done();
+    }
+
+    if (doc.toJSON) {
+      doc = doc.toJSON( { transform: esFilterDatesOnly });
+    }
+
+    done(null, doc);
+  }
+
   originalToElasticsearch.call(this, function(err, doc) {
     if (err) {
       return callback(err);
     }
     async.parallel({
       person: function(done) {
-        Person.findById(self.person_id, {memberships: 0}, done);
+        Person.findById(self.person_id, {memberships: 0}, function(err, doc) { applyToJSON(err, doc, done); });
       },
       organization: function(done) {
-        Organization.findById(self.organization_id, {memberships: 0}, done);
+        Organization.findById(self.organization_id, {memberships: 0}, function(err, doc) { applyToJSON(err, doc, done); });
       },
       post: function(done) {
-        Post.findById(self.post_id, {memberships: 0}, done);
+        Post.findById(self.post_id, {memberships: 0}, function(err, doc) { applyToJSON(err, doc, done); });
       },
       member: function(done) {
         if (!self.member) {

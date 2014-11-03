@@ -10,7 +10,7 @@
  */
 
 var elasticsearch = require('elasticsearch');
-var filter = require('../filter');
+var esFilter = require('../esfilter')().esFilter;
 var paginate = require('../paginate');
 var i18n = require('../i18n');
 var async = require('async');
@@ -43,7 +43,7 @@ function elasticsearchPlugin(schema) {
   schema.methods.toElasticsearch = function toElasticsearch(callback) {
     process.nextTick(function() {
       var doc = this.toJSON({
-        transform: filter,
+        transform: esFilter,
         fields: {
           all: {
             memberships: false,
@@ -73,6 +73,24 @@ function elasticsearchPlugin(schema) {
         callback(err);
       });
     });
+  };
+
+  /*
+   * Undo the date munging we do for search convenience.
+   */
+  schema.methods.correctDates = function correctDates(callback) {
+    callback = callback || function() {};
+    var self = this;
+
+    ['start_date', 'birth_date', 'founding_date','end_date', 'death_date', 'dissolution_date'].forEach(function(field) {
+      var missing = field + '_missing';
+      if ( self.get(missing) ) {
+        self.set(missing, undefined);
+        self.set(field, undefined);
+      }
+    });
+
+    callback();
   };
 
   /**
