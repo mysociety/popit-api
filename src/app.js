@@ -113,7 +113,9 @@ function popitApiApp(options) {
       });
 
       async.each(docs, function(doc, done) {
-        doc.populateMemberships(done);
+        doc.populateMemberships(function() {
+          doc.correctDates(done);
+        });
       }, function(err) {
         if (err) {
           return next(err);
