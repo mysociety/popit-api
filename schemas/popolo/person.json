@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://popoloproject.com/schemas/person.json#",
+  "id": "http://www.popoloproject.com/schemas/person.json#",
   "title": "Person",
   "description": "A real person, alive or dead",
   "type": "object",
@@ -11,21 +11,20 @@
     },
     "name": {
       "description": "A person's preferred full name",
-      "type": "string",
-      "required": true
+      "type": ["string", "null"]
     },
     "other_names": {
       "description": "Alternate or former names",
       "type": "array",
       "items": {
-        "$ref": "http://popoloproject.com/schemas/other_name.json#"
+        "$ref": "http://www.popoloproject.com/schemas/other_name.json#"
       }
     },
     "identifiers": {
       "description": "Issued identifiers",
       "type": "array",
       "items": {
-        "$ref": "http://popoloproject.com/schemas/identifier.json#"
+        "$ref": "http://www.popoloproject.com/schemas/identifier.json#"
       }
     },
     "family_name": {
@@ -53,7 +52,7 @@
       "type": ["string", "null"]
     },
     "sort_name": {
-      "description": "A name to use in an lexicographically ordered list",
+      "description": "A name to use in a lexicographically ordered list",
       "type": ["string", "null"]
     },
     "email": {
@@ -88,25 +87,46 @@
       "description": "An extended account of a person's life",
       "type": ["string", "null"]
     },
+    "national_identity": {
+      "description": "A national identity",
+      "type": ["string", "null"]
+    },
     "contact_details": {
       "description": "Means of contacting the person",
       "type": "array",
       "items": {
-        "$ref": "http://popoloproject.com/schemas/contact_detail.json#"
+        "$ref": "http://www.popoloproject.com/schemas/contact_detail.json#"
       }
     },
     "links": {
       "description": "URLs to documents about the person",
       "type": "array",
       "items": {
-        "$ref": "http://popoloproject.com/schemas/link.json#"
+        "$ref": "http://www.popoloproject.com/schemas/link.json#"
       }
     },
     "memberships": {
-      "description": "The relationships to which the person is a party",
+      "description": "The person's memberships",
       "type": "array",
       "items": {
-        "$ref": "http://popoloproject.com/schemas/membership.json#"
+        "$ref": "http://www.popoloproject.com/schemas/membership.json#"
+      }
+    },
+    "created_at": {
+      "description": "The time at which the resource was created",
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The time at which the resource was last modified",
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "sources": {
+      "description": "URLs to documents from which the person is derived",
+      "type": "array",
+      "items": {
+        "$ref": "http://www.popoloproject.com/schemas/link.json#"
       }
     }
   }
