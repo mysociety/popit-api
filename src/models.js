@@ -6,6 +6,7 @@ var membershipFinder = require('./mongoose/membership-finder');
 var async = require('async');
 var _ = require('underscore');
 var esFilterDatesOnly = require('./esfilter')().esFilterDatesOnly;
+var merge = require('./mongoose/merge');
 
 mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
 
@@ -15,6 +16,7 @@ mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
 var PersonSchema = new mongoose.Schema({_id: String}, {collection: 'persons', strict: false});
 PersonSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/person.json#'});
 PersonSchema.plugin(membershipFinder, {field: 'person_id'});
+PersonSchema.plugin(merge);
 var Person = mongoose.model('Person', PersonSchema);
 
 /**
