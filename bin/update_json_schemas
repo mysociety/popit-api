@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# Updates all the popolo JSON schemas in schemas/popolo.
+
+set -e
+
+# Make sure we're in the popit-api directory
+cd "$(dirname $0)/../"
+
+schemadir="schemas/popolo"
+
+for schema in $(ls "$schemadir"); do
+  schemaurl="http://www.popoloproject.com/schemas/$schema"
+  echo "Downloading $schemaurl"
+  curl -fsSLo "$schemadir/$schema" "$schemaurl"
+done
