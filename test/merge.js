@@ -3,6 +3,7 @@
 var assert = require('assert');
 var mongoose = require('mongoose');
 var defaults = require("./defaults");
+var fixture = require('./fixture');
 
 require('../src/models');
 var Person = mongoose.model('Person');
@@ -15,6 +16,8 @@ describe("merging two people", function() {
   after(function(done) {
     mongoose.connection.close(done);
   });
+
+  beforeEach(fixture.clearDatabase);
 
   it("adds conflicting name to other_names", function(done) {
     var person1 = new Person({name: 'Bob'});
@@ -71,6 +74,21 @@ describe("merging two people", function() {
       assert.ifError(err);
       assert.equal(person1.contact_details.length, 1);
       done();
+    });
+  });
+
+  it("ignores the _id field", function(done) {
+    var person1 = new Person({_id: 'bob', name: 'Bob'});
+    var person2 = new Person({_id: 'bobby', name: 'Bobby'});
+    person1.save(function(err) {
+      assert.ifError(err);
+      person2.save(function(err) {
+        assert.ifError(err);
+        person1.merge(person2, function(err) {
+          assert.ifError(err);
+          done();
+        });
+      });
     });
   });
 

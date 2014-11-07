@@ -13,6 +13,11 @@ module.exports = function mergePlugin(schema) {
     schema.eachPath(function(path) {
       var selfValue = self.get(path);
       var otherValue = other.get(path);
+      // Skip 'hidden' paths starting with an underscore.
+      if (path.substr(0, 1) === '_') {
+        return;
+      }
+      // If there's no corresponding value skip this path
       if (!otherValue) {
         return;
       }
