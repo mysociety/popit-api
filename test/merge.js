@@ -50,4 +50,28 @@ describe("merging two people", function() {
     });
   });
 
+  it("merges arrays which are different", function(done) {
+    var person1 = new Person({name: 'Bob', contact_details: [{type: 'voice', value: '12345'}]});
+    var person2 = new Person({name: 'Bobby', contact_details: [{type: 'cell', value: '0712345'}]});
+    person1.merge(person2, function(err) {
+      assert.ifError(err);
+      assert.equal(person1.contact_details.length, 2);
+      assert.equal(person1.contact_details[0].type, 'voice');
+      assert.equal(person1.contact_details[0].value, '12345');
+      assert.equal(person1.contact_details[1].type, 'cell');
+      assert.equal(person1.contact_details[1].value, '0712345');
+      done();
+    });
+  });
+
+  it("doesn't merge arrays which are identical", function(done) {
+    var person1 = new Person({name: 'Bob', contact_details: [{type: 'voice', value: '12345'}]});
+    var person2 = new Person({name: 'Bobby', contact_details: [{type: 'voice', value: '12345'}]});
+    person1.merge(person2, function(err) {
+      assert.ifError(err);
+      assert.equal(person1.contact_details.length, 1);
+      done();
+    });
+  });
+
 });

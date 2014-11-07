@@ -1,5 +1,7 @@
 "use strict";
 
+var _ = require('underscore');
+
 /**
  * Mongoose plugin for merging two people together.
  */
@@ -24,7 +26,18 @@ module.exports = function mergePlugin(schema) {
         return;
       }
       if (Array.isArray(otherValue)) {
-        // TODO Handle arrays
+        otherValue.forEach(function(otherItem) {
+          var matchFound = false;
+          selfValue.forEach(function(item) {
+            if (_.isEqual(_.omit(item.toObject(), '_id'), _.omit(otherItem.toObject(), '_id'))) {
+              // Match found, no need to copy this item over.
+              matchFound = true;
+            }
+          });
+          if (!matchFound) {
+            selfValue.push(otherItem.toObject());
+          }
+        });
         return;
       }
       // Copy otherValue directly if there is no existing value on self.
@@ -38,6 +51,7 @@ module.exports = function mergePlugin(schema) {
         return;
       }
     });
+    // TODO Make this error class more specific
     if (conflicts.length > 0) {
       return callback(new Error(conflicts.join('\n')));
     }
