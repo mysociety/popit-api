@@ -177,6 +177,49 @@ function popitApiApp(options) {
     });
   });
 
+  /**
+   * Merge two people together.
+   *
+   * TODO Possibly make this work for any collection?
+   */
+  app.post('/:collection/:id/merge/:otherId', function(req, res, next) {
+    var id = req.params.id;
+    var otherId = req.params.otherId;
+    if (req.params.collection !== 'persons') {
+      return res.jsonp(400, {errors: ["The merge method currently only works with people"]});
+    }
+    async.map([id, otherId], req.collection.findById.bind(req.collection), function(err, results) {
+      if (err) {
+        return next(err);
+      }
+      var person = results[0];
+      var otherPerson = results[1];
+      if (!person) {
+        return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
+      }
+      if (!otherPerson) {
+        return res.jsonp(404, {errors: ["id '" + otherId + "' not found"]});
+      }
+      person.merge(otherPerson, function(err) {
+        if (err) {
+          // TODO Handle this error if it's a merging error
+          return next(err);
+        }
+        person.save(function(err) {
+          if (err) {
+            return next(err);
+          }
+          otherPerson.remove(function(err) {
+            if (err) {
+              return next(err);
+            }
+            res.withBody(person);
+          });
+        });
+      });
+    });
+  });
+
   app.get('/:collection/:id(*)', function (req, res, next) {
     var id = req.params.id;
 

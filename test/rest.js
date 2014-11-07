@@ -714,4 +714,29 @@ describe("REST", function () {
 
   });
 
+  describe("merging people", function() {
+    beforeEach(fixture.loadFixtures);
+
+    beforeEach(function(done) {
+      var Person = mongoose.model('Person');
+      var person = new Person({_id: 'fred-bloggs-2', name: 'Fred Bloggs', gender: 'male'});
+      person.save(done);
+    });
+
+    it("works for two similar people", function(done) {
+      request.post('/api/persons/fred-bloggs/merge/fred-bloggs-2')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.gender, 'male');
+        request.get('/api/persons/fred-bloggs-2').expect(404, done);
+      });
+    });
+
+    it("returns an error if you try to merge a person into themselves");
+
+    it("returns an error if there are any unresolvable conflicts");
+
+  });
+
 });
