@@ -23,6 +23,7 @@ var eachSchema = require('./utils').eachSchema;
 var InvalidQueryError = require('./mongoose/elasticsearch').InvalidQueryError;
 var async = require('async');
 var InvalidEmbedError = require('./mongoose/embed').InvalidEmbedError;
+var MergeConflictError = require('./mongoose/merge').MergeConflictError;
 
 module.exports = popitApiApp;
 
@@ -205,7 +206,9 @@ function popitApiApp(options) {
       }
       person.merge(otherPerson, function(err) {
         if (err) {
-          // TODO Handle this error if it's a merging error
+          if (err instanceof MergeConflictError) {
+            return res.send(400, {errors: [err.message].concat(err.conflicts)});
+          }
           return next(err);
         }
         person.save(function(err) {

@@ -716,10 +716,11 @@ describe("REST", function () {
 
   describe("merging people", function() {
     beforeEach(fixture.loadFixtures);
+    var Person = mongoose.model('Person');
+    var person;
 
     beforeEach(function(done) {
-      var Person = mongoose.model('Person');
-      var person = new Person({_id: 'fred-bloggs-2', name: 'Fred Bloggs', gender: 'male'});
+      person = new Person({_id: 'fred-bloggs-2', name: 'Fred Bloggs', gender: 'male'});
       person.save(done);
     });
 
@@ -743,7 +744,23 @@ describe("REST", function () {
       });
     });
 
-    it("returns an error if there are any unresolvable conflicts");
+    describe("with unresolvable conflicts", function() {
+      beforeEach(function(done) {
+        person.email = 'f.bloggs@example.org';
+        person.save(done);
+      });
+
+      it("returns an error", function(done) {
+        request.post('/api/persons/fred-bloggs/merge/fred-bloggs-2')
+        .expect(400)
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.errors[0], "Unresolvable merge conflict");
+          assert.equal(res.body.errors[1], "Please resolve conflict with email: fbloggs@example.org doesn't match f.bloggs@example.org");
+          done();
+        });
+      });
+    });
 
   });
 

@@ -1,12 +1,20 @@
 "use strict";
 
 var _ = require('underscore');
+var inherits = require('util').inherits;
+
+function MergeConflictError(message, conflicts) {
+  this.name = 'MergeConflictError';
+  this.message = message;
+  this.conflicts = conflicts;
+}
+inherits(MergeConflictError, Error);
 
 /**
  * Mongoose plugin for merging two people together.
  */
 
-module.exports = function mergePlugin(schema) {
+module.exports = exports = function mergePlugin(schema) {
   schema.methods.merge = function merge(other, callback) {
     var self = this;
     var conflicts = [];
@@ -56,10 +64,11 @@ module.exports = function mergePlugin(schema) {
         return;
       }
     });
-    // TODO Make this error class more specific
     if (conflicts.length > 0) {
-      return callback(new Error(conflicts.join('\n')));
+      return callback(new MergeConflictError('Unresolvable merge conflict', conflicts));
     }
     callback();
   };
 };
+
+exports.MergeConflictError = MergeConflictError;
