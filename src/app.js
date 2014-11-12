@@ -188,6 +188,9 @@ function popitApiApp(options) {
     if (req.params.collection !== 'persons') {
       return res.jsonp(400, {errors: ["The merge method currently only works with people"]});
     }
+    if (id === otherId) {
+      return res.jsonp(400, {errors: ["Can't merge a person into themselves"]});
+    }
     async.map([id, otherId], req.collection.findById.bind(req.collection), function(err, results) {
       if (err) {
         return next(err);

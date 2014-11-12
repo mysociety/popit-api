@@ -733,7 +733,15 @@ describe("REST", function () {
       });
     });
 
-    it("returns an error if you try to merge a person into themselves");
+    it("returns an error if you try to merge a person into themselves", function(done) {
+      request.post('/api/persons/fred-bloggs/merge/fred-bloggs')
+      .expect(400)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.errors[0], "Can't merge a person into themselves");
+        done();
+      });
+    });
 
     it("returns an error if there are any unresolvable conflicts");
 
