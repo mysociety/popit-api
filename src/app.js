@@ -113,7 +113,7 @@ function popitApiApp(options) {
       });
 
       async.each(docs, function(doc, done) {
-        doc.populateMemberships(function() {
+        doc.embedDocuments(req.query.embed, function() {
           doc.correctDates(done);
         });
       }, function(err) {
@@ -136,7 +136,7 @@ function popitApiApp(options) {
       }
 
       async.each(docs, function(doc, done) {
-        doc.populateMemberships(done);
+        doc.embedDocuments(req.query.embed, done);
       }, function(err) {
         if (err) {
           return next(err);
