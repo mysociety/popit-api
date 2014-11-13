@@ -762,6 +762,16 @@ describe("REST", function () {
       });
     });
 
+    it("returns an error if you try to merge something other than a person", function(done) {
+      request.post('/api/organizations/foo-corp/merge/acme-inc')
+      .expect(400)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.errors[0], "The merge method currently only works with people");
+        done();
+      });
+    });
+
   });
 
 });
