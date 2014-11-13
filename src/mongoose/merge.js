@@ -18,7 +18,8 @@ module.exports = exports = function mergePlugin(schema) {
   schema.methods.merge = function merge(other, callback) {
     var self = this;
     var conflicts = [];
-    schema.eachPath(function(path) {
+    var pathsToMerge = Object.keys(other.toObject());
+    _.each(pathsToMerge, function(path) {
       var selfValue = self.get(path);
       var otherValue = other.get(path);
       // Skip 'hidden' paths starting with an underscore.

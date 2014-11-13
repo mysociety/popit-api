@@ -92,4 +92,14 @@ describe("merging two people", function() {
     });
   });
 
+  it("merges fields that aren't in the schema", function(done) {
+    var person1 = new Person({name: 'Bob'});
+    var person2 = new Person({name: 'Bob', foo: 'bar'});
+    person1.merge(person2, function(err) {
+      assert.ifError(err);
+      assert.equal(person1.get('foo'), 'bar');
+      done();
+    });
+  });
+
 });
