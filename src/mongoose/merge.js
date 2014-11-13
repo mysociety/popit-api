@@ -26,6 +26,10 @@ module.exports = exports = function mergePlugin(schema) {
       if (path.substr(0, 1) === '_') {
         return;
       }
+      // Ignore the 'id' field
+      if (path === 'id') {
+        return;
+      }
       // If there's no corresponding value skip this path
       if (!otherValue) {
         return;

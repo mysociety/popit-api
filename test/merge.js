@@ -92,6 +92,15 @@ describe("merging two people", function() {
     });
   });
 
+  it("ignores the id field", function(done) {
+    var person1 = new Person({id: 'bob', name: 'Bob'});
+    var person2 = new Person({id: 'bobby', name: 'Bobby'});
+    person1.merge(person2, function(err) {
+      assert.ifError(err);
+      done();
+    });
+  });
+
   it("merges fields that aren't in the schema", function(done) {
     var person1 = new Person({name: 'Bob'});
     var person2 = new Person({name: 'Bob', foo: 'bar'});
