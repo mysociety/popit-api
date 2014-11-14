@@ -111,4 +111,14 @@ describe("merging two people", function() {
     });
   });
 
+  it("merges arrays of strings", function(done) {
+    var person1 = new Person({name: 'Bob', widgets: ['foo', 'bar']});
+    var person2 = new Person({name: 'Bob', widgets: ['bar', 'baz']});
+    person1.merge(person2, function(err) {
+      assert.ifError(err);
+      assert.deepEqual(person1.get('widgets'), ['foo', 'bar', 'baz']);
+      done();
+    });
+  });
+
 });

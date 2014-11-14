@@ -10,6 +10,28 @@ function MergeConflictError(message, conflicts) {
 }
 inherits(MergeConflictError, Error);
 
+function mergeArrays(selfValue, otherValue) {
+  var matchFound;
+  otherValue.forEach(function(otherItem) {
+    matchFound = false;
+    selfValue.forEach(function(item) {
+      if (item.toObject) {
+        item = _.omit(item.toObject(), '_id');
+      }
+      if (otherItem.toObject) {
+        otherItem = _.omit(otherItem.toObject(), '_id');
+      }
+      if (_.isEqual(item, otherItem)) {
+        // Match found, no need to copy this item over.
+        matchFound = true;
+      }
+    });
+    if (!matchFound) {
+      selfValue.push(otherItem);
+    }
+  });
+}
+
 /**
  * Mongoose plugin for merging two people together.
  */
@@ -43,24 +65,13 @@ module.exports = exports = function mergePlugin(schema) {
         }
         return;
       }
-      if (Array.isArray(otherValue)) {
-        otherValue.forEach(function(otherItem) {
-          var matchFound = false;
-          selfValue.forEach(function(item) {
-            if (_.isEqual(_.omit(item.toObject(), '_id'), _.omit(otherItem.toObject(), '_id'))) {
-              // Match found, no need to copy this item over.
-              matchFound = true;
-            }
-          });
-          if (!matchFound) {
-            selfValue.push(otherItem.toObject());
-          }
-        });
-        return;
-      }
       // Copy otherValue directly if there is no existing value on self.
       if (!selfValue && otherValue) {
         self.set(path, otherValue);
+        return;
+      }
+      if (Array.isArray(selfValue) && Array.isArray(otherValue)) {
+        mergeArrays(selfValue, otherValue);
         return;
       }
       // If the two documents have conflicting values then add to conflicts.
