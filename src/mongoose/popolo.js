@@ -1,7 +1,7 @@
 "use strict";
 
 var mongooseJsonSchema = require('./json-schema');
-var jsonTransform = require('./json-transform');
+var jsonTransform = require('./json-transform').jsonTransformPlugin;
 var search = require('./search');
 var elasticsearch = require('./elasticsearch');
 var embed = require('./embed');

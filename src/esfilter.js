@@ -2,7 +2,7 @@
 
 var _ = require('underscore');
 var filter = require('./filter');
-
+var translate = require('./mongoose/json-transform').translateDoc;
 
 module.exports = function esFilters() {
   return {
@@ -16,7 +16,18 @@ module.exports = function esFilters() {
       return esFilterDatesOnly(doc, ret, options);
     },
 
-    esFilterDatesOnly: esFilterDatesOnly,
+    esTranslateFilter: function esTranslateFilter(doc, ret, options) {
+      if (!doc) {
+        return;
+      }
+
+      //converts _id -> id in organization which upsets test
+      ret = filter(doc, ret, options);
+      ret = translate(doc, ret, options);
+      ret = esFilterDatesOnly(doc, ret, options);
+
+      return ret;
+    }
   };
 
   function transformImages(image) {

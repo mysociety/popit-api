@@ -5,8 +5,8 @@ var popolo = require('./mongoose/popolo');
 var membershipFinder = require('./mongoose/membership-finder');
 var async = require('async');
 var _ = require('underscore');
-var esFilterDatesOnly = require('./esfilter')().esFilterDatesOnly;
 var merge = require('./mongoose/merge');
+var esFilter = require('./esfilter')().esTranslateFilter;
 
 mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
 
@@ -63,7 +63,12 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
     }
 
     if (doc.toJSON) {
-      doc = doc.toJSON( { transform: esFilterDatesOnly });
+      doc = doc.toJSON({
+        transform: esFilter,
+        langs: doc.schema.options.toJSON.langs,
+        defaultLanguage: doc.schema.options.toJSON.defaultLanguage,
+        includeTranslations: true
+      });
     }
 
     done(null, doc);
@@ -87,7 +92,7 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
         if (!self.member) {
           return done();
         }
-        self.model(self.member['@type']).findById(self.member.id, {memberships: 0}, done);
+        self.model(self.member['@type']).findById(self.member.id, {memberships: 0}, function(err, doc) { applyToJSON(err, doc, done); });
       }
     }, function(err, results) {
       if (err) {

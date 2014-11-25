@@ -3,7 +3,8 @@
 var filter = require('../filter');
 var i18n = require('../i18n');
 
-module.exports = jsonTransformPlugin;
+module.exports.jsonTransformPlugin = jsonTransformPlugin;
+module.exports.translateDoc = translateDoc;
 
 function jsonTransformPlugin(schema) {
   schema.set('toJSON', {transform: filterFields});
@@ -74,7 +75,7 @@ function translateDoc(doc, ret, options) {
   if (options.returnAllTranslations) {
     return ret;
   }
-  return i18n(ret, options.langs, options.defaultLanguage);
+  return i18n(ret, options.langs, options.defaultLanguage, options.includeTranslations);
 }
 
 function generateImageUrl(img, doc, options) {
