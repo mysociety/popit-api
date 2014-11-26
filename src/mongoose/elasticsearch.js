@@ -82,12 +82,22 @@ function elasticsearchPlugin(schema) {
     callback = callback || function() {};
     var self = this;
 
-    ['start_date', 'birth_date', 'founding_date','end_date', 'death_date', 'dissolution_date'].forEach(function(field) {
+    function demungeDates(field) {
       var missing = field + '_missing';
       if ( self.get(missing) ) {
         self.set(missing, undefined);
         self.set(field, undefined);
       }
+    }
+
+    var fields = ['start_date', 'birth_date', 'founding_date','end_date', 'death_date', 'dissolution_date'];
+    var embeds = ['person', 'organization', 'member', 'post'];
+    fields.forEach(function(field) {
+      demungeDates(field);
+      embeds.forEach(function(embed) {
+        var embed_field = embed + '.' + field;
+        demungeDates(embed_field);
+      });
     });
 
     callback();
