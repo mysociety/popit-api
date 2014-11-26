@@ -24,6 +24,8 @@ module.exports = function esFilters() {
     // unhappy so change it to something ES can parse
     if (image.created && image.created.toISOString ) {
       image.created = image.created.toISOString();
+    } else {
+      delete image.created;
     }
     // don't save the mongo ObjectID, save the id
     if (image._id && image._id.toString) {
