@@ -358,6 +358,24 @@ function popitApiApp(options) {
     });
   });
 
+  function tidyUpInlineMembershipError(doc, memberships, callback) {
+    doc.remove(function(err) {
+      if (err) {
+        return callback(err);
+      }
+      async.each(memberships, function deleteMembership(membership, done) {
+        membership.remove(function(err) {
+          if (err) {
+            return done(err);
+          }
+          done();
+        });
+      }, function (err) {
+        callback(err);
+      });
+    });
+  }
+
   app.post('/:collection', validateBody, function (req, res, next) {
     var body = req.body;
     // if there's an image and no body.images then add one as the popit front end uses
@@ -365,13 +383,66 @@ function popitApiApp(options) {
     if ( body.image && !body.images ) {
       body.images = [ { url: body.image } ];
     }
+
+    var memberships = body.memberships;
+    var created_memberships = [];
+    delete body.memberships;
     req.collection.create(body, function (err, doc) {
       if (err) {
         return next(err);
       }
-      res.withBody(doc);
+      if ( memberships ) {
+        async.each(memberships, function createMembership(membership, done) {
+          if ( req.model.modelName == 'Person' ) {
+            if ( !membership.person_id ) {
+              membership.person_id = doc.id;
+            } else if ( membership.person_id != doc.id ) {
+              return done("person id (" + membership.person_id + ") in membership and person id (" + doc.id + ") are mismatched");
+            }
+          } else if ( req.model.modelName == 'Organization' ) {
+            if ( !membership.organization_id ) {
+              membership.organization_id = doc.id;
+            } else if ( membership.organization_id != doc.id ) {
+              return done("organization id (" + membership.organization_id + ") in membership and organization id (" + doc.id + ") are mismatched");
+            }
+          }
+          if ( ! membership.id ) {
+            var id = new mongoose.Types.ObjectId();
+            membership.id = id.toHexString();
+          }
+          membership._id = membership.id;
+          var Membership = req.db.model(models.memberships.modelName);
+          Membership.create(membership, function (err, mem) {
+            if ( err ) {
+              return done(err);
+            }
+            created_memberships.push(mem);
+            done();
+          });
+        }, function (err) {
+          if (err) {
+            tidyUpInlineMembershipError(doc, created_memberships, function(innerErr) {
+              if ( innerErr ) {
+                return res.send(400, {errors: [innerErr]});
+              }
+              return res.send(400, {errors: [err]});
+            });
+          } else {
+            doc.populateMemberships( function (err) {
+              if (err) {
+                tidyUpInlineMembershipError(doc, created_memberships, function(err) {
+                  return res.send(400, {errors: [err]});
+                });
+              } else {
+                res.withBody(doc);
+              }
+            });
+          }
+        });
+      } else {
+        res.withBody(doc);
+      }
     });
-
   });
 
 

@@ -774,4 +774,49 @@ describe("REST", function () {
 
   });
 
+  describe("inline memberships", function() {
+    beforeEach(fixture.loadFixtures);
+
+    it("creates memberships included in POST", function(done) {
+      request.post('/api/persons')
+      .send({id: 'bob-example', name: 'Bob Example', memberships: [ { person_id: "bob-example", organization_id: 'example-org' } ]})
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships.length, 1);
+        done();
+      });
+    });
+
+    it("adds the id of the created object to the membership if missing", function(done) {
+      request.post('/api/persons')
+      .send({id: 'bob-example', name: 'Bob Example', memberships: [ { organization_id: 'example-org' } ]})
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships.length, 1);
+        assert.equal(res.body.result.memberships[0].person_id, 'bob-example');
+        done();
+      });
+    });
+
+    it("returns error and doesn't create anything if you try and create a membership for a different doc", function(done) {
+      request.post('/api/persons')
+      .send({id: 'bob-example', name: 'Bob Example', memberships: [ { person_id: 'dave-example', organization_id: 'example-org' } ]})
+      .expect(400)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.errors.length, 1);
+        assert.equal(res.body.errors[0], "person id (dave-example) in membership and person id (bob-example) are mismatched");
+
+        request.get('/api/persons/bob-example')
+        .expect(404)
+        .end(function(err, res) {
+          assert.ifError(err);
+          done();
+        });
+      });
+    });
+  });
+
 });
