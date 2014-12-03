@@ -25,6 +25,8 @@ var async = require('async');
 var cors = require('cors');
 var InvalidEmbedError = require('./mongoose/embed').InvalidEmbedError;
 var MergeConflictError = require('./mongoose/merge').MergeConflictError;
+var exporter = require('./exporter');
+var zlib = require('zlib');
 
 module.exports = popitApiApp;
 
@@ -76,6 +78,30 @@ function popitApiApp(options) {
     });
   });
 
+  app.get('/export.json', function(req, res, next) {
+    exporter(req.db, function(err, exportObject) {
+      if (err) {
+        return next(err);
+      }
+      res.send(exportObject);
+    });
+  });
+
+  app.get('/export.json.gz', function(req, res, next) {
+    exporter(req.db, function(err, exportObject) {
+      if (err) {
+        return next(err);
+      }
+      res.attachment('export.json.gz');
+      var buf = new Buffer(JSON.stringify(exportObject), 'utf8');
+      zlib.gzip(buf, function(err, result) {
+        if (err) {
+          return next(err);
+        }
+        res.end(result);
+      });
+    });
+  });
 
   /**
    * Check that the collection is in the allowed list, if it is then expose
