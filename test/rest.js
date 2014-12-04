@@ -811,8 +811,39 @@ describe("REST", function () {
 
         request.get('/api/persons/bob-example')
         .expect(404)
+        .end(function(err) {
+          assert.ifError(err);
+          done();
+        });
+      });
+    });
+
+    it("creates memberships included in PUT", function(done) {
+      request.put('/api/persons/joe-bloggs')
+      .send({name: 'Joe Bloggs', memberships: [ { person_id: "joe-bloggs", organization_id: 'example-org' } ]})
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships.length, 1);
+        done();
+      });
+    });
+
+    it("removes memberships not included in a PUT", function(done) {
+      request.put('/api/persons/joe-bloggs')
+      .send({name: 'Joe Bloggs', memberships: [ { person_id: "joe-bloggs", organization_id: 'example-org' } ]})
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships.length, 1);
+        var mem_id = res.body.result.memberships[0].id;
+        request.put('/api/persons/joe-bloggs')
+        .send({name: 'Joe Bloggs', memberships: [ { person_id: "joe-bloggs", organization_id: 'another-org' } ]})
+        .expect(200)
         .end(function(err, res) {
           assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 1);
+          assert.notEqual(res.body.result.memberships[0].id, mem_id);
           done();
         });
       });

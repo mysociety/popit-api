@@ -1,6 +1,7 @@
 "use strict";
 
 var express = require('express');
+var _ = require('underscore');
 var mongoose = require('mongoose');
 var packageJSON = require("../package");
 var path = require('path');
@@ -410,6 +411,8 @@ function popitApiApp(options) {
             var id = new mongoose.Types.ObjectId();
             membership.id = id.toHexString();
           }
+          // TODO: should we try and find existing memberships if they
+          // give us an id?
           membership._id = membership.id;
           var Membership = req.db.model(models.memberships.modelName);
           Membership.create(membership, function (err, mem) {
@@ -676,13 +679,106 @@ function popitApiApp(options) {
       if ( body.image && !body.images ) {
         body.images = [ { url: body.image } ];
       }
-      doc.set(body);
-      doc.save(function(err) {
-        if (err) {
-          return next(err);
-        }
-        res.withBody(doc);
-      });
+      var memberships = body.memberships;
+      var created_memberships = [];
+      delete body.memberships;
+      if ( memberships ) {
+        var Membership = req.db.model(models.memberships.modelName);
+        async.each(memberships, function processMembership(membership, done) {
+          var existing = false;
+          if ( req.model.modelName == 'Person' ) {
+            if ( !membership.person_id ) {
+              membership.person_id = doc.id;
+            } else if ( membership.person_id != doc.id ) {
+              return done("person id (" + membership.person_id + ") in membership and person id (" + doc.id + ") are mismatched");
+            }
+          } else if ( req.model.modelName == 'Organization' ) {
+            if ( !membership.organization_id ) {
+              membership.organization_id = doc.id;
+            } else if ( membership.organization_id != doc.id ) {
+              return done("organization id (" + membership.organization_id + ") in membership and organization id (" + doc.id + ") are mismatched");
+            }
+          }
+          if ( ! membership.id ) {
+            var id = new mongoose.Types.ObjectId();
+            membership.id = id.toHexString();
+            createMembership(membership, done);
+          } else {
+            Membership.findById(membership.id, function(err, mem) {
+              if (mem) {
+                existing = true;
+                mem.set(membership);
+                mem.save(function(err) {
+                  if (err) {
+                    return done(err);
+                  }
+                  return done();
+                });
+              } else {
+                createMembership(membership, done);
+              }
+            });
+          }
+
+          function createMembership(membership, done) {
+            membership._id = membership.id;
+            Membership.create(membership, function (err, mem) {
+              if ( err ) {
+                return done(err);
+              }
+              created_memberships.push(mem);
+              done();
+            });
+          }
+        }, function afterCreateMembership(err) {
+          if (err) {
+            next(err);
+          }
+          // TODO: need to store these and restore them in the
+          // event of badness
+          var membership_ids =
+            _.chain(memberships)
+             .map( function(membership) { return membership.id; })
+             .compact()
+             .value();
+
+          Membership
+            .find( { 'person_id': req.param('id') } )
+            .where( '_id' ).nin( membership_ids )
+            .exec( function( err, memberships ) {
+              if ( err ) {
+                next(err);
+              }
+              async.forEachSeries(memberships, function(membership, done) {
+                membership.remove(done);
+              }, function(err) {
+                if (err) {
+                  return next(err);
+                }
+                doc.set(body);
+                doc.save(function(err) {
+                  if (err) {
+                    return next(err);
+                  }
+                  doc.populateMemberships( function(err) {
+                    if (err) {
+                      return next(err);
+                    }
+                    res.withBody(doc);
+                  });
+                });
+              });
+          });
+        });
+      } else {
+        doc.set(body);
+        doc.save(function(err) {
+          if (err) {
+            return next(err);
+          }
+          res.withBody(doc);
+        });
+      }
     });
 
   });
