@@ -22,7 +22,7 @@ describe("importing popolo json", function() {
   it("includes all data", function(done) {
     var popoloObject = {
       persons: [
-        { _id: 'john-smith', name: 'John Smith' },
+        { name: 'John Smith' },
       ],
     };
     importer(mongoose, popoloObject, function(err) {
