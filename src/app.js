@@ -359,21 +359,79 @@ function popitApiApp(options) {
     });
   });
 
-  function tidyUpInlineMembershipError(doc, memberships, callback) {
-    doc.remove(function(err) {
-      if (err) {
-        return callback(err);
-      }
-      async.each(memberships, function deleteMembership(membership, done) {
-        membership.remove(function(err) {
-          if (err) {
-            return done(err);
-          }
-          done();
-        });
-      }, function (err) {
-        callback(err);
+  function removeMemberships(memberships, callback) {
+    async.each(memberships, function deleteMembership(membership, done) {
+      membership.remove(function(err) {
+        if (err) {
+          return done(err);
+        }
+        done();
       });
+    }, function (err) {
+      callback(err);
+    });
+  }
+
+  function restoreMemberships(memberships, callback) {
+    async.each(memberships, function restoreMembership(membership, done) {
+      membership.save(function(err) {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+    }, function (err) {
+      callback(err);
+    });
+  }
+
+  function tidyUpInlineMembershipError(doc, created, updated, callback) {
+    if (doc) {
+      doc.remove(function(err) {
+        if (err) {
+          return callback(err);
+        }
+        removeMemberships(created, callback);
+      });
+    } else {
+      removeMemberships(created, function (err) {
+        if (err) {
+          return callback(err);
+        }
+        restoreMemberships(updated, callback);
+      });
+    }
+  }
+
+  function checkMembership(req, membership, doc, done) {
+    if ( req.model.modelName == 'Person' ) {
+      if ( !membership.person_id ) {
+        membership.person_id = doc.id;
+      } else if ( membership.person_id != doc.id ) {
+        return done("person id (" + membership.person_id + ") in membership and person id (" + doc.id + ") are mismatched");
+      }
+    } else if ( req.model.modelName == 'Organization' ) {
+      if ( !membership.organization_id ) {
+        membership.organization_id = doc.id;
+      } else if ( membership.organization_id != doc.id ) {
+        return done("organization id (" + membership.organization_id + ") in membership and organization id (" + doc.id + ") are mismatched");
+      }
+    }
+    return done(null, membership);
+  }
+
+  function createMembership(req, membership, done) {
+    if ( !membership.id ) {
+      var id = new mongoose.Types.ObjectId();
+      membership.id = id.toHexString();
+    }
+    membership._id = membership.id;
+    var Membership = req.db.model(models.memberships.modelName);
+    Membership.create(membership, function (err, mem) {
+      if ( err ) {
+        return done(err);
+      }
+      done(null, mem);
     });
   }
 
@@ -393,38 +451,28 @@ function popitApiApp(options) {
         return next(err);
       }
       if ( memberships ) {
-        async.each(memberships, function createMembership(membership, done) {
-          if ( req.model.modelName == 'Person' ) {
-            if ( !membership.person_id ) {
-              membership.person_id = doc.id;
-            } else if ( membership.person_id != doc.id ) {
-              return done("person id (" + membership.person_id + ") in membership and person id (" + doc.id + ") are mismatched");
-            }
-          } else if ( req.model.modelName == 'Organization' ) {
-            if ( !membership.organization_id ) {
-              membership.organization_id = doc.id;
-            } else if ( membership.organization_id != doc.id ) {
-              return done("organization id (" + membership.organization_id + ") in membership and organization id (" + doc.id + ") are mismatched");
-            }
-          }
-          if ( ! membership.id ) {
-            var id = new mongoose.Types.ObjectId();
-            membership.id = id.toHexString();
-          }
-          // TODO: should we try and find existing memberships if they
-          // give us an id?
-          membership._id = membership.id;
-          var Membership = req.db.model(models.memberships.modelName);
-          Membership.create(membership, function (err, mem) {
-            if ( err ) {
-              return done(err);
-            }
-            created_memberships.push(mem);
-            done();
-          });
-        }, function (err) {
+        async.each(memberships, function processMembership(membership, done) {
+          async.waterfall([
+            function callCheckMembership(cb) {
+              checkMembership(req, membership, doc, cb);
+            },
+            function callCreateMembership(membership, cb) {
+              createMembership(req, membership, function(err, membership) {
+                if ( err ) {
+                  return cb(err);
+                }
+                created_memberships.push(membership);
+                cb();
+              });
+            }], function membershipCreated(err) {
+              if (err) {
+                return done(err);
+              }
+              done();
+            });
+        }, function afterCreateMemberships(err) {
           if (err) {
-            tidyUpInlineMembershipError(doc, created_memberships, function(innerErr) {
+            tidyUpInlineMembershipError(doc, created_memberships, null, function(innerErr) {
               if ( innerErr ) {
                 return res.send(400, {errors: [innerErr]});
               }
@@ -433,7 +481,7 @@ function popitApiApp(options) {
           } else {
             doc.populateMemberships( function (err) {
               if (err) {
-                tidyUpInlineMembershipError(doc, created_memberships, function(err) {
+                tidyUpInlineMembershipError(doc, created_memberships, null, function(err) {
                   return res.send(400, {errors: [err]});
                 });
               } else {
@@ -636,6 +684,32 @@ function popitApiApp(options) {
     });
   });
 
+  function removeOldMemberships(req, memberships, done) {
+    var membership_ids =
+      _.chain(memberships)
+       .map( function(membership) { return membership.id; })
+       .compact()
+       .value();
+
+    var Membership = req.db.model(models.memberships.modelName);
+    Membership
+      .find( { 'person_id': req.param('id') } )
+      .where( '_id' ).nin( membership_ids )
+      .exec( function( err, memberships ) {
+        if ( err ) {
+          return done(err);
+        }
+        async.forEachSeries(memberships, function(membership, done) {
+          membership.remove(done);
+        }, function (err) {
+          if (err) {
+            return done(err);
+          }
+          done();
+        });
+      });
+  }
+
   app.put('/:collection/:id(*)', validateBody, function (req, res, next) {
 
     var id = req.params.id;
@@ -681,93 +755,76 @@ function popitApiApp(options) {
       }
       var memberships = body.memberships;
       var created_memberships = [];
+      var updated_memberships = [];
       delete body.memberships;
       if ( memberships ) {
         var Membership = req.db.model(models.memberships.modelName);
         async.each(memberships, function processMembership(membership, done) {
           var existing = false;
-          if ( req.model.modelName == 'Person' ) {
-            if ( !membership.person_id ) {
-              membership.person_id = doc.id;
-            } else if ( membership.person_id != doc.id ) {
-              return done("person id (" + membership.person_id + ") in membership and person id (" + doc.id + ") are mismatched");
-            }
-          } else if ( req.model.modelName == 'Organization' ) {
-            if ( !membership.organization_id ) {
-              membership.organization_id = doc.id;
-            } else if ( membership.organization_id != doc.id ) {
-              return done("organization id (" + membership.organization_id + ") in membership and organization id (" + doc.id + ") are mismatched");
-            }
-          }
-          if ( ! membership.id ) {
-            var id = new mongoose.Types.ObjectId();
-            membership.id = id.toHexString();
-            createMembership(membership, done);
-          } else {
-            Membership.findById(membership.id, function(err, mem) {
-              if (mem) {
-                existing = true;
-                mem.set(membership);
-                mem.save(function(err) {
-                  if (err) {
-                    return done(err);
+          async.waterfall([
+            function callCheckMembership(cb) {
+              checkMembership(req, membership, doc, cb);
+            },
+            function callCreateMembership(membership, cb) {
+              if ( ! membership.id ) {
+                createMembership(req, membership, function(err, membership) {
+                  if ( err ) {
+                    return cb(err);
                   }
-                  return done();
+                  created_memberships.push(membership);
+                  cb();
                 });
               } else {
-                createMembership(membership, done);
+                Membership.findById(membership.id, function(err, mem) {
+                  if (mem) {
+                    existing = true;
+                    updated_memberships.push(mem.toJSON());
+                    mem.set(membership);
+                    mem.save(function(err) {
+                      if (err) {
+                        return cb(err);
+                      }
+                      return cb();
+                    });
+                  } else {
+                    createMembership(req, membership, function(err, membership) {
+                      if ( err ) {
+                        return cb(err);
+                      }
+                      created_memberships.push(membership);
+                      cb();
+                    });
+                  }
+                });
               }
-            });
-          }
-
-          function createMembership(membership, done) {
-            membership._id = membership.id;
-            Membership.create(membership, function (err, mem) {
-              if ( err ) {
+            }], function membershipCreated(err) {
+              if (err) {
                 return done(err);
               }
-              created_memberships.push(mem);
               done();
             });
-          }
-        }, function afterCreateMembership(err) {
+        }, function afterCreateMemberships(err) {
           if (err) {
             next(err);
           }
           // TODO: need to store these and restore them in the
           // event of badness
-          var membership_ids =
-            _.chain(memberships)
-             .map( function(membership) { return membership.id; })
-             .compact()
-             .value();
-
-          Membership
-            .find( { 'person_id': req.param('id') } )
-            .where( '_id' ).nin( membership_ids )
-            .exec( function( err, memberships ) {
-              if ( err ) {
-                next(err);
+          removeOldMemberships(req, memberships, function(err) {
+            if (err) {
+              return next(err);
+            }
+            doc.set(body);
+            doc.save(function(err) {
+              if (err) {
+                tidyUpInlineMembershipError(null, created_memberships, updated_memberships, next);
               }
-              async.forEachSeries(memberships, function(membership, done) {
-                membership.remove(done);
-              }, function(err) {
+              doc.populateMemberships( function(err) {
                 if (err) {
                   return next(err);
                 }
-                doc.set(body);
-                doc.save(function(err) {
-                  if (err) {
-                    return next(err);
-                  }
-                  doc.populateMemberships( function(err) {
-                    if (err) {
-                      return next(err);
-                    }
-                    res.withBody(doc);
-                  });
-                });
+                res.withBody(doc);
               });
+            });
           });
         });
       } else {
