@@ -9,6 +9,7 @@ var supertest     = require("supertest"),
     serverApp     = require("../test-server-app"),
     person        = require('./util').person,
     mongoose      = require('mongoose'),
+    zlib          = require('zlib'),
     dropElasticsearchIndex = require('./util').dropElasticsearchIndex,
     refreshElasticsearchIndex = require('./util').refreshElasticsearchIndex,
     apiApp = require('..');
@@ -769,6 +770,60 @@ describe("REST", function () {
         assert.ifError(err);
         assert.equal(res.body.errors[0], "The merge method currently only works with people");
         done();
+      });
+    });
+
+  });
+
+  describe("export", function() {
+    beforeEach(fixture.loadFixtures);
+
+    it("provides popolo json", function(done) {
+      request.get('/api/export.json')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(2, res.body.people.length);
+        assert.equal(2, res.body.organizations.length);
+        assert.equal(2, res.body.memberships.length);
+        assert.equal(2, res.body.posts.length);
+        done();
+      });
+    });
+
+    /**
+     * Parser for binary responses
+     *
+     * @see http://stackoverflow.com/a/14802413
+     */
+    function binaryParser(res, callback) {
+      res.setEncoding('binary');
+      res.data = '';
+      res.on('data', function(chunk) {
+        res.data += chunk;
+      });
+      res.on('end', function() {
+        callback(null, new Buffer(res.data, 'binary'));
+      });
+    }
+
+    it("provides compressed popolo json", function(done) {
+      request.get('/api/export.json.gz')
+      .expect(200)
+      .parse(binaryParser)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal('application/octet-stream', res.header['content-type']);
+        assert(res.header['content-disposition'].indexOf('export.json.gz') !== -1);
+        zlib.unzip(res.body, function(err, json) {
+          assert.ifError(err);
+          var popolo = JSON.parse(json);
+          assert.equal(2, popolo.people.length);
+          assert.equal(2, popolo.organizations.length);
+          assert.equal(2, popolo.memberships.length);
+          assert.equal(2, popolo.posts.length);
+          done();
+        });
       });
     });
 
