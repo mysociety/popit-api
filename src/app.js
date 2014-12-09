@@ -372,20 +372,28 @@ function popitApiApp(options) {
     });
   }
 
-  function restoreMemberships(memberships, callback) {
+  function restoreMemberships(req, memberships, callback) {
+    var Membership = req.db.model(models.memberships.modelName);
     async.each(memberships, function restoreMembership(membership, done) {
-      membership.save(function(err) {
-        if (err) {
-          return done(err);
+      Membership.findById(membership.id, function(err, mem) {
+        if (mem) {
+          mem.set(membership);
+          mem.save(function(err) {
+            if (err) {
+              return done(err);
+            }
+            return done();
+          });
+        } else {
+          return done();
         }
-        done();
       });
     }, function (err) {
       callback(err);
     });
   }
 
-  function tidyUpInlineMembershipError(doc, created, updated, callback) {
+  function tidyUpInlineMembershipError(req, doc, created, updated, callback) {
     if (doc) {
       doc.remove(function(err) {
         if (err) {
@@ -398,7 +406,7 @@ function popitApiApp(options) {
         if (err) {
           return callback(err);
         }
-        restoreMemberships(updated, callback);
+        restoreMemberships(req, updated, callback);
       });
     }
   }
@@ -472,7 +480,7 @@ function popitApiApp(options) {
             });
         }, function afterCreateMemberships(err) {
           if (err) {
-            tidyUpInlineMembershipError(doc, created_memberships, null, function(innerErr) {
+            tidyUpInlineMembershipError(req, doc, created_memberships, null, function(innerErr) {
               if ( innerErr ) {
                 return res.send(400, {errors: [innerErr]});
               }
@@ -481,7 +489,7 @@ function popitApiApp(options) {
           } else {
             doc.populateMemberships( function (err) {
               if (err) {
-                tidyUpInlineMembershipError(doc, created_memberships, null, function(err) {
+                tidyUpInlineMembershipError(req, doc, created_memberships, null, function(err) {
                   return res.send(400, {errors: [err]});
                 });
               } else {
@@ -816,7 +824,7 @@ function popitApiApp(options) {
             doc.set(body);
             doc.save(function(err) {
               if (err) {
-                tidyUpInlineMembershipError(null, created_memberships, updated_memberships, next);
+                tidyUpInlineMembershipError(req, null, created_memberships, updated_memberships, next);
               }
               doc.populateMemberships( function(err) {
                 if (err) {
