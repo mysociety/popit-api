@@ -93,7 +93,13 @@ function popitApiApp(options) {
       if (err) {
         return next(err);
       }
-      res.attachment('export.json.gz');
+      var filename;
+      if (options.instanceName) {
+        filename = options.instanceName + '-popolo-export.json.gz';
+      } else {
+        filename = 'popolo-export.json.gz';
+      }
+      res.attachment(filename);
       var buf = new Buffer(JSON.stringify(exportObject), 'utf8');
       zlib.gzip(buf, function(err, result) {
         if (err) {
