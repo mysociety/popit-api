@@ -66,6 +66,7 @@ function popitApiApp(options) {
   app.use(dateFilter);
   app.use(accept);
   app.use(i18n(options.defaultLanguage));
+  app.use(apiLinks(options));
 
   app.get('/', function (req, res) {
     res.jsonp({
@@ -132,7 +133,6 @@ function popitApiApp(options) {
    * Handle hidden fields on collections.
    */
   app.param('collection', hiddenFields);
-  app.param('collection', apiLinks(options));
 
   app.get('/search/:collection', function(req, res, next) {
     var pagination = paginate(req.query);
