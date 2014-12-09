@@ -424,6 +424,12 @@ function popitApiApp(options) {
       } else if ( membership.organization_id != doc.id ) {
         return done("organization id (" + membership.organization_id + ") in membership and organization id (" + doc.id + ") are mismatched");
       }
+    } else if ( req.model.modelName == 'Post' ) {
+      if ( !membership.post_id ) {
+        membership.post_id = doc.id;
+      } else if ( membership.post_id != doc.id ) {
+        return done("post id (" + membership.post_id + ") in membership and post id (" + doc.id + ") are mismatched");
+      }
     }
     return done(null, membership);
   }
