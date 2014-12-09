@@ -26,6 +26,7 @@ var InvalidEmbedError = require('./mongoose/embed').InvalidEmbedError;
 var MergeConflictError = require('./mongoose/merge').MergeConflictError;
 var exporter = require('./exporter');
 var zlib = require('zlib');
+var importer = require('./importer');
 
 module.exports = popitApiApp;
 
@@ -97,6 +98,15 @@ function popitApiApp(options) {
         }
         res.end(result);
       });
+    });
+  });
+
+  app.post('/import', function(req, res, next) {
+    importer(req.db, req.body, function(err) {
+      if (err) {
+        return next(err);
+      }
+      res.send({'import': 'ok'});
     });
   });
 
