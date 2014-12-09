@@ -825,7 +825,13 @@ function popitApiApp(options) {
             });
         }, function afterCreateMemberships(err) {
           if (err) {
-            next(err);
+            tidyUpInlineMembershipError(req, null, created_memberships, updated_memberships, function(innerErr) {
+              if ( innerErr ) {
+                return res.send(400, {errors: [innerErr]});
+              }
+              return res.send(400, {errors: [err]});
+            });
+            return;
           }
           // TODO: need to store these and restore them in the
           // event of badness
