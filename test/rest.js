@@ -857,4 +857,29 @@ describe("REST", function () {
 
   });
 
+  describe("importer", function() {
+    var Person = mongoose.model('Person');
+
+    it("accepts popolo json", function(done) {
+      request.post('/api/import')
+      .send({
+        people: [
+          { name: 'George Bush' },
+        ],
+      })
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        Person.find(function(err, people) {
+          assert.ifError(err);
+          assert.deepEqual({'import': 'ok'}, res.body);
+          assert.equal(1, people.length);
+          assert.equal('George Bush', people[0].name);
+          done();
+        });
+      });
+    });
+
+  });
+
 });
