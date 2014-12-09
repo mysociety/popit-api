@@ -465,7 +465,10 @@ function popitApiApp(options) {
         return next(err);
       }
       if ( memberships ) {
-        async.each(memberships, function processMembership(membership, done) {
+        // we do this in series otherwise if there's an error we might not
+        // have recorded all the memberships created and hence can't
+        // undo things correctly
+        async.eachSeries(memberships, function processMembership(membership, done) {
           async.waterfall([
             function callCheckMembership(cb) {
               checkMembership(req, membership, doc, cb);
@@ -773,7 +776,10 @@ function popitApiApp(options) {
       delete body.memberships;
       if ( memberships ) {
         var Membership = req.db.model(models.memberships.modelName);
-        async.each(memberships, function processMembership(membership, done) {
+        // we do this in series otherwise if there's an error we might not
+        // have recorded all the memberships created/updated and hence can't
+        // undo things correctly
+        async.eachSeries(memberships, function processMembership(membership, done) {
           var existing = false;
           async.waterfall([
             function callCheckMembership(cb) {
