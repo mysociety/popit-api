@@ -455,6 +455,53 @@ function popitApiApp(options) {
     });
   }
 
+  function processMembership(membership, req, doc, done) {
+    var existing = false;
+    var Membership = req.db.model(models.memberships.modelName);
+    async.waterfall([
+      function callCheckMembership(cb) {
+        checkMembership(req, membership, doc, cb);
+      },
+      function callCreateMembership(membership, cb) {
+        if ( ! membership.id ) {
+          createMembership(req, membership, function(err, membership) {
+            if ( err ) {
+              return cb(err);
+            }
+            req.created_memberships.push(membership);
+            cb();
+          });
+        } else {
+          Membership.findById(membership.id, function(err, mem) {
+            if (mem) {
+              existing = true;
+              req.updated_memberships.push(mem.toJSON());
+              mem.set(membership);
+              mem.save(function(err) {
+                if (err) {
+                  return cb(err);
+                }
+                return cb();
+              });
+            } else {
+              createMembership(req, membership, function(err, membership) {
+                if ( err ) {
+                  return cb(err);
+                }
+                req.created_memberships.push(membership);
+                cb();
+              });
+            }
+          });
+        }
+      }], function membershipCreated(err) {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  }
+
   app.post('/:collection', validateBody, function (req, res, next) {
     var body = req.body;
     // if there's an image and no body.images then add one as the popit front end uses
@@ -464,7 +511,8 @@ function popitApiApp(options) {
     }
 
     var memberships = body.memberships;
-    var created_memberships = [];
+    req.created_memberships = [];
+    req.updated_memberships = [];
     delete body.memberships;
     req.collection.create(body, function (err, doc) {
       if (err) {
@@ -474,28 +522,11 @@ function popitApiApp(options) {
         // we do this in series otherwise if there's an error we might not
         // have recorded all the memberships created and hence can't
         // undo things correctly
-        async.eachSeries(memberships, function processMembership(membership, done) {
-          async.waterfall([
-            function callCheckMembership(cb) {
-              checkMembership(req, membership, doc, cb);
-            },
-            function callCreateMembership(membership, cb) {
-              createMembership(req, membership, function(err, membership) {
-                if ( err ) {
-                  return cb(err);
-                }
-                created_memberships.push(membership);
-                cb();
-              });
-            }], function membershipCreated(err) {
-              if (err) {
-                return done(err);
-              }
-              done();
-            });
-        }, function afterCreateMemberships(err) {
+        async.eachSeries(memberships, function callProcessMembership(membership, done) {
+            processMembership(membership, req, doc, done);
+          }, function afterCreateMemberships(err) {
           if (err) {
-            tidyUpInlineMembershipError(req, doc, created_memberships, null, function(innerErr) {
+            tidyUpInlineMembershipError(req, doc, req.created_memberships, null, function(innerErr) {
               if ( innerErr ) {
                 return res.send(400, {errors: [innerErr]});
               }
@@ -504,7 +535,7 @@ function popitApiApp(options) {
           } else {
             doc.populateMemberships( function (err) {
               if (err) {
-                tidyUpInlineMembershipError(req, doc, created_memberships, null, function(err) {
+                tidyUpInlineMembershipError(req, doc, req.created_memberships, null, function(err) {
                   return res.send(400, {errors: [err]});
                 });
               } else {
@@ -781,62 +812,19 @@ function popitApiApp(options) {
         body.images = [ { url: body.image } ];
       }
       var memberships = body.memberships;
-      var created_memberships = [];
-      var updated_memberships = [];
       var key = req.collection.modelName.toLowerCase() + '_id';
+      req.created_memberships = [];
+      req.updated_memberships = [];
       delete body.memberships;
       if ( memberships ) {
-        var Membership = req.db.model(models.memberships.modelName);
         // we do this in series otherwise if there's an error we might not
         // have recorded all the memberships created/updated and hence can't
         // undo things correctly
-        async.eachSeries(memberships, function processMembership(membership, done) {
-          var existing = false;
-          async.waterfall([
-            function callCheckMembership(cb) {
-              checkMembership(req, membership, doc, cb);
-            },
-            function callCreateMembership(membership, cb) {
-              if ( ! membership.id ) {
-                createMembership(req, membership, function(err, membership) {
-                  if ( err ) {
-                    return cb(err);
-                  }
-                  created_memberships.push(membership);
-                  cb();
-                });
-              } else {
-                Membership.findById(membership.id, function(err, mem) {
-                  if (mem) {
-                    existing = true;
-                    updated_memberships.push(mem.toJSON());
-                    mem.set(membership);
-                    mem.save(function(err) {
-                      if (err) {
-                        return cb(err);
-                      }
-                      return cb();
-                    });
-                  } else {
-                    createMembership(req, membership, function(err, membership) {
-                      if ( err ) {
-                        return cb(err);
-                      }
-                      created_memberships.push(membership);
-                      cb();
-                    });
-                  }
-                });
-              }
-            }], function membershipCreated(err) {
-              if (err) {
-                return done(err);
-              }
-              done();
-            });
-        }, function afterCreateMemberships(err) {
+        async.eachSeries(memberships, function callProcessMembership(membership, done) {
+            processMembership(membership, req, doc, done);
+          }, function afterCreateMemberships(err) {
           if (err) {
-            tidyUpInlineMembershipError(req, null, created_memberships, updated_memberships, function(innerErr) {
+            tidyUpInlineMembershipError(req, null, req.created_memberships, req.updated_memberships, function(innerErr) {
               if ( innerErr ) {
                 return res.send(400, {errors: [innerErr]});
               }
@@ -848,11 +836,11 @@ function popitApiApp(options) {
             if (err) {
               return next(err);
             }
-            updated_memberships = updated_memberships.concat(removed);
+            req.updated_memberships = req.updated_memberships.concat(removed);
             doc.set(body);
             doc.save(function(err) {
               if (err) {
-                tidyUpInlineMembershipError(req, null, created_memberships, updated_memberships, function(innerErr) {
+                tidyUpInlineMembershipError(req, null, req.created_memberships, req.updated_memberships, function(innerErr) {
                   if ( innerErr ) {
                     return res.send(400, {errors: [innerErr]});
                   }
