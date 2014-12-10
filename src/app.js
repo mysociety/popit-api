@@ -385,7 +385,13 @@ function popitApiApp(options) {
             return done();
           });
         } else {
-          return done();
+          membership._id = membership.id;
+          Membership.create(membership, function (err, mem) {
+            if ( err ) {
+              return done(err);
+            }
+            done(null, mem);
+          });
         }
       });
     }, function (err) {
@@ -701,7 +707,7 @@ function popitApiApp(options) {
     });
   });
 
-  function removeOldMemberships(req, memberships, done) {
+  function removeOldMemberships(req, memberships, key, id, done) {
     var membership_ids =
       _.chain(memberships)
        .map( function(membership) { return membership.id; })
@@ -709,20 +715,24 @@ function popitApiApp(options) {
        .value();
 
     var Membership = req.db.model(models.memberships.modelName);
+    var criteria = {};
+    criteria[key] = id;
+    var removed = [];
     Membership
-      .find( { 'person_id': req.param('id') } )
+      .find( criteria )
       .where( '_id' ).nin( membership_ids )
       .exec( function( err, memberships ) {
         if ( err ) {
           return done(err);
         }
         async.forEachSeries(memberships, function(membership, done) {
+          removed.push(membership.toJSON());
           membership.remove(done);
         }, function (err) {
           if (err) {
             return done(err);
           }
-          done();
+          done(null, removed);
         });
       });
   }
@@ -773,6 +783,7 @@ function popitApiApp(options) {
       var memberships = body.memberships;
       var created_memberships = [];
       var updated_memberships = [];
+      var key = req.collection.modelName.toLowerCase() + '_id';
       delete body.memberships;
       if ( memberships ) {
         var Membership = req.db.model(models.memberships.modelName);
@@ -833,16 +844,21 @@ function popitApiApp(options) {
             });
             return;
           }
-          // TODO: need to store these and restore them in the
-          // event of badness
-          removeOldMemberships(req, memberships, function(err) {
+          removeOldMemberships(req, memberships, key, doc.id, function(err, removed) {
             if (err) {
               return next(err);
             }
+            updated_memberships = updated_memberships.concat(removed);
             doc.set(body);
             doc.save(function(err) {
               if (err) {
-                tidyUpInlineMembershipError(req, null, created_memberships, updated_memberships, next);
+                tidyUpInlineMembershipError(req, null, created_memberships, updated_memberships, function(innerErr) {
+                  if ( innerErr ) {
+                    return res.send(400, {errors: [innerErr]});
+                  }
+                  return res.send(400, {errors: [err]});
+                });
+                return;
               }
               doc.populateMemberships( function(err) {
                 if (err) {
