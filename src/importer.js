@@ -15,8 +15,9 @@ function populateIdField(record) {
   }
   if (record.id) {
     record._id = record.id;
+  } else {
+    record._id = generateID();
   }
-  record._id = generateID();
 }
 
 function importer(connection, popoloObject, callback) {
