@@ -28,6 +28,7 @@ function importer(connection, popoloObject, callback) {
     ['memberships', 'Membership'],
     ['posts', 'Post'],
   ];
+  var stats = {};
   async.each(collections, function(collectionPair, done) {
     var key = collectionPair[0];
     var modelName = collectionPair[1];
@@ -36,8 +37,15 @@ function importer(connection, popoloObject, callback) {
     }
     // Ensure all records have a valid _id field
     popoloObject[key].forEach(populateIdField);
-    connection.model(modelName).create(popoloObject[key], done);
-  }, callback);
+    var Model = connection.model(modelName)
+    Model.create(popoloObject[key], done);
+    stats[key] = popoloObject[key].length;
+  }, function(err) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, stats);
+  });
 }
 
 module.exports = importer;
