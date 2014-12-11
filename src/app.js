@@ -155,11 +155,14 @@ function popitApiApp(options) {
   });
 
   app.post('/import', function(req, res, next) {
-    importer(req.db, req.body, function(err) {
+    importer(req.db, req.body, function(err, stats) {
       if (err) {
         return next(err);
       }
-      res.send({'import': 'ok'});
+      res.withBody({
+        import: 'ok',
+        stats: stats,
+      });
     });
   });
 
