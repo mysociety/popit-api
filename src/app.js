@@ -697,6 +697,17 @@ function popitApiApp(options) {
 
   });
 
+  // Error handling
+  app.use(function(err, req, res, next) {
+    // This should always be an error, but jshint complains if we don't use all
+    // arguments and express will only interpret this as an error handler if
+    // the arity is 4.
+    if (!err) {
+      return next();
+    }
+    console.error(err.stack);
+    res.status(500).send({errors: ["Something went wrong", err.message]});
+  });
 
   /*
     Anything else we should 400 for as it is probably an unsupported method.
