@@ -51,7 +51,7 @@ function popitApiApp(options) {
     next();
   });
 
-  app.use(express.bodyParser());
+  app.use(express.bodyParser({limit: '10mb'}));
 
   app.use(storageSelector(options));
 
