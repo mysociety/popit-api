@@ -25,6 +25,10 @@ var async = require('async');
 var InvalidEmbedError = require('./mongoose/embed').InvalidEmbedError;
 var MergeConflictError = require('./mongoose/merge').MergeConflictError;
 
+var tidyUpInlineMembershipError = require('./inline-memberships').tidyUpInlineMembershipError;
+var processMembership = require('./inline-memberships').processMembership;
+var removeOldMemberships = require('./inline-memberships').removeOldMemberships;
+
 module.exports = popitApiApp;
 
 // Expose the reIndex function so popit UI can use it.
@@ -365,13 +369,45 @@ function popitApiApp(options) {
     if ( body.image && !body.images ) {
       body.images = [ { url: body.image } ];
     }
+
+    var memberships = body.memberships;
+    req.created_memberships = [];
+    req.updated_memberships = [];
+    delete body.memberships;
     req.collection.create(body, function (err, doc) {
       if (err) {
         return next(err);
       }
-      res.withBody(doc);
+      if ( memberships ) {
+        // we do this in series otherwise if there's an error we might not
+        // have recorded all the memberships created and hence can't
+        // undo things correctly
+        async.eachSeries(memberships, function callProcessMembership(membership, done) {
+            processMembership(membership, req, doc, done);
+          }, function afterCreateMemberships(err) {
+          if (err) {
+            tidyUpInlineMembershipError(req, doc, req.created_memberships, null, function(innerErr) {
+              if ( innerErr ) {
+                return res.send(400, {errors: [innerErr]});
+              }
+              return res.send(400, {errors: [err]});
+            });
+          } else {
+            doc.populateMemberships( function (err) {
+              if (err) {
+                tidyUpInlineMembershipError(req, doc, req.created_memberships, null, function(err) {
+                  return res.send(400, {errors: [err]});
+                });
+              } else {
+                res.withBody(doc);
+              }
+            });
+          }
+        });
+      } else {
+        res.withBody(doc);
+      }
     });
-
   });
 
 
@@ -605,13 +641,61 @@ function popitApiApp(options) {
       if ( body.image && !body.images ) {
         body.images = [ { url: body.image } ];
       }
-      doc.set(body);
-      doc.save(function(err) {
-        if (err) {
-          return next(err);
-        }
-        res.withBody(doc);
-      });
+      var memberships = body.memberships;
+      var key = req.collection.modelName.toLowerCase() + '_id';
+      req.created_memberships = [];
+      req.updated_memberships = [];
+      delete body.memberships;
+      if ( memberships ) {
+        // we do this in series otherwise if there's an error we might not
+        // have recorded all the memberships created/updated and hence can't
+        // undo things correctly
+        async.eachSeries(memberships, function callProcessMembership(membership, done) {
+            processMembership(membership, req, doc, done);
+          }, function afterCreateMemberships(err) {
+          if (err) {
+            tidyUpInlineMembershipError(req, null, req.created_memberships, req.updated_memberships, function(innerErr) {
+              if ( innerErr ) {
+                return res.send(400, {errors: [innerErr]});
+              }
+              return res.send(400, {errors: [err]});
+            });
+            return;
+          }
+          removeOldMemberships(req, memberships, key, doc.id, function(err, removed) {
+            if (err) {
+              return next(err);
+            }
+            req.updated_memberships = req.updated_memberships.concat(removed);
+            doc.set(body);
+            doc.save(function(err) {
+              if (err) {
+                tidyUpInlineMembershipError(req, null, req.created_memberships, req.updated_memberships, function(innerErr) {
+                  if ( innerErr ) {
+                    return res.send(400, {errors: [innerErr]});
+                  }
+                  return res.send(400, {errors: [err]});
+                });
+                return;
+              }
+              doc.populateMemberships( function(err) {
+                if (err) {
+                  return next(err);
+                }
+                res.withBody(doc);
+              });
+            });
+          });
+        });
+      } else {
+        doc.set(body);
+        doc.save(function(err) {
+          if (err) {
+            return next(err);
+          }
+          res.withBody(doc);
+        });
+      }
     });
 
   });
