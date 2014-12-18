@@ -361,12 +361,7 @@ function popitApiApp(options) {
 
   function removeMemberships(memberships, callback) {
     async.each(memberships, function deleteMembership(membership, done) {
-      membership.remove(function(err) {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      membership.remove(done);
     }, function (err) {
       callback(err);
     });
