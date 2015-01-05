@@ -90,6 +90,15 @@ function generateImageUrl(img, doc, options) {
   return url;
 }
 
+function generateImageProxyUrl(img, doc, options) {
+  var url = [
+    options.proxyBaseUrl,
+    encodeURIComponent(img.url),
+  ].join('/');
+
+  return url;
+}
+
 function setImage(doc, ret, options) {
   var images = ret.images;
 
@@ -99,9 +108,15 @@ function setImage(doc, ret, options) {
       if (!img.url) {
         img.url = generateImageUrl(img, doc, options);
       }
+      if (options.proxyBaseUrl && !img.proxy_url) {
+        img.proxy_url = generateImageProxyUrl(img, doc, options);
+      }
       ret.images.push(img);
     });
     ret.image = ret.images[0].url;
+    if ( options.proxyBaseUrl ) {
+      ret.proxy_image = ret.images[0].proxy_url;
+    }
   }
 
   return ret;
