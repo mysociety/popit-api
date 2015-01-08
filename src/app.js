@@ -22,6 +22,7 @@ var models = require('./models');
 var eachSchema = require('./utils').eachSchema;
 var InvalidQueryError = require('./mongoose/elasticsearch').InvalidQueryError;
 var async = require('async');
+var cors = require('cors');
 var InvalidEmbedError = require('./mongoose/embed').InvalidEmbedError;
 var MergeConflictError = require('./mongoose/merge').MergeConflictError;
 
@@ -63,6 +64,8 @@ function popitApiApp(options) {
   app.use(dateFilter);
   app.use(accept);
   app.use(i18n(options.defaultLanguage));
+
+  app.get('*', cors());
 
   app.get('/', function (req, res) {
     res.jsonp({
