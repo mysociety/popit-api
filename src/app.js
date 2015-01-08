@@ -27,6 +27,8 @@ var InvalidEmbedError = require('./mongoose/embed').InvalidEmbedError;
 var MergeConflictError = require('./mongoose/merge').MergeConflictError;
 var exporter = require('./exporter');
 var zlib = require('zlib');
+var bodyParser = require('body-parser');
+var multer = require('multer');
 
 module.exports = popitApiApp;
 
@@ -51,7 +53,9 @@ function popitApiApp(options) {
     next();
   });
 
-  app.use(express.bodyParser());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(multer());
 
   app.use(storageSelector(options));
 
