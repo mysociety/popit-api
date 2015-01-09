@@ -78,25 +78,38 @@ function translateDoc(doc, ret, options) {
   return i18n(ret, options.langs, options.defaultLanguage, options.includeTranslations);
 }
 
+
+function _generateUrl(parts) {
+  var url = parts.join('/');
+
+  // this is a bit grim but there doesn't seem to be a JS
+  // library to do this.
+  var reDoubleSlash = /([^:])\/\//g;
+  url = url.replace(reDoubleSlash, "$1/");
+
+  return url;
+}
+
+
 function generateImageUrl(img, doc, options) {
-  var url = [
+  var parts = [
     options.baseUrl,
     doc.constructor.collection.name.toLowerCase(),
     doc._id || doc.id,
     'image',
     img._id
-  ].join('/');
+  ];
 
-  return url;
+  return _generateUrl(parts);
 }
 
 function generateImageProxyUrl(img, doc, options) {
-  var url = [
+  var parts = [
     options.proxyBaseUrl,
     encodeURIComponent(img.url),
-  ].join('/');
+  ];
 
-  return url;
+  return _generateUrl(parts);
 }
 
 function setImage(doc, ret, options) {
