@@ -374,6 +374,26 @@ describe("REST", function () {
           .end(done);
       });
 
+      it("should replace the whole document", function(done) {
+        request
+          .put("/api/persons/test")
+          .send({ name: "Joe Bloggs", meme: "Harlem Shake" }) // name should be string
+          .expect(200)
+          .end(function(err, res) {
+            assert.ifError(err);
+            request
+              .put("/api/persons/test")
+              .send({ name: "Joe Bloggs", foo: "Bar" }) // name should be string
+              .expect(200)
+              .end(function(err, res) {
+                assert.ifError(err);
+                assert.equal(res.body.result.foo, "Bar")
+                assert(!res.body.result.meme, "meme property should have been overwritten");
+                done();
+              });
+          });
+      });
+
     });
 
 
