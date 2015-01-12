@@ -666,7 +666,7 @@ function popitApiApp(options) {
         return next(err);
       }
       if (!doc) {
-        doc = new req.collection();
+        doc = new req.collection({ _id: id });
       }
       delete body.__v;
 
@@ -690,7 +690,7 @@ function popitApiApp(options) {
       if ( body.image && !body.images ) {
         body.images = [ { url: body.image } ];
       }
-      doc.update(body, {overwrite: true}, function(err) {
+      doc.update(body, { upsert: true, overwrite: true }, function(err) {
         if (err) {
           return next(err);
         }
