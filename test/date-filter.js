@@ -47,7 +47,7 @@ describe("Filter by date", function() {
   });
 
   it("removes fields that don't span the ?at parameter", function(done) {
-    request.get('/api/persons/fred-bloggs?at=2010-02-03')
+    request.get('/api/v0.1/persons/fred-bloggs?at=2010-02-03')
     .expect(200)
     .end(function(err, res) {
       assert.ifError(err);

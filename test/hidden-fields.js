@@ -27,7 +27,7 @@ function showsAllFieldsForAuthenticatedRequests() {
 
     it("includes the hidden fields on /:collection/:id", function(done) {
       api
-      .get('/persons/joe-bloggs?apiKey=' + apiKey)
+      .get('/v0.1/persons/joe-bloggs?apiKey=' + apiKey)
       .expect(200)
       .expect({
         result: person({
@@ -40,7 +40,7 @@ function showsAllFieldsForAuthenticatedRequests() {
 
     it("includes the hidden fields on /:collection", function(done) {
       api
-      .get('/persons?apiKey=' + apiKey)
+      .get('/v0.1/persons?apiKey=' + apiKey)
       .expect(200)
       .end(function(err, res) {
         if (err) {
@@ -77,7 +77,7 @@ describe("hidden fields", function () {
 
     it("hides fields in all documents", function(done) {
       api
-      .get('/persons')
+      .get('/v0.1/persons')
       .expect(200)
       .end(function(err, res) {
         if (err) {
@@ -92,7 +92,7 @@ describe("hidden fields", function () {
 
     it("hides fields on individual documents", function(done) {
       api
-      .get('/persons/fred-bloggs')
+      .get('/v0.1/persons/fred-bloggs')
       .expect(200)
       .end(function(err, res) {
         if (err) {
@@ -107,7 +107,7 @@ describe("hidden fields", function () {
 
       it("shows all fields in all documents", function(done) {
         api
-        .get('/persons?apiKey=secret')
+        .get('/v0.1/persons?apiKey=secret')
         .expect(200)
         .end(function(err, res) {
           if (err) {
@@ -122,7 +122,7 @@ describe("hidden fields", function () {
 
       it("shows all fields on individual documents", function(done) {
         api
-        .get('/persons/fred-bloggs?apiKey=secret')
+        .get('/v0.1/persons/fred-bloggs?apiKey=secret')
         .expect(200)
         .end(function(err, res) {
           if (err) {
@@ -156,7 +156,7 @@ describe("hidden fields", function () {
 
       it("doesn't return the hidden field on /:collection/:id", function (done) {
         request
-        .get("/api/persons/joe-bloggs")
+        .get("/api/v0.1/persons/joe-bloggs")
         .expect(200)
         .end(function(err, res) {
           if (err) {
@@ -169,7 +169,7 @@ describe("hidden fields", function () {
 
       it("doesn't return the hidden field on /:collection", function(done) {
         request
-        .get('/api/persons')
+        .get('/api/v0.1/persons')
         .expect(200)
         .end(function(err, res) {
           if (err) {
@@ -206,7 +206,7 @@ describe("hidden fields", function () {
 
       it("doesn't include the hidden field for the individual document", function(done) {
         request
-        .get("/api/persons/joe-bloggs")
+        .get("/api/v0.1/persons/joe-bloggs")
         .expect(200)
         .end(function(err, res) {
           if (err) {
@@ -219,7 +219,7 @@ describe("hidden fields", function () {
 
       it("includes the hidden field for other documents", function(done) {
         request
-        .get("/api/persons/fred-bloggs")
+        .get("/api/v0.1/persons/fred-bloggs")
         .expect(200)
         .end(function(err, res) {
           if (err) {
@@ -232,7 +232,7 @@ describe("hidden fields", function () {
 
       it("doesn't include fields on hidden documents for /:collection", function(done) {
         request
-        .get('/api/persons')
+        .get('/api/v0.1/persons')
         .expect(200)
         .end(function(err, res) {
           if (err) {

@@ -61,12 +61,20 @@ describe("Apps", function () {
 
       it("correct config", function (done) {
         hostRequest
-          .get('/')
+          .get('/v0.1')
           .set('Host','foo.bar')
           .expect({
+            note: "This is the API entry point - use a '*_api_url' link in 'meta' to search a collection.",
             info: {
               databaseName: 'popit-api-foo-bar',
               version:      packageJSON.version,
+            },
+            meta: {
+              persons_api_url: '/persons',
+              organizations_api_url: '/organizations',
+              memberships_api_url: '/memberships',
+              posts_api_url: '/posts',
+              image_proxy_url: ''
             },
           })
           .end(done);
@@ -74,7 +82,7 @@ describe("Apps", function () {
 
       it("handles long hostnames gracefully", function(done) {
         hostRequest
-          .get('/persons')
+          .get('/v0.1/persons')
           .set('Host', 'cores-por-antartica-chilena-con-mucho-frio.popit.votainteligente.org')
           .expect(200)
           .end(done);
@@ -97,7 +105,7 @@ describe("Apps", function () {
     describe('paths', function () {
       it("should 200 on '/api'", function (done) {
         request
-          .get("/api")
+          .get("/api/v0.1")
           .expect(200)
           .end(done);
       });
@@ -111,7 +119,7 @@ describe("Apps", function () {
 
       it("should 404 on '/api/non-existent-collection'", function (done) {
         request
-          .get("/api/bad")
+          .get("/api/v0.1/bad")
           .expect(404)
           .expect({errors: ["collection 'bad' not found"] })
           .end(done);
@@ -119,7 +127,7 @@ describe("Apps", function () {
       
       it("should 200 on '/api/good-collection'", function (done) {
         request
-          .get("/api/persons")
+          .get("/api/v0.1/persons")
           .expect(200)
           .end(done);
       });

@@ -58,7 +58,7 @@ describe("internationalization", function() {
     });
 
     it("allows documents to be created over the API", function(done) {
-      request.post('/api/persons')
+      request.post('/api/v0.1/persons')
       .send({
         name: {
           en: 'Chris',
@@ -78,7 +78,7 @@ describe("internationalization", function() {
     });
 
     it("returns the document in the requested language", function(done) {
-      request.get('/api/persons/fred-bloggs')
+      request.get('/api/v0.1/persons/fred-bloggs')
       .set('Accept-Language', 'en')
       .expect(200)
       .end(function(err, res) {
@@ -89,7 +89,7 @@ describe("internationalization", function() {
     });
 
     it("returns all translations if requested", function(done) {
-      request.get('/api/persons/fred-bloggs/full')
+      request.get('/api/v0.1/persons/fred-bloggs/full')
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
@@ -114,7 +114,7 @@ describe("internationalization", function() {
     });
 
     it("allows memberships using translated documents to be created over the API", function(done) {
-      request.post('/api/memberships')
+      request.post('/api/v0.1/memberships')
       .send({
         person_id: 'fred-bloggs',
         organization_id: 'org-1'
@@ -127,7 +127,7 @@ describe("internationalization", function() {
         // we need to do this to give the ES indexing time to happen
         // as it's an async process
         setTimeout(function() {
-          request.get('/api/search/memberships?q=person.name:Fred%20Bloggs')
+          request.get('/api/v0.1/search/memberships?q=person.name:Fred%20Bloggs')
           .expect(200)
           .end(function(err, res) {
             assert.ifError(err);

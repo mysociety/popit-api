@@ -34,7 +34,7 @@ describe("REST", function () {
     describe("Content-Type of 'json' but no body", function () {
       it("should not 400", function (done) {
         request
-          .del("/api/persons/123")
+          .del("/api/v0.1/persons/123")
           .type('json') // to force the application/json content type header
           .send("")     // don't send anything
           .expect(204)
@@ -43,15 +43,23 @@ describe("REST", function () {
     });
   });
 
-  describe("/api ", function () {
+  describe("/api/v0.1 ", function () {
     it("should 200 with API info", function (done) {
       request
-        .get("/api")
+        .get("/api/v0.1")
         .expect(200)
         .expect({
+          note: "This is the API entry point - use a '*_api_url' link in 'meta' to search a collection.",
           info: {
             databaseName: defaults.databaseName,
             version:      packageJSON.version,
+          },
+          meta: {
+            persons_api_url: '/persons',
+            organizations_api_url: '/organizations',
+            memberships_api_url: '/memberships',
+            posts_api_url: '/posts',
+            image_proxy_url: ''
           },
         })
         .end(done);
@@ -59,14 +67,14 @@ describe("REST", function () {
     });
   });
 
-  describe("/api/collectionName", function () {
+  describe("/api/v0.1/collectionName", function () {
 
     describe("GET", function () {
 
       it("should return empty list", function (done) {
         async.each( [ 'persons', 'memberships', 'organizations', 'posts' ], function(type, callback) {
             request
-              .get("/api/" + type)
+              .get("/api/v0.1/" + type)
               .expect(200)
               .end(function(err, res) {
                 assert.ifError(err);
@@ -81,7 +89,7 @@ describe("REST", function () {
 
         it('persons', function(done) {
           request
-            .get("/api/persons")
+            .get("/api/v0.1/persons")
             .expect(200)
             .end(function(err, res) {
               if (err) {
@@ -97,7 +105,7 @@ describe("REST", function () {
 
         it('organizations', function(done) {
           request
-            .get("/api/organizations")
+            .get("/api/v0.1/organizations")
             .expect(200)
             .end(function(err, res) {
               if (err) {
@@ -113,7 +121,7 @@ describe("REST", function () {
 
         it('memberships', function(done) {
           request
-            .get("/api/memberships")
+            .get("/api/v0.1/memberships")
             .expect(200)
             .expect({
               total: 2,
@@ -132,7 +140,7 @@ describe("REST", function () {
 
         it('posts', function(done) {
           request
-            .get("/api/posts")
+            .get("/api/v0.1/posts")
             .expect(200)
             .end(function(err, res) {
               if (err) {
@@ -155,7 +163,7 @@ describe("REST", function () {
         async.waterfall([
           function(callback){
             request
-              .post("/api/persons")
+              .post("/api/v0.1/persons")
               .send({ name: "Joe Bloggs" })
               .expect(200)
               .end(function (err, res) {
@@ -166,7 +174,7 @@ describe("REST", function () {
           },
           function(id, callback){
             request
-              .get("/api/persons/" + id)
+              .get("/api/v0.1/persons/" + id)
               .expect(200)
               .end(function (err, res) {
                 assert(res.body.result.id);
@@ -183,7 +191,7 @@ describe("REST", function () {
 
             var personDoc = person({ id: 'test', name: "Joe Bloggs" });
             request
-              .post("/api/persons")
+              .post("/api/v0.1/persons")
               .send(personDoc)
               .expect(200)
               .expect({ result: personDoc })
@@ -191,7 +199,7 @@ describe("REST", function () {
           },
           function(callback){
             request
-              .get('/api/persons/test')
+              .get('/api/v0.1/persons/test')
               .expect(200)
               .expect({ result: person({ id: 'test', name: "Joe Bloggs" }) })
               .end(callback);
@@ -201,7 +209,7 @@ describe("REST", function () {
 
       it("should error when not valid (bad name)", function (done) {
         request
-          .post("/api/persons")
+          .post("/api/v0.1/persons")
           .send({ name: 123, meme: "Harlem Shake" }) // name should be string
           .expect(400)
           .expect("Content-Type", "application/json; charset=utf-8")
@@ -213,7 +221,7 @@ describe("REST", function () {
 
       it("should error when not valid (missing name)", function (done) {
         request
-          .post("/api/persons")
+          .post("/api/v0.1/persons")
           .send({ meme: "Harlem Shake" }) // no name
           .expect(400)
           .expect("Content-Type", "application/json; charset=utf-8")
@@ -225,7 +233,7 @@ describe("REST", function () {
 
       it("should accept arbitrary fields and save them", function(done) {
         request
-          .post("/api/persons")
+          .post("/api/v0.1/persons")
           .send({id: 'test', name: 'Test', meme: 'Harlem Shake', tags: ['music', 'shaking']})
           .expect(200)
           .expect({
@@ -235,7 +243,7 @@ describe("REST", function () {
 
       it("should return an image attribute when adding images", function(done) {
         request
-          .post("/api/persons")
+          .post("/api/v0.1/persons")
           .send({id: 'test', name: 'Test', images: [ { url: 'http://example.com/image.png' }]})
           .expect(200)
           .expect({
@@ -245,7 +253,7 @@ describe("REST", function () {
 
       it("should return an set the image attribute to the first image from images", function(done) {
         request
-          .post("/api/persons")
+          .post("/api/v0.1/persons")
           .send({id: 'test', name: 'Test', images: [ { url: 'http://example.com/image.png' }, { url: 'http://example.org/image2.png' } ]})
           .expect(200)
           .expect({
@@ -255,7 +263,7 @@ describe("REST", function () {
 
       it("should add an image to the images array", function(done) {
         request
-          .post("/api/persons")
+          .post("/api/v0.1/persons")
           .send({id: 'test', name: 'Test', image: 'http://example.com/image.png' })
           .expect(200)
           .expect({
@@ -268,7 +276,7 @@ describe("REST", function () {
     describe("PUT", function () {
       it("should 405", function (done) {
         request
-          .put("/api/persons")
+          .put("/api/v0.1/persons")
           .send([{id: "test", name: "Foo"}])
           .expect(405)
           .end(done);
@@ -278,7 +286,7 @@ describe("REST", function () {
     describe("DELETE", function () {
       it("should 405", function (done) {
         request
-          .del("/api/persons")
+          .del("/api/v0.1/persons")
           .expect(405)
           .end(done);
       });
@@ -286,7 +294,7 @@ describe("REST", function () {
 
   });
 
-  describe("/api/collectionName/id", function () {
+  describe("/api/v0.1/collectionName/id", function () {
 
     describe("GET", function () {
 
@@ -294,13 +302,13 @@ describe("REST", function () {
 
       it("should 200 when doc exists", function (done) {
         request
-          .get("/api/persons/fred-bloggs")
+          .get("/api/v0.1/persons/fred-bloggs")
           .expect(200, done);
       });
 
       it("should 404 when doc does not exist", function (done) {
         request
-          .get("/api/persons/i-do-not-exist")
+          .get("/api/v0.1/persons/i-do-not-exist")
           .expect(404)
           .expect({
             errors: [ "id 'i-do-not-exist' not found" ]
@@ -313,7 +321,7 @@ describe("REST", function () {
     describe("POST", function () {
       it("should 405", function (done) {
         request
-          .post("/api/persons/does-not-exist")
+          .post("/api/v0.1/persons/does-not-exist")
           .send({name: "Foo"})
           .expect(405)
           .end(done);
@@ -326,7 +334,7 @@ describe("REST", function () {
         async.series([
           function(callback){
             request
-              .put("/api/persons/test")
+              .put("/api/v0.1/persons/test")
               .send({ name: "Joe Bloggs" })
               .expect(200)
               .expect({ result: person({ id: "test", name: "Joe Bloggs" }) })
@@ -334,14 +342,14 @@ describe("REST", function () {
           },
           function(callback){
             request
-              .get("/api/persons/test")
+              .get("/api/v0.1/persons/test")
               .expect(200)
               .expect({ result: person({ id: "test", name: "Joe Bloggs" }) })
               .end(callback);
           },
           function(callback){
             request
-              .put("/api/persons/test")
+              .put("/api/v0.1/persons/test")
               .send({ id: 'test', name: "Fred Smith" })
               .expect(200)
               .expect({ result: person({ id: "test", name: "Fred Smith" }) })
@@ -349,7 +357,7 @@ describe("REST", function () {
           },
           function(callback){
             request
-              .get("/api/persons/test")
+              .get("/api/v0.1/persons/test")
               .expect(200)
               .expect({ result: person({ id: "test", name: "Fred Smith" }) })
               .end(callback);
@@ -359,7 +367,7 @@ describe("REST", function () {
 
       it("should error if url id and doc id differ", function (done) {
         request
-          .put("/api/persons/test")
+          .put("/api/v0.1/persons/test")
           .send({ id: "different", name: "Joe Bloggs" })
           .expect(400)
           .expect({errors: ["URL id and document id are different"]})
@@ -368,7 +376,7 @@ describe("REST", function () {
 
       it("should error when not valid (bad name)", function (done) {
         request
-          .put("/api/persons/test")
+          .put("/api/v0.1/persons/test")
           .send({ name: 123, meme: "Harlem Shake" }) // name should be string
           .expect(400)
           .end(done);
@@ -385,13 +393,13 @@ describe("REST", function () {
         async.series([
           function(callback){
             request
-              .del("/api/persons/fred-bloggs")
+              .del("/api/v0.1/persons/fred-bloggs")
               .expect(204)
               .end(callback);
           },
           function(callback){
             request
-              .get('/api/persons/fred-bloggs')
+              .get('/api/v0.1/persons/fred-bloggs')
               .expect(404)
               .end(callback);
           },
@@ -400,7 +408,7 @@ describe("REST", function () {
 
       it("document that does not exist", function (done) {
         request
-          .del("/api/persons/does-not-exist")
+          .del("/api/v0.1/persons/does-not-exist")
           .expect(204)
           .end(done);
       });
@@ -431,7 +439,7 @@ describe("REST", function () {
     beforeEach(refreshElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
     it("returns names when searching", function(done) {
-      request.get('/api/search/persons?q=Barnaby')
+      request.get('/api/v0.1/search/persons?q=Barnaby')
       .expect(200)
       .expect({
         total: 1,
@@ -454,7 +462,7 @@ describe("REST", function () {
       });
 
       it("is formatted correctly", function(done) {
-        apiRequest.get('/search/persons?q=Barnaby')
+        apiRequest.get('/v0.1/search/persons?q=Barnaby')
         .expect(200)
         .end(function(err, res) {
           assert.ifError(err);
@@ -470,7 +478,7 @@ describe("REST", function () {
 
     describe("without correct configuration", function() {
       it("doesn't include links", function(done) {
-        request.get('/api/persons/joe-bloggs')
+        request.get('/api/v0.1/persons/joe-bloggs')
         .expect(200)
         .end(function(err, res) {
           assert.ifError(err);
@@ -487,31 +495,31 @@ describe("REST", function () {
       beforeEach(function() {
         app = supertest(apiApp({
           databaseName: defaults.databaseName,
-          apiBaseUrl: 'http://example.com/api',
+          apiBaseUrl: 'http://example.com/v0.1',
           baseUrl: 'http://example.com'
         }));
       });
 
       it("includes 'url' links when configured correctly", function(done) {
-        app.get('/persons/joe-bloggs')
+        app.get('/v0.1/persons/joe-bloggs')
         .expect(200)
         .end(function(err, res) {
           assert.ifError(err);
-          assert.equal(res.body.result.url, 'http://example.com/api/persons/joe-bloggs');
+          assert.equal(res.body.result.url, 'http://example.com/v0.1/persons/joe-bloggs');
           done();
         });
       });
 
       describe("html_url", function() {
         beforeEach(function(done) {
-          app.post('/persons')
+          app.post('/v0.1/persons')
           .send({id: 'test', name: 'Test'})
           .expect(200)
           .end(done);
         });
 
         it("is present", function(done) {
-          app.get('/persons/test')
+          app.get('/v0.1/persons/test')
           .expect(200)
           .end(function(err, res) {
             assert.ifError(err);
@@ -523,11 +531,11 @@ describe("REST", function () {
 
       describe("embedded documents 'url' property", function() {
         it("is correct", function(done) {
-          app.get('/persons/fred-bloggs')
+          app.get('/v0.1/persons/fred-bloggs')
           .expect(200)
           .end(function(err, res) {
             assert.ifError(err);
-            assert.equal(res.body.result.memberships[0].url, 'http://example.com/api/memberships/oldMP');
+            assert.equal(res.body.result.memberships[0].url, 'http://example.com/v0.1/memberships/oldMP');
             done();
           });
         });
@@ -545,7 +553,7 @@ describe("REST", function () {
     });
 
     it("defaults to 30 results", function(done) {
-      request.get('/api/persons')
+      request.get('/api/v0.1/persons')
       .expect(200)
       .end(function(err, res) {
         if (err) {
@@ -561,7 +569,7 @@ describe("REST", function () {
     });
 
     it("allows specifying a 'per_page' parameter", function(done) {
-      request.get('/api/persons?per_page=10')
+      request.get('/api/v0.1/persons?per_page=10')
       .expect(200)
       .end(function(err, res) {
         if (err) {
@@ -577,7 +585,7 @@ describe("REST", function () {
     });
 
     it("allows specifying a 'page' parameter", function(done) {
-      request.get('/api/persons?page=2')
+      request.get('/api/v0.1/persons?page=2')
       .expect(200)
       .end(function(err, res) {
         if (err) {
@@ -594,7 +602,7 @@ describe("REST", function () {
     });
 
     it("allows specifying both pagination parameters", function(done) {
-      request.get('/api/persons?per_page=39&page=2')
+      request.get('/api/v0.1/persons?per_page=39&page=2')
       .expect(200)
       .end(function(err, res) {
         if (err) {
@@ -615,36 +623,36 @@ describe("REST", function () {
       });
 
       it("adds next_url when there are more results", function(done) {
-        app.get('/persons')
+        app.get('/v0.1/persons')
         .expect(200)
         .end(function(err, res) {
           assert.ifError(err);
           assert(res.body.has_more);
           assert(!res.body.prev_url);
-          assert.equal(res.body.next_url, 'http://example.com/persons?page=2');
+          assert.equal(res.body.next_url, 'http://example.com/v0.1/persons?page=2');
           done();
         });
       });
 
       it("adds prev_url when not on the first page", function(done) {
-        app.get('/persons?page=2')
+        app.get('/v0.1/persons?page=2')
         .expect(200)
         .end(function(err, res) {
           assert.ifError(err);
           assert(!res.body.has_more);
-          assert.equal(res.body.prev_url, 'http://example.com/persons?page=1');
+          assert.equal(res.body.prev_url, 'http://example.com/v0.1/persons?page=1');
           assert(!res.body.next_url);
           done();
         });
       });
 
       it("preserves the rest of the query string", function(done) {
-        app.get('/persons?per_page=10')
+        app.get('/v0.1/persons?per_page=10')
         .expect(200)
         .end(function(err, res) {
           assert.ifError(err);
           assert(res.body.has_more);
-          assert.equal(res.body.next_url, 'http://example.com/persons?per_page=10&page=2');
+          assert.equal(res.body.next_url, 'http://example.com/v0.1/persons?per_page=10&page=2');
           assert(!res.body.prev_url);
           done();
         });
@@ -656,7 +664,7 @@ describe("REST", function () {
     beforeEach(fixture.loadFixtures);
 
     it("works for GET /:collection/:id", function(done) {
-      request.get('/api/persons/fred-bloggs?include_root=false')
+      request.get('/api/v0.1/persons/fred-bloggs?include_root=false')
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
@@ -666,7 +674,7 @@ describe("REST", function () {
     });
 
     it("works for PUT /:collection/:id", function(done) {
-      request.put('/api/persons/fred-bloggs?include_root=false')
+      request.put('/api/v0.1/persons/fred-bloggs?include_root=false')
       .send({name: 'Fred Bloggs'})
       .expect(200)
       .end(function(err, res) {
@@ -677,7 +685,7 @@ describe("REST", function () {
     });
 
     it("works for POST /:collection", function(done) {
-      request.post('/api/persons?include_root=false')
+      request.post('/api/v0.1/persons?include_root=false')
       .send({name: 'Bob Example'})
       .expect(200)
       .end(function(err, res) {
@@ -693,7 +701,7 @@ describe("REST", function () {
     beforeEach(fixture.loadFixtures);
 
     it("embeds memberships by default", function(done) {
-      request.get('/api/persons/fred-bloggs')
+      request.get('/api/v0.1/persons/fred-bloggs')
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
@@ -704,7 +712,7 @@ describe("REST", function () {
     });
 
     it("embeds organizations when requested", function(done) {
-      request.get('/api/persons/fred-bloggs?embed=membership.organization')
+      request.get('/api/v0.1/persons/fred-bloggs?embed=membership.organization')
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
@@ -726,17 +734,17 @@ describe("REST", function () {
     });
 
     it("works for two similar people", function(done) {
-      request.post('/api/persons/fred-bloggs/merge/fred-bloggs-2')
+      request.post('/api/v0.1/persons/fred-bloggs/merge/fred-bloggs-2')
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
         assert.equal(res.body.result.gender, 'male');
-        request.get('/api/persons/fred-bloggs-2').expect(404, done);
+        request.get('/api/v0.1/persons/fred-bloggs-2').expect(404, done);
       });
     });
 
     it("returns an error if you try to merge a person into themselves", function(done) {
-      request.post('/api/persons/fred-bloggs/merge/fred-bloggs')
+      request.post('/api/v0.1/persons/fred-bloggs/merge/fred-bloggs')
       .expect(400)
       .end(function(err, res) {
         assert.ifError(err);
@@ -752,7 +760,7 @@ describe("REST", function () {
       });
 
       it("returns an error", function(done) {
-        request.post('/api/persons/fred-bloggs/merge/fred-bloggs-2')
+        request.post('/api/v0.1/persons/fred-bloggs/merge/fred-bloggs-2')
         .expect(400)
         .end(function(err, res) {
           assert.ifError(err);
@@ -764,7 +772,7 @@ describe("REST", function () {
     });
 
     it("returns an error if you try to merge something other than a person", function(done) {
-      request.post('/api/organizations/foo-corp/merge/acme-inc')
+      request.post('/api/v0.1/organizations/foo-corp/merge/acme-inc')
       .expect(400)
       .end(function(err, res) {
         assert.ifError(err);
@@ -779,7 +787,7 @@ describe("REST", function () {
     beforeEach(fixture.loadFixtures);
 
     it("provides popolo json", function(done) {
-      request.get('/api/export.json')
+      request.get('/api/v0.1/export.json')
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
@@ -808,7 +816,7 @@ describe("REST", function () {
     }
 
     it("provides compressed popolo json", function(done) {
-      request.get('/api/export.json.gz')
+      request.get('/api/v0.1/export.json.gz')
       .expect(200)
       .parse(binaryParser)
       .end(function(err, res) {
