@@ -862,6 +862,20 @@ describe("REST", function () {
       });
     });
 
+    it("doesn't create memberships included in an organizations POST to 0.1 API", function(done) {
+      request.post('/api/v0.1/organizations')
+      .send({id: 'new-org', name: 'New Org', memberships: [ { person_id: "bob-example", organization_id: 'new-org' } ]})
+      .expect(200)
+      .end(function(err) {
+        assert.ifError(err);
+        request.get('/api/v0.1/organizations')
+        .end(function(err, res) {
+          assert.equal(res.body.result.memberships, undefined);
+          done();
+        });
+      });
+    });
+
     it("creates memberships included in an organizations POST", function(done) {
       request.post('/api/v1.0.0/organizations')
       .send({id: 'new-org', name: 'New Org', memberships: [ { person_id: "bob-example", organization_id: 'new-org' } ]})
@@ -987,6 +1001,21 @@ describe("REST", function () {
               assert.equal(res.body.total, 2);
               done();
           });
+        });
+      });
+    });
+
+    it("it doesn't create memberships included in v0.1 PUT", function(done) {
+      request.put('/api/v0.1/persons/joe-bloggs')
+      .send({name: 'Joe Bloggs', memberships: [ { person_id: "joe-bloggs", organization_id: 'example-org' } ]})
+      .expect(200)
+      .end(function(err) {
+        assert.ifError(err);
+        request.get('/api/v0.1/persons/joe-bloggs')
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 0);
+          done();
         });
       });
     });
