@@ -909,11 +909,15 @@ describe("REST", function () {
       request.post('/api/v1.0.0/organizations')
       .send({id: 'new-org', name: 'New Org', memberships: [ { person_id: "bob-example" } ]})
       .expect(200)
-      .end(function(err, res) {
+      .end(function(err) {
         assert.ifError(err);
-        assert.equal(res.body.result.memberships.length, 1);
-        assert.equal(res.body.result.memberships[0].organization_id, 'new-org');
-        done();
+        request.get('/api/v1.0.0/organizations/new-org')
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 1);
+          assert.equal(res.body.result.memberships[0].organization_id, 'new-org');
+          done();
+        });
       });
     });
 
@@ -921,11 +925,15 @@ describe("REST", function () {
       request.post('/api/v1.0.0/posts')
       .send({id: 'new-post', label: 'New Post', memberships: [ { organization_id: 'new-org' } ]})
       .expect(200)
-      .end(function(err, res) {
+      .end(function(err) {
         assert.ifError(err);
-        assert.equal(res.body.result.memberships.length, 1);
-        assert.equal(res.body.result.memberships[0].post_id, 'new-post');
-        done();
+        request.get('/api/v1.0.0/posts/new-post')
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 1);
+          assert.equal(res.body.result.memberships[0].post_id, 'new-post');
+          done();
+        });
       });
     });
 
@@ -996,10 +1004,14 @@ describe("REST", function () {
       request.put('/api/v1.0.0/persons/joe-bloggs')
       .send({name: 'Joe Bloggs', memberships: [ { person_id: "joe-bloggs", organization_id: 'example-org' } ]})
       .expect(200)
-      .end(function(err, res) {
+      .end(function(err) {
         assert.ifError(err);
-        assert.equal(res.body.result.memberships.length, 1);
-        done();
+        request.get('/api/v0.1/persons/joe-bloggs')
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 1);
+          done();
+        });
       });
     });
 
@@ -1007,10 +1019,14 @@ describe("REST", function () {
       request.put('/api/v1.0.0/organizations/parliament')
       .send({name: 'Houses of Parliament', memberships: [ { person_id: "joe-bloggs", organization_id: 'parliament' } ]})
       .expect(200)
-      .end(function(err, res) {
+      .end(function(err) {
         assert.ifError(err);
-        assert.equal(res.body.result.memberships.length, 1);
-        done();
+        request.get('/api/v0.1/organizations/parliament')
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 1);
+          done();
+        });
       });
     });
 
@@ -1018,11 +1034,15 @@ describe("REST", function () {
       request.put('/api/v1.0.0/posts/annapolis')
       .send({ label: 'MP for Annapolis', memberships: [ { post_id: "annapolis", organization_id: 'new-org' } ]})
       .expect(200)
-      .end(function(err, res) {
+      .end(function(err) {
         assert.ifError(err);
-        assert.equal(res.body.result.memberships.length, 1);
-        assert.equal(res.body.result.memberships[0].organization_id, 'new-org');
-        done();
+        request.get('/api/v1.0.0/posts/annapolis')
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 1);
+          assert.equal(res.body.result.memberships[0].organization_id, 'new-org');
+          done();
+        });
       });
     });
 
@@ -1030,11 +1050,15 @@ describe("REST", function () {
       request.put('/api/v1.0.0/persons/joe-bloggs')
       .send({name: 'Joe Bloggs', memberships: [ { organization_id: 'example-org' } ]})
       .expect(200)
-      .end(function(err, res) {
+      .end(function(err) {
         assert.ifError(err);
-        assert.equal(res.body.result.memberships.length, 1);
-        assert.equal(res.body.result.memberships[0].person_id, 'joe-bloggs');
-        done();
+        request.get('/api/v1.0.0/persons/joe-bloggs')
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 1);
+          assert.equal(res.body.result.memberships[0].person_id, 'joe-bloggs');
+          done();
+        });
       });
     });
 
@@ -1042,11 +1066,15 @@ describe("REST", function () {
       request.put('/api/v1.0.0/organizations/parliament')
       .send({name: 'Houses of Parliament', memberships: [ { person_id: 'joe-bloggs' } ]})
       .expect(200)
-      .end(function(err, res) {
+      .end(function(err) {
         assert.ifError(err);
-        assert.equal(res.body.result.memberships.length, 1);
-        assert.equal(res.body.result.memberships[0].organization_id, 'parliament');
-        done();
+        request.get('/api/v1.0.0/organizations/parliament')
+        .end(function(err, res) {
+          assert.ifError(err);
+          assert.equal(res.body.result.memberships.length, 1);
+          assert.equal(res.body.result.memberships[0].organization_id, 'parliament');
+          done();
+        });
       });
     });
 
@@ -1061,11 +1089,15 @@ describe("REST", function () {
         request.put('/api/v1.0.0/persons/joe-bloggs')
         .send({name: 'Joe Bloggs', memberships: [ { person_id: "joe-bloggs", organization_id: 'another-org' } ]})
         .expect(200)
-        .end(function(err, res) {
+        .end(function(err) {
           assert.ifError(err);
-          assert.equal(res.body.result.memberships.length, 1);
-          assert.notEqual(res.body.result.memberships[0].id, mem_id);
-          done();
+          request.get('/api/v1.0.0/persons/joe-bloggs')
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.memberships.length, 1);
+            assert.notEqual(res.body.result.memberships[0].id, mem_id);
+            done();
+          });
         });
       });
     });
@@ -1080,10 +1112,14 @@ describe("REST", function () {
         request.put('/api/v1.0.0/persons/joe-bloggs')
         .send({name: 'Joe Bloggs', memberships: [ ]})
         .expect(200)
-        .end(function(err, res) {
+        .end(function(err) {
           assert.ifError(err);
-          assert.equal(res.body.result.memberships.length, 0);
-          done();
+          request.get('/api/v1.0.0/persons/joe-bloggs')
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.memberships.length, 0);
+            done();
+          });
         });
       });
     });
@@ -1125,11 +1161,15 @@ describe("REST", function () {
         request.put('/api/v1.0.0/persons/joe-bloggs')
         .send({name: 'Joe Bloggs', memberships: [ { id: mem_id, person_id: "joe-bloggs", organization_id: 'another-org' } ]})
         .expect(200)
-        .end(function(err, res) {
+        .end(function(err) {
           assert.ifError(err);
-          assert.equal(res.body.result.memberships.length, 1);
-          assert.equal(res.body.result.memberships[0].organization_id, 'another-org');
-          done();
+          request.get('/api/v1.0.0/persons/joe-bloggs')
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.memberships.length, 1);
+            assert.equal(res.body.result.memberships[0].organization_id, 'another-org');
+            done();
+          });
         });
       });
     });
