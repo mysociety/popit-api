@@ -59,6 +59,7 @@ describe("REST", function () {
             organizations_api_url: '/organizations',
             memberships_api_url: '/memberships',
             posts_api_url: '/posts',
+            export_url: '/export.json',
             image_proxy_url: ''
           },
         })
