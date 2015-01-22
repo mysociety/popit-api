@@ -95,6 +95,10 @@ function embedPlugin(schema) {
         path: 'memberships.organization_id',
         model: 'Organization',
       },
+      'membership.post': {
+        path: 'memberships.post_id',
+        model: 'Post',
+      },
     };
 
     var invalidTargets = !_.all(targets, function(target) { return target_map[target]; });
