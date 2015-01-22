@@ -4,6 +4,19 @@ var url = require('url');
 
 module.exports = paginate;
 
+// We want to preserve these query string parameters when paginating.
+var queryParamsToKeep = ['per_page', 'embed', 'q'];
+
+function filterQuery(query) {
+  var filtered = {};
+  queryParamsToKeep.forEach(function(param) {
+    if (query[param] !== undefined) {
+      filtered[param] = query[param];
+    }
+  });
+  return filtered;
+}
+
 /**
  * Turns page/per_page parameters into mongo-friendly skip/limit parameters.
  *
@@ -40,13 +53,8 @@ function paginate(options) {
     if (currentUrl) {
       var parsedUrl = url.parse(currentUrl, true);
       delete parsedUrl.search;
-      var currentPerPage = parsedUrl.query.per_page;
 
-      parsedUrl.query = {};
-
-      if (currentPerPage) {
-        parsedUrl.query.per_page = currentPerPage;
-      }
+      parsedUrl.query = filterQuery(parsedUrl.query);
 
       if (hasMore) {
         parsedUrl.query.page = (page + 1);

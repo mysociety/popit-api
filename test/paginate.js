@@ -87,5 +87,23 @@ describe("paginate", function() {
       metadata = pagination.metadata(42, 'http://example.org/api/persons?page=2&callback=jQuery999');
       assert.equal(metadata.prev_url, 'http://example.org/api/persons?page=1');
     });
+
+    it("preserves useful params such as ?embed and ?q", function() {
+      pagination = paginate({ page: 1 });
+      metadata = pagination.metadata(42, 'http://example.org/api/persons?embed=membership.person');
+      assert.equal(metadata.next_url, 'http://example.org/api/persons?embed=membership.person&page=2');
+
+      pagination = paginate({ page: 1 });
+      metadata = pagination.metadata(42, 'http://example.org/api/search/persons?q=Bob');
+      assert.equal(metadata.next_url, 'http://example.org/api/search/persons?q=Bob&page=2');
+
+      pagination = paginate({ page: 1 });
+      metadata = pagination.metadata(42, 'http://example.org/api/search/persons?embed=membership.person&q=Bob');
+      assert.equal(metadata.next_url, 'http://example.org/api/search/persons?embed=membership.person&q=Bob&page=2');
+
+      pagination = paginate({ page: 1 });
+      metadata = pagination.metadata(42, 'http://example.org/api/search/persons?embed=&q=Bob');
+      assert.equal(metadata.next_url, 'http://example.org/api/search/persons?embed=&q=Bob&page=2');
+    });
   });
 });
