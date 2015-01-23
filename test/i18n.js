@@ -101,7 +101,6 @@ describe("internationalization", function() {
 
   describe("translating memberships in the API", function() {
     var fixture = fixtures.connect(defaults.databaseName);
-    var request = supertest(popitApp);
     beforeEach(function(done) {
       fixture.clearAllAndLoad({
         persons: [
@@ -111,32 +110,6 @@ describe("internationalization", function() {
           { _id: 'org-1', name: { en: 'Org-1', ru: 'Фrg-1' } }
         ],
       }, done);
-    });
-
-    it("allows memberships using translated documents to be created over the API", function(done) {
-      request.post('/api/v0.1/memberships')
-      .send({
-        person_id: 'fred-bloggs',
-        organization_id: 'org-1'
-      })
-      .expect(200)
-      .end(function(err, res) {
-        assert.ifError(err);
-        assert.equal(res.body.result.organization_id, 'org-1');
-        assert.equal(res.body.result.person_id, 'fred-bloggs');
-        // we need to do this to give the ES indexing time to happen
-        // as it's an async process
-        setTimeout(function() {
-          request.get('/api/v0.1/search/memberships?q=person.name:Fred%20Bloggs')
-          .expect(200)
-          .end(function(err, res) {
-            assert.ifError(err);
-            assert.equal(res.body.result[0].person.name, 'Fred Bloggs');
-            assert.equal(res.body.result[0].organization.name, 'Org-1');
-            done();
-          });
-        }, 1750);
-      });
     });
   });
 
