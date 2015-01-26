@@ -142,6 +142,30 @@ function elasticsearchPlugin(schema) {
       }
     });
 
+    var memberships = self.get('memberships');
+    if ( memberships ) {
+      memberships = memberships.map( function(membership) {
+        ['start_date', 'end_date'].forEach(function(field) {
+          var missing = field + '_missing';
+          if ( membership[missing] ) {
+            membership[missing] = undefined;
+            membership[field] = undefined;
+          }
+        });
+        return membership;
+      });
+      self.set('memberships', memberships);
+    }
+
+    callback();
+  };
+
+  schema.methods.removeAltNames = function removeAltNames(callback) {
+    callback = callback || function() {};
+    var self = this;
+
+    self.set('alt_name', undefined);
+    self.set('name_variations', undefined);
     callback();
   };
 
@@ -202,6 +226,58 @@ function elasticsearchPlugin(schema) {
       index: this.indexName(),
       type: this.typeName(),
       q: params.q,
+      from: skipLimit.skip,
+      size: skipLimit.limit,
+      explain: true
+    };
+
+    client.indices.validateQuery(query, function(err, res) {
+      if (err) {
+        return cb(err);
+      }
+      if (!res.valid) {
+        var message = "Invalid q parameter: " + query.q;
+        var error = new InvalidQueryError(message, res.explanations[0].error);
+        return cb(error);
+      }
+      client.search(query, cb);
+    });
+
+  };
+
+  schema.statics.resolve = function(params, cb) {
+    var skipLimit = paginate(params);
+    var criteria = [];
+    if ( params.name ) {
+      criteria.push( '(alt_name:' + params.name + ' OR other_names.name:' + params.name + ')' );
+    }
+    var today = '2015-01-26';
+    var alive_on = today;
+    if ( params.alive_on ) {
+      alive_on = params.alive_on;
+    }
+    criteria.push( 'birth_date:<=' + alive_on + ' AND ' + 'death_date:>=' + alive_on );
+
+    if ( params.org ) {
+      var org_criteria = '(';
+      org_criteria += 'memberships.organization_id:' + params.org + ' AND ';
+      var org_date = today;
+      if ( params.org_date ) {
+        org_date = params.org_date;
+      }
+      org_criteria += 'memberships.start_date:<=' + org_date + ' AND ' + 'memberships.end_date:>=' + org_date + ')';
+      criteria.push(org_criteria);
+    }
+    if ( params.q ) {
+      criteria.push(params.q);
+    }
+
+    var q = criteria.join(' AND ');
+
+    var query = {
+      index: this.indexName() + '_resolve',
+      type: this.typeName(),
+      q: q,
       from: skipLimit.skip,
       size: skipLimit.limit,
       explain: true
