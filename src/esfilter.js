@@ -27,6 +27,20 @@ module.exports = function esFilters() {
       ret = esFilterDatesOnly(doc, ret, options);
 
       return ret;
+    },
+
+    esResolveFilter: function esResolveFilter(doc, ret, options) {
+      if (!doc) {
+        return;
+      }
+
+      //converts _id -> id in organization which upsets test
+      ret = filter(doc, ret, options);
+      ret = translate(doc, ret, options);
+      ret = esFilterDatesOnly(doc, ret, options);
+      ret = parseName(doc, ret, options);
+
+      return ret;
     }
   };
 
@@ -68,6 +82,10 @@ module.exports = function esFilters() {
         ret[field] = esFilterDatesOnly(ret[field], ret[field]);
       }
 
+      if ( field == 'memberships' && ret[field] ) {
+        ret[field] = ret[field].map(function(membership) { return esFilterDatesOnly( membership, membership); } );
+      }
+
       if ( field == 'images' && _.isArray(ret.images) && ret.images.length > 0 ) {
         var images = ret.images;
         var new_images = images.map(transformImages);
@@ -78,6 +96,28 @@ module.exports = function esFilters() {
           ret.images = undefined;
         }
       }
+    }
+    return ret;
+  }
+
+  function parseName(doc, ret, options) {
+    var name = ret.name;
+
+    // normalise name here
+
+    if ( name ) {
+      var parts = name.split(/\s+/);
+      var variations = [name];
+      var initials = parts.map(function(part) { return part.substr(0,1); });
+      for ( var i = 0; i < parts.length; i++) {
+        var variation = initials.slice(0,i+1).concat(parts.slice(i+1));
+        variations.push(variation.join(' '));
+      }
+      var initials_together = initials.slice(0,-1).join('') + ' ' + parts.slice(-1);
+      variations.push(initials_together);
+      var family_first = parts.slice(-1).concat(parts.slice(0, -1)).join(' ');
+      variations.push(family_first);
+      ret.name_variations = variations;
     }
     return ret;
   }
