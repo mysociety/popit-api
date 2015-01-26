@@ -11,6 +11,7 @@
 
 var elasticsearch = require('elasticsearch');
 var esFilter = require('../esfilter')().esFilter;
+var esResolveFilter = require('../esfilter')().esResolveFilter;
 var paginate = require('../paginate');
 var i18n = require('../i18n');
 var async = require('async');
@@ -56,6 +57,27 @@ function elasticsearchPlugin(schema) {
     }.bind(this));
   };
 
+  schema.methods.toESResolveIndex = function toESResolveIndex(callback) {
+    process.nextTick(function() {
+      var self = this;
+      this.populateMemberships(function(err) {
+        if (err) {
+          callback(err);
+        }
+        var doc = self.toJSON({
+          transform: esResolveFilter,
+          fields: {
+            all: {
+              url: false,
+              html_url: false
+            }
+          }
+        });
+        callback(null, i18n(doc, [], schema.options.toJSON.defaultLanguage || 'en', true));
+      });
+    }.bind(this));
+  };
+
   schema.methods.reIndex = function reIndex(callback) {
     callback = callback || function() {};
     var self = this;
@@ -72,6 +94,36 @@ function elasticsearchPlugin(schema) {
         self.emit('es-indexed', err);
         callback(err);
       });
+    });
+  };
+
+  schema.methods.resolveIndex = function resolveIndex(callback) {
+    callback = callback || function() {};
+    var self = this;
+    self.toESResolveIndex(function(err, result) {
+      if (err) {
+        throw err;
+      }
+      // get name variations, create an index entry for each one.
+      // need to work out how to do the ID bit though so they are
+      // overwritten correctly
+      var variations = result.name_variations;
+      if ( !variations ) {
+        return callback();
+      }
+      async.each(variations, function(name, done) {
+        var local_result = result;
+        var name_id = name.replace(/\s+/, '');
+        local_result.alt_name = name;
+        client.index({
+          index: self.constructor.indexName() + '_resolve',
+          type: self.constructor.typeName(),
+          id: result.id + '_' + name_id,
+          body: local_result
+        }, function(err) {
+          done(err);
+        });
+      }, function(err) { self.emit('es-resolve-indexed', err); callback(err); });
     });
   };
 
@@ -100,6 +152,9 @@ function elasticsearchPlugin(schema) {
     doc.reIndex(function(err) {
       if (err) {
         console.warn(err);
+      }
+      if ( doc.constructor.typeName() == 'person' ) {
+        doc.resolveIndex();
       }
     });
   });
