@@ -103,7 +103,8 @@ module.exports = function esFilters() {
   function parseName(doc, ret, options) {
     var name = ret.name;
 
-    // normalise name here
+    // TODO: normalise name here
+    // TODO: strip titles? full stops?
 
     if ( name ) {
       var parts = name.split(/\s+/);
