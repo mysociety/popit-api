@@ -18,6 +18,7 @@ function popitApiApp(options) {
   require('../routes/export')(app);
   require('../routes/collection.param')(app);
   require('../routes/search')(app);
+  require('../routes/name-resolution.get')(app);
   require('../routes/collection.get')(app);
   require('../routes/collection.post')(app);
   require('../routes/merge')(app);
