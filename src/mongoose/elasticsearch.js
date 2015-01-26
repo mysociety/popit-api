@@ -346,6 +346,58 @@ function elasticsearchPlugin(schema) {
 
   };
 
+  schema.statics.reResolveIndex = function(done) {
+    var self = this;
+    self.find(function(err, docs) {
+      if (err) {
+        return done(err);
+      }
+
+      var indexed = 0;
+      var body;
+
+      async.concatSeries(docs, function(doc, callback) {
+        doc.toESResolveIndex(function(err, result) {
+          if (err) {
+            return callback(err);
+          }
+          var variations = result.name_variations;
+          async.concatSeries(variations, function(name, callback2) {
+            indexed++;
+            var local_result = result;
+            var name_id = name.replace(/\s+/, '');
+            local_result.alt_name = name;
+            callback2(null, [{ index: {
+              _index: self.indexName() + '_resolve',
+              _type: self.typeName(),
+              _id: result.id + '_' + name_id,
+            }
+            }, local_result]);
+          }, function( err, results ) {
+            callback(err, results);
+          });
+        });
+      }, function(err, results) {
+        if (err) {
+          return done(err);
+        }
+        body = results;
+
+        if (body.length === 0) {
+          return done(null, 0);
+        }
+
+        // Send the commands and content docs to the bulk API.
+        // Set the requestTimeout to 5 minutes to hopefully prevent timeouts
+        // for large collections.
+        client.bulk({body: body, requestTimeout: 600000}, function(err) {
+          done(err, indexed);
+        });
+      });
+    });
+
+  };
+
   schema.statics.dropIndex = function dropIndex(done) {
     var indexName = this.indexName();
     client.indices.exists({
