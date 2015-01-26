@@ -248,9 +248,12 @@ function elasticsearchPlugin(schema) {
   schema.statics.resolve = function(params, cb) {
     var skipLimit = paginate(params);
     var criteria = [];
+    // TODO: strip fullstops etc
+    // TODO: normalise name
     if ( params.name ) {
       criteria.push( '(alt_name:' + params.name + ' OR other_names.name:' + params.name + ')' );
     }
+    //TODO: remove hardcoded dates for today:)
     var today = '2015-01-26';
     var alive_on = today;
     if ( params.alive_on ) {
@@ -258,6 +261,8 @@ function elasticsearchPlugin(schema) {
     }
     criteria.push( 'birth_date:<=' + alive_on + ' AND ' + 'death_date:>=' + alive_on );
 
+    // TODO: work out to make all the criteria apply to one membership
+    // TODO: allow for multiple orgs too ( e.g is an MP and a member of party )
     if ( params.org ) {
       var org_criteria = '(';
       org_criteria += 'memberships.organization_id:' + params.org + ' AND ';
