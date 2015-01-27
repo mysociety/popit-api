@@ -17,6 +17,8 @@ var i18n = require('../i18n');
 var async = require('async');
 var util = require('util');
 var moment = require('moment');
+var unorm = require('unorm');
+
 
 module.exports = exports = elasticsearchPlugin;
 
@@ -250,9 +252,13 @@ function elasticsearchPlugin(schema) {
     var skipLimit = paginate(params);
     var criteria = [];
     // TODO: strip fullstops etc
-    // TODO: normalise name
-    if ( params.name ) {
-      criteria.push( '(alt_name:' + params.name + ' OR other_names.name:' + params.name + ')' );
+
+    var name = params.name;
+    name = name.toLowerCase();
+    name = unorm.nfkd(name).replace(/[\u0300-\u036F]/g, '');
+
+    if ( name ) {
+      criteria.push( '(alt_name:' + name + ' OR other_names.name:' + name + ')' );
     }
 
     var today = moment().format('YYYY-MM-DD');

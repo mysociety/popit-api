@@ -3,6 +3,7 @@
 var _ = require('underscore');
 var filter = require('./filter');
 var translate = require('./mongoose/json-transform').translateDoc;
+var unorm = require('unorm');
 
 module.exports = function esFilters() {
   return {
@@ -104,10 +105,11 @@ module.exports = function esFilters() {
   function parseName(doc, ret) {
     var name = ret.name;
 
-    // TODO: normalise name here
     // TODO: strip titles? full stops?
 
     if ( name ) {
+      name = name.toLowerCase();
+      name = unorm.nfkd(name).replace(/[\u0300-\u036F]/g, '');
       var parts = name.split(/\s+/);
       var variations = [name];
       var initials = parts.map(function(part) { return part.substr(0,1); });
