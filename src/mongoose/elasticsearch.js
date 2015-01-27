@@ -16,6 +16,7 @@ var paginate = require('../paginate');
 var i18n = require('../i18n');
 var async = require('async');
 var util = require('util');
+var moment = require('moment');
 
 module.exports = exports = elasticsearchPlugin;
 
@@ -253,8 +254,8 @@ function elasticsearchPlugin(schema) {
     if ( params.name ) {
       criteria.push( '(alt_name:' + params.name + ' OR other_names.name:' + params.name + ')' );
     }
-    //TODO: remove hardcoded dates for today:)
-    var today = '2015-01-26';
+
+    var today = moment().format('YYYY-MM-DD')
     var alive_on = today;
     if ( params.alive_on ) {
       alive_on = params.alive_on;
