@@ -29,6 +29,7 @@
     "language-tags": "~1.0.2",
     "mkdirp": "~ 0.3.1",
     "mongoose": "~3.8.5",
+    "moment": "2.9.0",
     "mpath": "~0.2.1",
     "multer": "^0.1.6",
     "underscore": "~1.4.4",
