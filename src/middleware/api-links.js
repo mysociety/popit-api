@@ -16,11 +16,9 @@ module.exports = apiLinksMiddleware;
  */
 function apiLinksMiddleware(options) {
   return function apiLinks(req, res, next) {
-    eachSchema(req.db, function(schema) {
-      schema.options.toJSON.baseUrl = options.baseUrl;
-      schema.options.toJSON.apiBaseUrl = options.apiBaseUrl;
-      schema.options.toJSON.proxyBaseUrl = options.proxyBaseUrl;
-    });
+    req.baseUrl = options.baseUrl;
+    req.apiBaseUrl = options.apiBaseUrl;
+    req.proxyBaseUrl = options.proxyBaseUrl;
     next();
   };
 }

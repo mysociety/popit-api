@@ -2,7 +2,7 @@
 
 var async = require('async');
 var MergeConflictError = require('../mongoose/merge').MergeConflictError;
-
+var transform = require('../transform');
 
 module.exports = function(app) {
 
@@ -47,7 +47,7 @@ module.exports = function(app) {
             if (err) {
               return next(err);
             }
-            res.withBody(person);
+            res.withBody(transform(person, req));
           });
         });
       });

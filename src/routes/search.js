@@ -3,6 +3,7 @@
 var paginate = require('../paginate');
 var async = require('async');
 var InvalidQueryError = require('../mongoose/elasticsearch').InvalidQueryError;
+var transform = require('../transform');
 
 module.exports = function(app) {
 
@@ -31,6 +32,9 @@ module.exports = function(app) {
         }
 
         var body = pagination.metadata(result.hits.total, req.currentUrl);
+        docs.forEach(function(doc) {
+          transform(doc, req);
+        });
         body.result = docs;
         res.jsonp(body);
       });

@@ -2,6 +2,7 @@
 
 var async = require('async');
 var paginate = require('../paginate');
+var transform = require('../transform');
 
 module.exports = function(app) {
 
@@ -24,6 +25,9 @@ module.exports = function(app) {
             return next(err);
           }
           var body = pagination.metadata(count, req.currentUrl);
+          docs.forEach(function(doc) {
+            transform(doc, req);
+          });
           body.result = docs;
           res.jsonp(body);
         });

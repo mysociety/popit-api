@@ -2,6 +2,7 @@
 
 var eachSchema = require('../utils').eachSchema;
 var InvalidEmbedError = require('../mongoose/embed').InvalidEmbedError;
+var transform = require('../transform');
 
 module.exports = function(app) {
 
@@ -20,7 +21,7 @@ module.exports = function(app) {
         schema.options.toJSON.returnAllTranslations = true;
       });
 
-      res.withBody(doc);
+      res.withBody(transform(doc, req));
 
       eachSchema(req.collection, function(schema) {
         schema.options.toJSON.returnAllTranslations = false;
@@ -48,7 +49,7 @@ module.exports = function(app) {
         if (err) {
           return next(err);
         }
-        res.withBody(doc);
+        res.withBody(transform(doc, req));
       });
     });
   });

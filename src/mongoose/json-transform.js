@@ -17,30 +17,9 @@ function jsonTransformPlugin(schema) {
  */
 function filterFields(doc, ret, options) {
   ret = filter(doc, ret, options);
-  ret = addLinks(doc, ret, options);
   ret = translateDoc(doc, ret, options);
   ret = filterDates(doc, ret, options);
   ret = setImage(doc, ret, options);
-  return ret;
-}
-
-function addLinks(doc, ret, options) {
-  if (doc.constructor.collection) {
-    if (options.apiBaseUrl) {
-      ret.url = [
-        options.apiBaseUrl,
-        doc.constructor.collection.name.toLowerCase(),
-        doc._id || doc.id
-      ].join('/');
-    }
-    if (options.baseUrl && (doc._id || doc.id)) {
-      ret.html_url = [
-        options.baseUrl,
-        doc.constructor.collection.name.toLowerCase(),
-        doc._id || doc.id
-      ].join('/');
-    }
-  }
   return ret;
 }
 
