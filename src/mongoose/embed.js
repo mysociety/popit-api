@@ -9,6 +9,7 @@ var _ = require('underscore');
 var async = require('async');
 var mpath = require('mpath');
 var util = require('util');
+var transform = require('../transform');
 
 function InvalidEmbedError(message, explanation) {
   this.name = 'InvalidQueryError';
@@ -17,20 +18,23 @@ function InvalidEmbedError(message, explanation) {
 }
 util.inherits(InvalidEmbedError, Error);
 
+function getDocs(path, doc) {
+  var models = mpath.get(path, doc, '_doc');
+  // For a path like 'membership.person.membership.organization mpath will
+  // return an array of arrays. We don't need that level of nesting, so we
+  // flatten it here before iterating over it.
+  models = _.flatten(models);
+  // Remove any null values from the models array
+  models = _.compact(models);
+  return models;
+}
+
 /**
  * Populate memberships of embedded documents.
  */
 function populateMemberships(req, doc, path, callback) {
-  var modelsToPopulate = mpath.get(path, doc, '_doc');
-
-  // For a path like 'membership.person.membership.organization mpath will
-  // return an array of arrays. We don't need that level of nesting, so we
-  // flatten it here before iterating over it.
-  modelsToPopulate = _.flatten(modelsToPopulate);
-
-  // Remove any null values from the modelsToPopulate array and make sure all
-  // the members have the necessary method on them.
-  modelsToPopulate = _.compact(modelsToPopulate);
+  var modelsToPopulate = getDocs(path, doc);
+  // Make sure all the models have the necessary method on them.
   modelsToPopulate = _.filter(modelsToPopulate, function(model) {
     return _.isObject(model) && _.isFunction(model.populateMemberships);
   });
@@ -41,10 +45,15 @@ function populateMemberships(req, doc, path, callback) {
 }
 
 function populateJoins(req, doc, opt, callback) {
-  doc.populate(opt, function(err) {
+  doc.populate(opt, function(err, doc) {
     if (err) {
       return callback(err);
     }
+    // Make sure populated models have been transformed
+    var modelsToTransform = getDocs(opt.path, doc);
+    modelsToTransform.forEach(function(model) {
+      transform(model, req);
+    });
     if (opt.populateMemberships) {
       populateMemberships(req, doc, opt.path, callback);
     } else {
