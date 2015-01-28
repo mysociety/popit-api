@@ -3,6 +3,7 @@
 var fs = require('fs-extra');
 var mkdirp = require('mkdirp');
 var path = require('path');
+var transform = require('../transform');
 
 module.exports = function(app) {
 
@@ -35,7 +36,7 @@ module.exports = function(app) {
           return next(err);
         }
 
-        return res.withBody(newDoc);
+        return res.withBody(transform(newDoc, req));
       });
     });
   });
@@ -88,61 +89,64 @@ module.exports = function(app) {
             return next(err);
           }
 
-          return res.withBody(newDoc);
+          return res.withBody(transform(newDoc, req));
         });
       });
     });
   });
 
-
-  function saveImages( doc, image, upload, dest_path, res, next, idx ) {
-    var options = {};
-    if ( typeof idx != 'undefined' ) {
-      options = { clobber: true };
-    }
-    fs.move( upload.path, dest_path, options, function(err) {
-      if (err) {
-        throw err;
-      }
-
-      var images = doc.get('images');
-      if ( !images ) {
-        images = [];
-      }
-
-      /* This whole process here is to make sure mongoose sees this as
-       * JSON and not as a Mongoose document. If it does the latter then
-       * there are various circular references in there that cause a stack
-       * size exceeded error.
-       *
-       * Furthermore elasticsearch is fussy about date formats and the default
-       * format that is produced when parsing the created date to JSON upsets
-       * it so to be safe we force it to a known compatible
-       * format here.
-       */
-      image = image.toJSON();
-      image.created = image.created.toISOString();
-
+  app.use(function(req, res, next) {
+    function saveImages( doc, image, upload, dest_path, idx ) {
+      var options = {};
       if ( typeof idx != 'undefined' ) {
-        images[idx] = image;
-      } else {
-        images.push(image);
+        options = { clobber: true };
       }
-
-      doc.set('images', images);
-      // mongoose has trouble working out if mixed object arrays have changed
-      // so make sure it knows otherwise the changes aren't saved
-      doc.markModified('images');
-
-      doc.save(function(err, newDoc) {
+      fs.move( upload.path, dest_path, options, function(err) {
         if (err) {
-          return next(err);
+          throw err;
         }
 
-        return res.withBody(newDoc);
+        var images = doc.get('images');
+        if ( !images ) {
+          images = [];
+        }
+
+        /* This whole process here is to make sure mongoose sees this as
+         * JSON and not as a Mongoose document. If it does the latter then
+         * there are various circular references in there that cause a stack
+         * size exceeded error.
+         *
+         * Furthermore elasticsearch is fussy about date formats and the default
+         * format that is produced when parsing the created date to JSON upsets
+         * it so to be safe we force it to a known compatible
+         * format here.
+         */
+        image = image.toJSON();
+        image.created = image.created.toISOString();
+
+        if ( typeof idx != 'undefined' ) {
+          images[idx] = image;
+        } else {
+          images.push(image);
+        }
+
+        doc.set('images', images);
+        // mongoose has trouble working out if mixed object arrays have changed
+        // so make sure it knows otherwise the changes aren't saved
+        doc.markModified('images');
+
+        doc.save(function(err, newDoc) {
+          if (err) {
+            return next(err);
+          }
+
+          return res.withBody(transform(newDoc, req));
+        });
       });
-    });
-  }
+    }
+    res.saveImages = saveImages;
+    next();
+  });
 
   function processImageBody( image, body ) {
     var fieldsToRemove = [ 'filename', 'name', 'content', 'id', '_id' ];
@@ -199,7 +203,7 @@ module.exports = function(app) {
         if (err) {
           throw err;
         }
-        saveImages( doc, image, upload, dest_path, res, next );
+        res.saveImages( doc, image, upload, dest_path );
       });
     });
   });
@@ -278,7 +282,7 @@ module.exports = function(app) {
 
       var dest_path = req.popit.files_dir( image.local_path );
 
-      saveImages( doc, image, upload, dest_path, res, next, imageIdx );
+      res.saveImages( doc, image, upload, dest_path, imageIdx );
     });
   });
 
