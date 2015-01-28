@@ -257,10 +257,13 @@ function elasticsearchPlugin(schema) {
     name = name.toLowerCase();
     name = unorm.nfkd(name).replace(/[\u0300-\u036F]/g, '');
 
+    var name_q;
     if ( name ) {
-      criteria.push( '(alt_name:' + name + ' OR other_names.name:' + name + ')' );
+      name_q = { "multi_match": { "query": name, "fields": [ "alt_name", "other_names.name" ], "type": "phrase" } };
     }
 
+    var q = {};
+    var filtered;
     var today = moment().format('YYYY-MM-DD');
     var alive_on = today;
     if ( params.alive_on ) {
@@ -271,41 +274,51 @@ function elasticsearchPlugin(schema) {
     // TODO: work out to make all the criteria apply to one membership
     // TODO: allow for multiple orgs too ( e.g is an MP and a member of party )
     if ( params.org ) {
-      var org_criteria = '(';
-      org_criteria += 'memberships.organization_id:' + params.org + ' AND ';
+      var bool_criteria = [];
+      bool_criteria.push({ "term": { "memberships.organization_id": params.org } });
       var org_date = today;
       if ( params.org_date ) {
         org_date = params.org_date;
       }
-      org_criteria += 'memberships.start_date:<=' + org_date + ' AND ' + 'memberships.end_date:>=' + org_date + ')';
-      criteria.push(org_criteria);
+      bool_criteria.push({ "range": { "memberships.start_date": { "lte": org_date } } });
+      bool_criteria.push({ "range": { "memberships.end_date": { "gte": org_date } } });
+      filtered = { "nested": { "path": "memberships", "filter": { "bool": { "must": bool_criteria } } } };
     }
     if ( params.q ) {
       criteria.push(params.q);
     }
 
-    var q = criteria.join(' AND ');
+    var simple_q = { "simple_query_string": { "query": criteria.join(' AND ') } };
+    q = { "bool": { "must": [ name_q, simple_q ] } };
+
+    if ( filtered ) {
+      q = { "filtered": { "query": q, "filter": filtered } };
+    }
+
+    q = { "query": q };
 
     var query = {
       index: this.indexName() + '_resolve',
       type: this.typeName(),
-      q: q,
+      body: q,
       from: skipLimit.skip,
       size: skipLimit.limit,
       explain: true
     };
 
+    client.search(query, cb);
+    /*
     client.indices.validateQuery(query, function(err, res) {
       if (err) {
         return cb(err);
       }
       if (!res.valid) {
-        var message = "Invalid q parameter: " + query.q;
+        var message = "Invalid q parameter: " + query.body;
         var error = new InvalidQueryError(message, res.explanations[0].error);
         return cb(error);
       }
-      client.search(query, cb);
     });
+   */
 
   };
 
