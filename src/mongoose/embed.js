@@ -20,7 +20,7 @@ util.inherits(InvalidEmbedError, Error);
 /**
  * Populate memberships of embedded documents.
  */
-function populateMemberships(doc, path, callback) {
+function populateMemberships(req, doc, path, callback) {
   var modelsToPopulate = mpath.get(path, doc, '_doc');
 
   // For a path like 'membership.person.membership.organization mpath will
@@ -36,17 +36,17 @@ function populateMemberships(doc, path, callback) {
   });
 
   async.each(modelsToPopulate, function(val, done) {
-    val.populateMemberships(done);
+    val.populateMemberships(req, done);
   }, callback);
 }
 
-function populateJoins(doc, opt, callback) {
+function populateJoins(req, doc, opt, callback) {
   doc.populate(opt, function(err) {
     if (err) {
       return callback(err);
     }
     if (opt.populateMemberships) {
-      populateMemberships(doc, opt.path, callback);
+      populateMemberships(req, doc, opt.path, callback);
     } else {
       callback();
     }
@@ -59,8 +59,9 @@ function embedPlugin(schema) {
    * Taked the ?embed parameter and embeds any people, organizations or
    * memberships that have been requested.
    */
-  schema.methods.embedDocuments = function embedDocuments(embed, callback) {
+  schema.methods.embedDocuments = function embedDocuments(req, callback) {
     var doc = this;
+    var embed = req.query.embed;
 
     // Default to embedding one layer of memberships
     if (!_.isString(embed)) {
@@ -123,12 +124,12 @@ function embedPlugin(schema) {
       last.populateMemberships = false;
     }
 
-    doc.populateMemberships(function(err) {
+    doc.populateMemberships(req, function(err) {
       if (err) {
         return callback(err);
       }
       async.eachSeries(join_structure, function(structure, done) {
-        populateJoins(doc, structure, done);
+        populateJoins(req, doc, structure, done);
       }, callback);
     });
   };

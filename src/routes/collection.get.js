@@ -14,7 +14,7 @@ module.exports = function(app) {
       }
 
       async.each(docs, function(doc, done) {
-        doc.embedDocuments(req.query.embed, done);
+        doc.embedDocuments(req, done);
       }, function(err) {
         if (err) {
           return next(err);

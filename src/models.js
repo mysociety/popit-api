@@ -107,7 +107,7 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
 
 // This method doesn't do anything, it just provides the same interface as
 // the other models get from the membershipFinder plugin.
-MembershipSchema.methods.populateMemberships = function populateMemberships(callback) {
+MembershipSchema.methods.populateMemberships = function populateMemberships(_req, callback) {
   callback();
 };
 

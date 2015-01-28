@@ -1,9 +1,5 @@
 "use strict";
 
-var eachSchema = require('../utils').eachSchema;
-
-module.exports = apiLinksMiddleware;
-
 /**
  * If the apiBaseUrl argument is given then configure the models to include
  * links in their output.
@@ -22,3 +18,5 @@ function apiLinksMiddleware(options) {
     next();
   };
 }
+
+module.exports = apiLinksMiddleware;

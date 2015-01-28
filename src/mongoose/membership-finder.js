@@ -1,6 +1,7 @@
 "use strict";
 
 var async = require("async");
+var transform = require('../transform');
 
 /**
  * Find memberships that are associated with the current object and
@@ -26,12 +27,15 @@ function membershipFinder(schema, options) {
     Membership.find({$or: queries}, callback);
   };
 
-  schema.methods.populateMemberships = function populateMemberships(callback) {
+  schema.methods.populateMemberships = function populateMemberships(req, callback) {
     var self = this;
     this.findMemberships(function(err, memberships) {
       if (err) {
         return callback(err);
       }
+      memberships = memberships.map(function(membership) {
+        return transform(membership, req);
+      });
       self.memberships = memberships;
       callback();
     });

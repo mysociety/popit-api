@@ -23,7 +23,7 @@ module.exports = function(app) {
       });
 
       async.each(docs, function(doc, done) {
-        doc.embedDocuments(req.query.embed, function() {
+        doc.embedDocuments(req, function() {
           doc.correctDates(done);
         });
       }, function(err) {

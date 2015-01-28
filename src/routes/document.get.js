@@ -41,7 +41,7 @@ module.exports = function(app) {
         return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
 
-      doc.embedDocuments(req.query.embed, function(err) {
+      doc.embedDocuments(req, function(err) {
         if (err instanceof InvalidEmbedError) {
           // Send a 400 error to indicate the client needs to alter their request
           return res.send(400, {errors: [err.message, err.explaination]});
