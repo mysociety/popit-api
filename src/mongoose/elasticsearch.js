@@ -271,18 +271,25 @@ function elasticsearchPlugin(schema) {
     }
     criteria.push( 'birth_date:<=' + alive_on + ' AND ' + 'death_date:>=' + alive_on );
 
-    // TODO: work out to make all the criteria apply to one membership
-    // TODO: allow for multiple orgs too ( e.g is an MP and a member of party )
     if ( params.org ) {
-      var bool_criteria = [];
-      bool_criteria.push({ "term": { "memberships.organization_id": params.org } });
-      var org_date = today;
-      if ( params.org_date ) {
-        org_date = params.org_date;
+      var orgs = params.org.split('|');
+      var org_queries = [];
+      orgs.forEach(function(org) {
+        var bool_criteria = [];
+        bool_criteria.push({ "term": { "memberships.organization_id": org } });
+        var org_date = today;
+        if ( params.org_date ) {
+          org_date = params.org_date;
+        }
+        bool_criteria.push({ "range": { "memberships.start_date": { "lte": org_date } } });
+        bool_criteria.push({ "range": { "memberships.end_date": { "gte": org_date } } });
+        org_queries.push({ "nested": { "path": "memberships", "filter": { "bool": { "must": bool_criteria } } } });
+      });
+      if ( org_queries.length > 1 ) {
+        filtered = { "bool": { "must": org_queries } };
+      } else {
+        filtered = org_queries[0];
       }
-      bool_criteria.push({ "range": { "memberships.start_date": { "lte": org_date } } });
-      bool_criteria.push({ "range": { "memberships.end_date": { "gte": org_date } } });
-      filtered = { "nested": { "path": "memberships", "filter": { "bool": { "must": bool_criteria } } } };
     }
     if ( params.q ) {
       criteria.push(params.q);
