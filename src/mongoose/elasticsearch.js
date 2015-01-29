@@ -265,11 +265,11 @@ function elasticsearchPlugin(schema) {
     var q = {};
     var filtered;
     var today = moment().format('YYYY-MM-DD');
-    var alive_on = today;
-    if ( params.alive_on ) {
-      alive_on = params.alive_on;
+    var search_date = today;
+    if ( params.date) {
+      search_date = params.date;
     }
-    criteria.push( 'birth_date:<=' + alive_on + ' AND ' + 'death_date:>=' + alive_on );
+    criteria.push( 'birth_date:<=' + search_date + ' AND ' + 'death_date:>=' + search_date );
 
     if ( params.org ) {
       var orgs = params.org.split('|');
@@ -277,12 +277,8 @@ function elasticsearchPlugin(schema) {
       orgs.forEach(function(org) {
         var bool_criteria = [];
         bool_criteria.push({ "term": { "memberships.organization_id": org } });
-        var org_date = today;
-        if ( params.org_date ) {
-          org_date = params.org_date;
-        }
-        bool_criteria.push({ "range": { "memberships.start_date": { "lte": org_date } } });
-        bool_criteria.push({ "range": { "memberships.end_date": { "gte": org_date } } });
+        bool_criteria.push({ "range": { "memberships.start_date": { "lte": search_date } } });
+        bool_criteria.push({ "range": { "memberships.end_date": { "gte": search_date } } });
         org_queries.push({ "nested": { "path": "memberships", "filter": { "bool": { "must": bool_criteria } } } });
       });
       if ( org_queries.length > 1 ) {
