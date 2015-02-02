@@ -100,6 +100,17 @@ function elasticsearchPlugin(schema) {
     });
   };
 
+  // TODO: we need to set up the mapping to make the nested memberships index
+  //       correctly. Somewhere needs to do the equivalent of
+  //         curl -XPUT 'http://localhost:9200/popitdev_struan_resolve/person/_mapping' -d '
+  //         {
+  //             "persons" : {
+  //                 "properties" : {
+  //                     "memberships" : {"type" : "nested" }
+  //                 }
+  //             }
+  //         }'
+  //       when the app is deployed
   schema.methods.resolveIndex = function resolveIndex(callback) {
     callback = callback || function() {};
     var self = this;
@@ -180,6 +191,9 @@ function elasticsearchPlugin(schema) {
       if (err) {
         console.warn(err);
       }
+      // TODO: if we add a person and then later their memberships the
+      //       latter won't be indexed as part of the person. need to
+      //       make sure we update the index when we update memberships
       if ( doc.constructor.typeName() == 'person' ) {
         doc.resolveIndex();
       }
@@ -271,6 +285,8 @@ function elasticsearchPlugin(schema) {
     }
     criteria.push( '(_missing_:birth_date OR birth_date:<=' + search_date + ') AND ' + '( _missing_:death_date OR death_date:>=' + search_date +')');
 
+    // TODO: need to add in a check for missing start/end dates and handle the same as
+    //       birth/death dates. probably needs a nested bool :(
     if ( params.org ) {
       var orgs = params.org.split('|');
       var org_queries = [];

@@ -18,6 +18,8 @@ describe("RESOLVE", function () {
 
   beforeEach(fixture.clearDatabase);
 
+  // TODO: needs to set up the mapping when it creates the index so that the
+  //       nested membership things work correctly
   before(function(done) {
     createElasticsearchIndex(defaults.databaseName.toLowerCase() + '_resolve')(function() {
       mongoose.connect('mongodb://localhost/' + defaults.databaseName, done);
