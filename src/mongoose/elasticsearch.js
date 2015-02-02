@@ -269,7 +269,7 @@ function elasticsearchPlugin(schema) {
     if ( params.date) {
       search_date = params.date;
     }
-    criteria.push( 'birth_date:<=' + search_date + ' AND ' + 'death_date:>=' + search_date );
+    criteria.push( '(_missing_:birth_date OR birth_date:<=' + search_date + ') AND ' + '( _missing_:death_date OR death_date:>=' + search_date +')');
 
     if ( params.org ) {
       var orgs = params.org.split('|');
@@ -291,7 +291,7 @@ function elasticsearchPlugin(schema) {
       criteria.push(params.q);
     }
 
-    var simple_q = { "simple_query_string": { "query": criteria.join(' AND ') } };
+    var simple_q = { "query_string": { "query": criteria.join(' AND ') } };
     q = { "bool": { "must": [ name_q, simple_q ] } };
 
     if ( filtered ) {
