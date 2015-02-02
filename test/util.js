@@ -19,6 +19,7 @@ function person(attrs) {
 exports.loadFixture = loadFixture;
 exports.dropElasticsearchIndex = dropElasticsearchIndex;
 exports.refreshElasticsearchIndex = refreshElasticsearchIndex;
+exports.createElasticsearchIndex = createElasticsearchIndex;
 
 /**
  * Populate collection using the json at fixturePath. The json file
@@ -73,6 +74,14 @@ function dropElasticsearchIndex(indexName) {
 function refreshElasticsearchIndex(indexName) {
   return function(done) {
     elasticsearch.indices.refresh({
+      index: indexName
+    }, done);
+  };
+}
+
+function createElasticsearchIndex(indexName) {
+  return function(done) {
+    elasticsearch.indices.create({
       index: indexName
     }, done);
   };
