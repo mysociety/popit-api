@@ -52,27 +52,25 @@ function generateImageProxyUrl(img, doc, options) {
   return _generateUrl(parts);
 }
 
-function setImage(doc, ret, options) {
-  var images = ret.images;
-
-  if ( images && images.length ) {
-    ret.images = [];
-    doc.get('images').forEach(function imageProcess(img) {
-      if (!img.url) {
-        img.url = generateImageUrl(img, doc, options);
-      }
-      if (options.proxyBaseUrl && !img.proxy_url) {
-        img.proxy_url = generateImageProxyUrl(img, doc, options);
-      }
-      ret.images.push(img);
-    });
-    ret.image = ret.images[0].url;
-    if ( options.proxyBaseUrl ) {
-      ret.proxy_image = ret.images[0].proxy_url;
+function setImage(doc, options) {
+  var images = doc.get('images');
+  if (!images || images.length === 0) {
+    return doc;
+  }
+  images.forEach(function imageProcess(img) {
+    if (!img.url) {
+      img.url = generateImageUrl(img, doc, options);
     }
+    if (options.proxyBaseUrl && !img.proxy_url) {
+      img.proxy_url = generateImageProxyUrl(img, doc, options);
+    }
+  });
+  doc.set('image', images[0].url);
+  if ( options.proxyBaseUrl ) {
+    doc.set('proxy_image', images[0].proxy_url);
   }
 
-  return ret;
+  return doc;
 }
 
 function transform(doc, options) {
