@@ -317,6 +317,25 @@ describe("REST", function () {
           .end(done);
       });
 
+      describe("when id and _id don't match for some reason", function() {
+        beforeEach(function(done) {
+          mongoose.model('Membership').create({
+            _id: 'abc',
+            id: '123',
+          }, done);
+        });
+
+        it("should always return the correct id", function(done) {
+          request
+            .get("/api/v0.1/memberships/abc")
+            .expect(200, function(err, res) {
+              assert.ifError(err);
+              assert.equal(res.body.result.id, "abc");
+              done();
+            });
+        });
+      });
+
     });
 
     describe("POST", function () {

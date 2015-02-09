@@ -17,10 +17,6 @@ function filter(doc, ret, options) {
 
   var newDoc = {};
 
-  if (doc._id) {
-    newDoc.id = doc._id;
-  }
-
   for (var field in ret) {
     // Skip any fields that have been hidden on this doc.
     if (fields[ret._id]) {
@@ -43,5 +39,11 @@ function filter(doc, ret, options) {
     // If we've made it this far then copy the field to the new doc.
     newDoc[field] = ret[field];
   }
+
+  // Set the 'id' last so it doesn't get overwritten by the 'id' of 'ret'
+  if (doc._id) {
+    newDoc.id = doc._id;
+  }
+
   return newDoc;
 }
