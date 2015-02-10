@@ -23,7 +23,7 @@
     "cors": ">=2.5.2",
     "doublemetaphone": "~0.1.2",
     "elasticsearch": "~1.5.1",
-    "express": "~3.17.5",
+    "express": "~3.19.2",
     "fs-extra": "~ 0.10.0",
     "http-accept": "~0.1.6",
     "language-tags": "~1.0.2",
