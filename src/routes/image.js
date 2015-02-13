@@ -95,7 +95,7 @@ module.exports = function(app) {
     });
   });
 
-  app.use(function(req, res, next) {
+  function saveImagesMiddleware(req, res, next) {
     function saveImages( doc, image, upload, dest_path, idx ) {
       var options = {};
       if ( typeof idx != 'undefined' ) {
@@ -146,7 +146,7 @@ module.exports = function(app) {
     }
     res.saveImages = saveImages;
     next();
-  });
+  }
 
   function processImageBody( image, body ) {
     var fieldsToRemove = [ 'filename', 'name', 'content', 'id', '_id' ];
@@ -161,7 +161,7 @@ module.exports = function(app) {
     return image;
   }
 
-  app.post('/:collection/:id/image', function (req, res, next) {
+  app.post('/:collection/:id/image', saveImagesMiddleware, function (req, res, next) {
     var id = req.params.id;
     var body = req.body;
 
@@ -226,7 +226,7 @@ module.exports = function(app) {
     return -1;
   }
 
-  app.put('/:collection/:id/image/:image_id', function (req, res, next) {
+  app.put('/:collection/:id/image/:image_id', saveImagesMiddleware, function (req, res, next) {
     var id = req.params.id;
     var image_id = req.params.image_id;
     var body = req.body;
