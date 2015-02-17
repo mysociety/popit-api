@@ -861,7 +861,7 @@ describe("REST", function () {
     var Person = mongoose.model('Person');
 
     it("accepts popolo json", function(done) {
-      request.post('/api/import')
+      request.post('/api/v0.1/import')
       .send({
         people: [
           { name: 'George Bush' },

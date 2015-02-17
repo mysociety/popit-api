@@ -37,7 +37,7 @@ function importer(connection, popoloObject, callback) {
     }
     // Ensure all records have a valid _id field
     popoloObject[key].forEach(populateIdField);
-    var Model = connection.model(modelName)
+    var Model = connection.model(modelName);
     async.each(popoloObject[key], function(doc, next) {
       Model.findByIdAndUpdate(doc._id, doc, {upsert: true}, function(err) {
         if (err) {

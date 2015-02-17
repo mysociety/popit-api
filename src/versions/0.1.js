@@ -16,6 +16,7 @@ function popitApiApp(options) {
 
   require('../routes/info')(app, options);
   require('../routes/export')(app);
+  require('../routes/import')(app);
   require('../routes/collection.param')(app);
   require('../routes/search')(app);
   require('../routes/collection.get')(app);
