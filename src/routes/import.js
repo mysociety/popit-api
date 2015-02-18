@@ -1,9 +1,11 @@
 "use strict";
 
 var kue = require('kue');
-var queue = kue.createQueue();
 
 function importPopolo(req, res, next) {
+  var queue = kue.createQueue({
+    prefix: req.options.queuePrefix,
+  });
   var job = queue.create('importPopolo', {
     title: 'import popolo',
     dbName: req.db.name,
