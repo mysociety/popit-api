@@ -4,10 +4,9 @@ var importer = require('./importer');
 var connection = require('./middleware/storage-selector').connection;
 
 function importPopolo(job, done) {
-  var instanceName = job.data.instance;
+  var dbName = job.data.dbName;
   var popoloJson = job.data.popoloJson;
-  var databaseName = 'popitdev_' + instanceName;
-  var db = connection(databaseName);
+  var db = connection(dbName);
 
   importer(db, popoloJson, function(err, stats) {
     if (err) {

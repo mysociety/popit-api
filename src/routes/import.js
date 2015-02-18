@@ -6,7 +6,7 @@ var queue = kue.createQueue();
 function importPopolo(req, res, next) {
   var job = queue.create('importPopolo', {
     title: 'import popolo',
-    instance: req.popit.dbname(),
+    dbName: req.db.name,
     popoloJson: req.body,
   }).save(function(err) {
     if (err) {
