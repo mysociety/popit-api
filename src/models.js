@@ -133,3 +133,13 @@ var HiddenSchema = new mongoose.Schema({
   fields: Object
 });
 mongoose.model('Hidden', HiddenSchema);
+
+var ImportSchema = new mongoose.Schema({
+  jobId: Number,
+  status: {
+    type: String,
+    default: 'pending',
+  },
+  result: Object,
+});
+mongoose.model('Import', ImportSchema);
