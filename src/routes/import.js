@@ -1,15 +1,19 @@
 "use strict";
 
-var importer = require('../importer');
+var kue = require('kue');
+var queue = kue.createQueue();
 
 function importPopolo(req, res, next) {
-  importer(req.db, req.body, function(err, stats) {
+  var job = queue.create('importPopolo', {
+    title: 'import popolo',
+    instance: req.popit.dbname(),
+    popoloJson: req.body,
+  }).save(function(err) {
     if (err) {
       return next(err);
     }
     res.withBody({
-      import: 'ok',
-      stats: stats,
+      job_id: job.id,
     });
   });
 }
