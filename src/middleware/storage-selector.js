@@ -87,4 +87,5 @@ function storageSelector(options) {
   return storage.selector;
 }
 
-module.exports = storageSelector;
+module.exports = exports = storageSelector;
+exports.connection = connection;
