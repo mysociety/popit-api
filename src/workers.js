@@ -7,15 +7,17 @@ function importPopolo(job, done) {
   var dbName = job.data.dbName;
   var popoloJson = job.data.popoloJson;
   var db = connection(dbName);
+  var Import = db.model('Import');
 
-  importer(db, popoloJson, function(err, stats) {
-    if (err) {
-      return next(err);
-    }
-    console.log("Successfully imported " + JSON.stringify(stats, null, 2));
-    done({
-      import: 'ok',
-      stats: stats,
+  Import.findOne({ jobId: job.id }, function(err, im) {
+    importer(db, popoloJson, function(err, stats) {
+      if (err) {
+        return next(err);
+      }
+      console.log("Successfully imported " + JSON.stringify(stats, null, 2));
+      im.status = 'complete';
+      im.counts = stats;
+      im.save(done);
     });
   });
 }

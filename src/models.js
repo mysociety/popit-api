@@ -140,6 +140,6 @@ var ImportSchema = new mongoose.Schema({
     type: String,
     default: 'pending',
   },
-  result: Object,
+  counts: Object,
 });
 mongoose.model('Import', ImportSchema);
