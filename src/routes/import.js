@@ -11,14 +11,17 @@ function setup(app, options) {
       title: 'import popolo',
       dbName: req.db.name,
       popoloJson: req.body,
-    }).save(function(err) {
+    });
+
+    // Create a new import
+    var Import = req.db.model('Import');
+    var im = new Import();
+    im.save(function(err, im) {
       if (err) {
         return next(err);
       }
-      // Create a new import
-      var Import = req.db.model('Import');
-      var im = new Import({ jobId: job.id });
-      im.save(function(err, im) {
+      job.data.importId = im.id;
+      job.save(function(err) {
         if (err) {
           return next(err);
         }

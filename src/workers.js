@@ -9,10 +9,16 @@ function importPopolo(job, done) {
   var db = connection(dbName);
   var Import = db.model('Import');
 
-  Import.findOne({ jobId: job.id }, function(err, im) {
+  Import.findById(job.data.importId, function(err, im) {
+    if (err) {
+      return done(err);
+    }
+    if (!im) {
+      return done(new Error("Couldn't find import ", job.data.importId));
+    }
     importer(db, popoloJson, function(err, stats) {
       if (err) {
-        return next(err);
+        return done(err);
       }
       console.log("Successfully imported " + JSON.stringify(stats, null, 2));
       im.status = 'complete';
