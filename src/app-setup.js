@@ -52,5 +52,8 @@ module.exports = function(app, options) {
   app.use(i18n(options.defaultLanguage));
   app.use(apiLinks(options));
 
+  // Allow openpoliticians to do imports over CORS
+  app.use('/imports', require('./openpoliticians'));
+
   app.get('*', cors());
 };
