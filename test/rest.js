@@ -858,10 +858,8 @@ describe("REST", function () {
   });
 
   describe("importer", function() {
-    var Person = mongoose.model('Person');
-
     it("accepts popolo json", function(done) {
-      request.post('/api/v0.1/import')
+      request.post('/api/v0.1/imports')
       .send({
         people: [
           { name: 'George Bush' },
@@ -870,13 +868,8 @@ describe("REST", function () {
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
-        Person.find(function(err, people) {
-          assert.ifError(err);
-          assert.deepEqual({'import': 'ok'}, res.body);
-          assert.equal(1, people.length);
-          assert.equal('George Bush', people[0].name);
-          done();
-        });
+        assert(res.body.result.import_id);
+        done();
       });
     });
 

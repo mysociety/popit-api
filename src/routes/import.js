@@ -51,6 +51,14 @@ function setup(app, options) {
     });
   }
 
+  app.get('/imports/user', function(req, res) {
+    if (req.user) {
+      res.send(200);
+    } else {
+      res.send(401);
+    }
+  });
+
   app.post('/imports', importPopolo);
   app.get('/imports/:id', getImport);
 }

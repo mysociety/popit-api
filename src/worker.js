@@ -1,3 +1,5 @@
+"use strict";
+
 var kue = require('kue');
 var _ = require('underscore');
 var workers = require('./workers');
@@ -11,7 +13,7 @@ function start(queuePrefix) {
     queue.process(name, worker);
   });
 
-  process.once('SIGTERM', function(sig) {
+  process.once('SIGTERM', function() {
     queue.shutdown(function(err) {
       console.log('Kue is shut down.', err || '' );
       process.exit(0);
