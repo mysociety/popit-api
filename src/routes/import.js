@@ -5,7 +5,7 @@ var kue = require('kue');
 function setup(app, options) {
   function importPopolo(req, res, next) {
     var queue = kue.createQueue({
-      prefix: req.options.queuePrefix,
+      prefix: req.options.queuePrefix || 'popit-api-',
     });
     var job = queue.create('importPopolo', {
       title: 'import popolo',
