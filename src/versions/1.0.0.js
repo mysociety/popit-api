@@ -17,12 +17,12 @@ function popitApiApp(options) {
   require('../routes/info')(app, options);
   require('../routes/export')(app);
   require('../routes/collection.param')(app);
-  require('../routes/search')(app);
-  require('../routes/collection.get')(app);
+  require('../routes/1.0/search')(app);
+  require('../routes/1.0/collection.get')(app);
   require('../routes/1.0/collection.post')(app);
   require('../routes/merge')(app);
   require('../routes/image')(app);
-  require('../routes/document.get')(app);
+  require('../routes/1.0/document.get')(app);
   require('../routes/document.delete')(app);
   require('../routes/1.0/document.put')(app);
 
