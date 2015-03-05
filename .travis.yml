@@ -6,6 +6,7 @@ node_js:
 services:
   - mongodb
   - elasticsearch
+  - redis-server
 
 # see https://github.com/npm/npm/issues/4984
 before_install:
