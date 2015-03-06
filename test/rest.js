@@ -284,15 +284,6 @@ describe("REST", function () {
       });
     });
 
-    describe("DELETE", function () {
-      it("should 405", function (done) {
-        request
-          .del("/api/v0.1/persons")
-          .expect(405)
-          .end(done);
-      });
-    });
-
   });
 
   describe("/api/v0.1/collectionName/id", function () {
@@ -870,6 +861,64 @@ describe("REST", function () {
         assert.ifError(err);
         assert(res.body.result.import_id);
         done();
+      });
+    });
+
+  });
+
+  describe("bulk delete", function() {
+    beforeEach(fixture.loadFixtures);
+
+    var Person = mongoose.model('Person');
+    var Organization = mongoose.model('Organization');
+
+    it("works on individual collections", function(done) {
+      Person.count(function(err, count) {
+        assert.ifError(err);
+        assert.equal(count, 2);
+        request
+        .del("/api/v0.1/persons")
+        .expect(204)
+        .end(function(err) {
+          assert.ifError(err);
+          Person.count(function(err, count) {
+            assert.ifError(err);
+            assert.equal(count, 0);
+            done();
+          });
+        });
+      });
+    });
+
+    function countPeopleAndOrgs(cb) {
+      function countModel(model) {
+        return function count(callback) {
+          model.count(callback);
+        };
+      }
+      async.parallel({
+        persons: countModel(Person),
+        organizations: countModel(Organization)
+      }, cb);
+    }
+
+    it("works on the whole instance", function(done) {
+      countPeopleAndOrgs(function(err, counts) {
+        assert.ifError(err);
+        assert.equal(counts.persons, 2);
+        assert.equal(counts.organizations, 2);
+        request
+        .del("/api/v0.1")
+        .expect(204)
+        .end(function(err) {
+          assert.ifError(err);
+          countPeopleAndOrgs(function(err, counts) {
+            assert.ifError(err);
+            assert.equal(counts.persons, 0);
+            assert.equal(counts.organizations, 0);
+            done();
+          });
+        });
       });
     });
 

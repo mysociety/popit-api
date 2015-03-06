@@ -131,6 +131,24 @@ function elasticsearchPlugin(schema) {
     return this.modelName.toLowerCase();
   };
 
+  schema.statics.deleteFromElasticsearch = function deleteFromElasticsearch(callback) {
+    var indexName = this.indexName();
+    var typeName = this.typeName();
+    client.indices.existsType({
+      type: typeName,
+      index: indexName,
+    }, function(err, res, status) {
+      if (status === 404) {
+        // Index doesn't exist
+        return process.nextTick(callback);
+      }
+      client.indices.deleteMapping({
+        index: indexName,
+        type: typeName,
+      }, callback);
+    });
+  };
+
   /**
    * Add a search method to models that use this plugin.
    *
