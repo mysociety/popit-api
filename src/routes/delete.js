@@ -7,7 +7,12 @@ function bulkDelete(req, res, next) {
     if (err) {
       return next(err);
     }
-    res.send(204);
+    req.collection.deleteFromElasticsearch(function(err) {
+      if (err) {
+        return next(err);
+      }
+      res.send(204);
+    });
   });
 }
 
@@ -19,7 +24,13 @@ function bulkDeleteAll(req, res, next) {
     'Post',
   ];
   async.each(collections, function deleteCollection(collection, done) {
-    req.db.model(collection).remove(done);
+    var Model = req.db.model(collection);
+    Model.remove(function(err) {
+      if (err) {
+        return done(err);
+      }
+      Model.deleteFromElasticsearch(done);
+    });
   }, function(err) {
     if (err) {
       return next(err);
