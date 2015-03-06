@@ -26,6 +26,7 @@ function popitApiApp(options) {
   require('../routes/document.get')(app);
   require('../routes/document.delete')(app);
   require('../routes/document.put')(app);
+  require('../routes/delete')(app);
 
   // Error handling
   app.use(function(err, req, res, next) {
