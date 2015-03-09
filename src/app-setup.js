@@ -33,8 +33,8 @@ module.exports = function(app, options) {
     next();
   });
 
-  // Allow openpoliticians to do imports over CORS
-  app.use('/imports', require('./openpoliticians'));
+  // Allow openpoliticians to access the API using CORS
+  app.use(require('./openpoliticians'));
 
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ extended: true }));
