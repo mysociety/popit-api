@@ -6,14 +6,14 @@ function addLinks(doc, options) {
       doc.set('url', [
         options.apiBaseUrl,
         doc.constructor.collection.name.toLowerCase(),
-        doc._id || doc.id
+        encodeURIComponent(doc._id || doc.id),
       ].join('/'));
     }
     if (options.baseUrl && (doc._id || doc.id)) {
       doc.set('html_url', [
         options.baseUrl,
         doc.constructor.collection.name.toLowerCase(),
-        doc._id || doc.id
+        encodeURIComponent(doc._id || doc.id),
       ].join('/'));
     }
   }

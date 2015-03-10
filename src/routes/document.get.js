@@ -6,7 +6,7 @@ var transform = require('../transform');
 
 module.exports = function(app) {
 
-  app.get('/:collection/:id(*)/full', function (req, res, next) {
+  app.get('/:collection/:id/full', function (req, res, next) {
     var id = req.params.id;
 
     req.collection.findById(id, function (err, doc) {
@@ -29,7 +29,7 @@ module.exports = function(app) {
     });
   });
 
-  app.get('/:collection/:id(*)', function (req, res, next) {
+  app.get('/:collection/:id', function (req, res, next) {
     var id = req.params.id;
 
     req.collection.findById(id)
