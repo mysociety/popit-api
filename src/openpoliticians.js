@@ -4,6 +4,7 @@ var cors = require('cors');
 
 var originWhitelist = [
   'http://openpoliticians.org',
+  'http://everypolitician.org',
   'http://localhost:4000',
 ];
 
