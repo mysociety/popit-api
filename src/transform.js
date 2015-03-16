@@ -73,9 +73,37 @@ function setImage(doc, options) {
   return doc;
 }
 
+function filterDates(doc, options) {
+  if (!options.at) {
+    return doc;
+  }
+
+  function checkDates(field) {
+    if (!field.start_date && !field.end_date) {
+      return true;
+    }
+    var start = new Date(field.start_date);
+    var end = new Date(field.end_date);
+    var at = options.at;
+
+    return start < at && (!field.end_date || end > at);
+  }
+
+  if (doc.other_names) {
+    doc.other_names = doc.other_names.filter(checkDates);
+  }
+
+  if (doc.memberships) {
+    doc.memberships = doc.memberships.filter(checkDates);
+  }
+
+  return doc;
+}
+
 function transform(doc, options) {
   doc = addLinks(doc, options);
   doc = setImage(doc, options);
+  doc = filterDates(doc, options);
   return doc;
 }
 
