@@ -55,7 +55,7 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
 
   function applyToJSON(err, doc, done) {
     if ( err ) {
-      done(err);
+      return done(err);
     }
 
     if (!doc) {
