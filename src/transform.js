@@ -1,5 +1,7 @@
 "use strict";
 
+var i18n = require('./i18n');
+
 function addLinks(doc, options) {
   if (doc.constructor.collection) {
     if (options.apiBaseUrl) {
@@ -100,10 +102,18 @@ function filterDates(doc, options) {
   return doc;
 }
 
+function translateDoc(doc, options) {
+  if (options.returnAllTranslations) {
+    return doc;
+  }
+  return i18n(doc.toJSON(), options.langs, options.defaultLanguage, options.includeTranslations);
+}
+
 function transform(doc, options) {
   doc = addLinks(doc, options);
   doc = setImage(doc, options);
   doc = filterDates(doc, options);
+  doc = translateDoc(doc, options);
   return doc;
 }
 

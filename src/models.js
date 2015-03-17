@@ -65,7 +65,6 @@ MembershipSchema.methods.toElasticsearch = function(callback) {
     if (doc.toJSON) {
       doc = doc.toJSON({
         transform: esFilter,
-        langs: doc.schema.options.toJSON.langs,
         defaultLanguage: doc.schema.options.toJSON.defaultLanguage,
         includeTranslations: true
       });

@@ -2,7 +2,7 @@
 
 var _ = require('underscore');
 var filter = require('./filter');
-var translate = require('./mongoose/json-transform').translateDoc;
+var i18n = require('./i18n');
 
 module.exports = function esFilters() {
   return {
@@ -23,7 +23,7 @@ module.exports = function esFilters() {
 
       //converts _id -> id in organization which upsets test
       ret = filter(doc, ret, options);
-      ret = translate(doc, ret, options);
+      ret = i18n(ret, options.langs, options.defaultLanguage, options.includeTranslations);
       ret = esFilterDatesOnly(doc, ret, options);
 
       return ret;

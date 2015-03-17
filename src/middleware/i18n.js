@@ -4,11 +4,12 @@ var eachSchema = require('../utils').eachSchema;
 
 function i18n(defaultLanguage) {
   defaultLanguage = defaultLanguage || 'en';
+  eachSchema(function(schema) {
+    schema.options.toJSON.defaultLanguage = defaultLanguage;
+  });
   return function i18nMiddleware(req, res, next) {
-    eachSchema(req.db, function(schema) {
-      schema.options.toJSON.langs = (req.accept && req.accept.languages);
-      schema.options.toJSON.defaultLanguage = defaultLanguage;
-    });
+    req.langs = (req.accept && req.accept.languages);
+    req.defaultLanguage = defaultLanguage;
     next();
   };
 }
