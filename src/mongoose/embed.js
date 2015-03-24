@@ -47,7 +47,7 @@ function populateMemberships(req, doc, path, callback) {
 function populateJoins(req, doc, opt, callback) {
   if (opt.newEmbedNames) {
     getDocs(opt.collection, doc).forEach(function(membership) {
-      membership.set(opt.to, membership.get(opt.from));
+      membership[opt.to] = membership[opt.from];
     });
   }
   doc.populate(opt, function(err, doc) {
