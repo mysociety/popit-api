@@ -32,8 +32,8 @@ module.exports = function(app) {
         }
 
         var body = pagination.metadata(result.hits.total, req.currentUrl);
-        docs.forEach(function(doc) {
-          transform(doc, req);
+        docs = docs.map(function(doc) {
+          return transform(doc, req);
         });
         body.result = docs;
         res.jsonp(body);

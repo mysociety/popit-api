@@ -56,8 +56,8 @@ function populateJoins(req, doc, opt, callback) {
     }
     // Make sure populated models have been transformed
     var modelsToTransform = getDocs(opt.path, doc);
-    modelsToTransform.forEach(function(model) {
-      transform(model, req);
+    modelsToTransform = modelsToTransform.map(function(model) {
+      return transform(model, req);
     });
     if (opt.populateMemberships) {
       populateMemberships(req, doc, opt.path, callback);
