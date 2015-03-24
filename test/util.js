@@ -13,6 +13,7 @@ function person(attrs) {
   attrs.contact_details = [];
   attrs.identifiers = [];
   attrs.other_names = [];
+  attrs.images = attrs.images || [];
   return attrs;
 }
 
