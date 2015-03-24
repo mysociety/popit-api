@@ -127,8 +127,17 @@ module.exports = function(app) {
         if ( typeof idx != 'undefined' ) {
           images[idx] = image;
         } else {
-          images.push(image);
+          if (image.index === 'first') {
+            images.unshift(image);
+          } else if (image.index === 'last') {
+            images.push(image);
+          } else if (/^(0|[1-9]\d*)$/.test(image.index)) {
+            images.splice(parseInt(image.index), 0, image);
+          } else {
+            images.push(image);
+          }
         }
+        delete image.index;
 
         doc.set('images', images);
         // mongoose has trouble working out if mixed object arrays have changed
