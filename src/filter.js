@@ -1,7 +1,5 @@
 "use strict";
 
-module.exports = filter;
-
 /**
  * Filter a document which has been retrieved from mongo. This handles
  * swapping the `_id` and `id` fields, processing hidden fields and
@@ -47,3 +45,5 @@ function filter(doc, ret, options) {
 
   return newDoc;
 }
+
+module.exports = filter;
