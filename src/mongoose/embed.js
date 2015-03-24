@@ -45,6 +45,11 @@ function populateMemberships(req, doc, path, callback) {
 }
 
 function populateJoins(req, doc, opt, callback) {
+  if (opt.newEmbedNames) {
+    getDocs(opt.collection, doc).forEach(function(membership) {
+      membership.set(opt.to, membership.get(opt.from));
+    });
+  }
   doc.populate(opt, function(err, doc) {
     if (err) {
       return callback(err);
@@ -68,7 +73,11 @@ function embedPlugin(schema) {
    * Taked the ?embed parameter and embeds any people, organizations or
    * memberships that have been requested.
    */
-  schema.methods.embedDocuments = function embedDocuments(req, callback) {
+  schema.methods.embedDocuments = function embedDocuments(req, newEmbedNames, callback) {
+    if (typeof newEmbedNames === 'function') {
+      callback = newEmbedNames;
+      newEmbedNames = false;
+    }
     var doc = this;
     var embed = req.query.embed;
 
@@ -96,20 +105,45 @@ function embedPlugin(schema) {
     while ( targets.length < 3 && ( match = target_re.exec(embed) ) ) {
       targets.push(match[0]);
     }
-    var target_map = {
-      'membership.person': {
-        path: 'memberships.person_id',
-        model: 'Person',
-      },
-      'membership.organization': {
-        path: 'memberships.organization_id',
-        model: 'Organization',
-      },
-      'membership.post': {
-        path: 'memberships.post_id',
-        model: 'Post',
-      },
-    };
+
+    var target_map;
+    if (newEmbedNames) {
+      target_map = {
+        'membership.person': {
+          path: 'memberships.person',
+          from: 'person_id',
+          to: 'person',
+          model: 'Person',
+        },
+        'membership.organization': {
+          path: 'memberships.organization',
+          from: 'organization_id',
+          to: 'organization',
+          model: 'Organization',
+        },
+        'membership.post': {
+          path: 'memberships.post',
+          from: 'post_id',
+          to: 'post',
+          model: 'Post',
+        },
+      };
+    } else {
+      target_map = {
+        'membership.person': {
+          path: 'memberships.person_id',
+          model: 'Person',
+        },
+        'membership.organization': {
+          path: 'memberships.organization_id',
+          model: 'Organization',
+        },
+        'membership.post': {
+          path: 'memberships.post_id',
+          model: 'Post',
+        },
+      };
+    }
 
     var invalidTargets = !_.all(targets, function(target) { return target_map[target]; });
     var missingTargets = targets.join('.') !== embed;
@@ -125,7 +159,14 @@ function embedPlugin(schema) {
     _.each(targets, function(target) {
       var this_map = target_map[target];
       path.push( this_map.path );
-      join_structure.push({ path: path.join('.'), model: this_map.model, populateMemberships: true });
+      join_structure.push({
+        path: path.join('.'),
+        model: this_map.model,
+        populateMemberships: true,
+        collection: path.slice(0, -1).concat(['memberships']).join('.'),
+        from: this_map.from,
+        to: this_map.to,
+      });
     });
 
     var last = join_structure[join_structure.length - 1];
@@ -138,6 +179,7 @@ function embedPlugin(schema) {
         return callback(err);
       }
       async.eachSeries(join_structure, function(structure, done) {
+        structure.newEmbedNames = newEmbedNames;
         populateJoins(req, doc, structure, done);
       }, callback);
     });

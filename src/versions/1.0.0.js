@@ -13,19 +13,18 @@ function popitApiApp(options) {
 
   require('../app-setup')(app, options);
 
+
   require('../routes/info')(app, options);
   require('../routes/export')(app);
-  require('../routes/import')(app, options);
   require('../routes/collection.param')(app);
-  require('../routes/search')(app);
-  require('../routes/collection.get')(app);
-  require('../routes/collection.post')(app);
+  require('../routes/1.0/search')(app);
+  require('../routes/1.0/collection.get')(app);
+  require('../routes/1.0/collection.post')(app);
   require('../routes/merge')(app);
   require('../routes/image')(app);
-  require('../routes/document.get')(app);
+  require('../routes/1.0/document.get')(app);
   require('../routes/document.delete')(app);
-  require('../routes/document.put')(app);
-  require('../routes/delete')(app);
+  require('../routes/1.0/document.put')(app);
 
   // Error handling
   app.use(function(err, req, res, next) {
