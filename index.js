@@ -18,7 +18,7 @@ function popitApiApp(options) {
   app.use('/v0.1', app_api_01);
 
   var app_api_1_0_0 = api_1_0_0(options);
-  app.use('/v1.0.0', app_api_1_0_0);
+  app.use('/v1.0.0-alpha', app_api_1_0_0);
 
   return app;
 }
