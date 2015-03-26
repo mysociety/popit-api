@@ -141,16 +141,19 @@ module.exports = function(app) {
         }
         delete image.index;
 
-        /* In case no MIME type was specified on upload, guess it
-         * using libmagic */
-        magic.detectFile(dest_path, function(err, result) {
+        /* Get the file's MIME type using libmagic */
+        magic.detectFile(dest_path, function(err, mimeType) {
           if (err) {
             throw err;
           }
 
-          if (!image.mime_type) {
-            image.mime_type = result;
+          if (!/^image\//.test(mimeType)) {
+            throw new Error(
+              "The uploaded image was of non-permitted type: " + mimeType
+            );
           }
+
+          image.mime_type = mimeType;
 
           doc.set('images', images);
           // mongoose has trouble working out if mixed object arrays have changed
