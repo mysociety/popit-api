@@ -3,6 +3,8 @@
 var fs = require('fs-extra');
 var mkdirp = require('mkdirp');
 var path = require('path');
+var mmm = require('mmmagic');
+var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 var transform = require('../transform');
 
 module.exports = function(app) {
@@ -139,17 +141,29 @@ module.exports = function(app) {
         }
         delete image.index;
 
-        doc.set('images', images);
-        // mongoose has trouble working out if mixed object arrays have changed
-        // so make sure it knows otherwise the changes aren't saved
-        doc.markModified('images');
-
-        doc.save(function(err, newDoc) {
+        /* In case no MIME type was specified on upload, guess it
+         * using libmagic */
+        magic.detectFile(dest_path, function(err, result) {
           if (err) {
-            return next(err);
+            throw err;
           }
 
-          return res.withBody(transform(newDoc, req));
+          if (!image.mime_type) {
+            image.mime_type = result;
+          }
+
+          doc.set('images', images);
+          // mongoose has trouble working out if mixed object arrays have changed
+          // so make sure it knows otherwise the changes aren't saved
+          doc.markModified('images');
+
+          doc.save(function(err, newDoc) {
+            if (err) {
+              return next(err);
+            }
+
+            return res.withBody(transform(newDoc, req));
+          });
         });
       });
     }
