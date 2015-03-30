@@ -404,6 +404,21 @@ describe("REST API v0.1", function () {
           .end(done);
       });
 
+      it("should allow specifying image ids in hex ObjectId format", function(done) {
+        var Person = mongoose.model('Person');
+        request
+        .put("/api/v0.1/persons/test")
+        .send({id: 'test', name: 'Test', images: [{ id: '55119bc1a69347a221956989', url: 'http://example.com/image.png' }] })
+        .expect(200)
+        .end(function(err) {
+          assert.ifError(err);
+          Person.findById('test', function(err, person) {
+            assert.ifError(err);
+            assert.equal(person.get('images')[0]._id, '55119bc1a69347a221956989');
+            done();
+          });
+        });
+      });
     });
 
 

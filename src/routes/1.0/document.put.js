@@ -40,7 +40,9 @@ module.exports = function(app) {
       if ( body.images ) {
         var images = [];
         body.images.forEach( function(img) {
-          if ( img._id ) {
+          if (img.id) {
+            img._id = new mongoose.Types.ObjectId(img.id);
+          } else if ( img._id ) {
             img._id = new mongoose.Types.ObjectId(img._id);
           }
           images.push(img);
