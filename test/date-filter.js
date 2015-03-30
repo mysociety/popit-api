@@ -63,7 +63,8 @@ describe("Filter by date", function() {
           start_date: '2009-10-10',
           end_date: '2010-10-10',
           links: [],
-          contact_details: []
+          contact_details: [],
+          images: []
         }
       ]);
       done();

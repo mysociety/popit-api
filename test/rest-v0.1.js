@@ -131,9 +131,9 @@ describe("REST API v0.1", function () {
               has_more: false,
               result: [
                 { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                  member: {'@type': 'Person', id: 'fred-bloggs'}, start_date: '2000', end_date: '2004', links: [], contact_details: [] },
+                  member: {'@type': 'Person', id: 'fred-bloggs'}, start_date: '2000', end_date: '2004', links: [], contact_details: [], images: [] },
                 { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
-                  member: {'@type': 'Person', id: 'fred-bloggs'}, start_date: '2011', links: [], contact_details: [] },
+                  member: {'@type': 'Person', id: 'fred-bloggs'}, start_date: '2011', links: [], contact_details: [], images: [] },
               ],
             })
             .end(done);
@@ -247,19 +247,26 @@ describe("REST API v0.1", function () {
           .post("/api/v0.1/persons")
           .send({id: 'test', name: 'Test', images: [ { url: 'http://example.com/image.png' }]})
           .expect(200)
-          .expect({
-            result: person({id: 'test', name: 'Test', image: 'http://example.com/image.png', images: [ { url: 'http://example.com/image.png' }]})
-          }, done);
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.image, 'http://example.com/image.png');
+            done();
+          });
       });
 
-      it("should return an set the image attribute to the first image from images", function(done) {
+      it("should return and set the image attribute to the first image from images", function(done) {
         request
           .post("/api/v0.1/persons")
           .send({id: 'test', name: 'Test', images: [ { url: 'http://example.com/image.png' }, { url: 'http://example.org/image2.png' } ]})
           .expect(200)
-          .expect({
-            result: person({id: 'test', name: 'Test', image: 'http://example.com/image.png', images: [ { url: 'http://example.com/image.png' }, { url: 'http://example.org/image2.png' } ]})
-          }, done);
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.images.length, 2);
+            assert.equal(res.body.result.images[0].url, 'http://example.com/image.png');
+            assert.equal(res.body.result.images[1].url, 'http://example.org/image2.png');
+            assert.equal(res.body.result.image, 'http://example.com/image.png');
+            done();
+          });
       });
 
       it("should add an image to the images array", function(done) {
@@ -267,9 +274,13 @@ describe("REST API v0.1", function () {
           .post("/api/v0.1/persons")
           .send({id: 'test', name: 'Test', image: 'http://example.com/image.png' })
           .expect(200)
-          .expect({
-            result: person({id: 'test', name: 'Test', image: 'http://example.com/image.png', images: [ { url: 'http://example.com/image.png' }]})
-          }, done);
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.images.length, 1);
+            assert.equal(res.body.result.images[0].url, 'http://example.com/image.png');
+            assert.equal(res.body.result.image, 'http://example.com/image.png');
+            done();
+          });
       });
 
     });
