@@ -59,10 +59,10 @@ function setImage(doc, options) {
   }
   images.forEach(function imageProcess(img) {
     if (!img.url) {
-      img.url = generateImageUrl(img, doc, options);
+      img.set('url', generateImageUrl(img, doc, options));
     }
     if (options.proxyBaseUrl && !img.proxy_url) {
-      img.proxy_url = generateImageProxyUrl(img, doc, options);
+      img.set('proxy_url', generateImageProxyUrl(img, doc, options));
     }
   });
   doc.set('image', images[0].url);
