@@ -67,7 +67,7 @@ function setImage(doc, options) {
   });
   doc.set('image', images[0].url);
   if ( options.proxyBaseUrl ) {
-    doc.set('proxy_image', images[0].proxy_url);
+    doc.set('proxy_image', images[0].get('proxy_url'));
   }
 
   return doc;

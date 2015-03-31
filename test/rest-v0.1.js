@@ -283,6 +283,25 @@ describe("REST API v0.1", function () {
           });
       });
 
+
+      it("should add proxy_url to image objects and proxy_image to top level", function(done) {
+        var apiRequest = supertest(apiApp({
+          databaseName: defaults.databaseName,
+          apiBaseUrl: 'http://example.org',
+          proxyBaseUrl: 'http://example.org/image-proxy',
+        }));
+        apiRequest
+          .post("/v0.1/persons")
+          .send({id: 'test', name: 'Test', images: [ { url: 'http://example.com/image.png' }]})
+          .expect(200)
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.images[0].proxy_url, 'http://example.org/image-proxy/http%3A%2F%2Fexample.com%2Fimage.png');
+            assert.equal(res.body.result.proxy_image, 'http://example.org/image-proxy/http%3A%2F%2Fexample.com%2Fimage.png');
+            done();
+          });
+      });
+
     });
 
     describe("PUT", function () {
