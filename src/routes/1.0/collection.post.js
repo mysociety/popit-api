@@ -2,6 +2,7 @@
 
 var async = require('async');
 var validateBody = require('../../middleware/validate-body');
+var transform = require('../../transform');
 
 var tidyUpInlineMembershipError = require('../../inline-memberships').tidyUpInlineMembershipError;
 var processMembership = require('../../inline-memberships').processMembership;
@@ -45,13 +46,13 @@ module.exports = function(app) {
                   return res.send(400, {errors: [err]});
                 });
               } else {
-                res.withBody(doc);
+                res.withBody(transform(doc, req));
               }
             });
           }
         });
       } else {
-        res.withBody(doc);
+        res.withBody(transform(doc, req));
       }
     });
   });
