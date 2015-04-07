@@ -3,6 +3,8 @@
 var fs = require('fs-extra');
 var mkdirp = require('mkdirp');
 var path = require('path');
+var mmm = require('mmmagic');
+var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 var transform = require('../transform');
 
 module.exports = function(app) {
@@ -139,17 +141,32 @@ module.exports = function(app) {
         }
         delete image.index;
 
-        doc.set('images', images);
-        // mongoose has trouble working out if mixed object arrays have changed
-        // so make sure it knows otherwise the changes aren't saved
-        doc.markModified('images');
-
-        doc.save(function(err, newDoc) {
+        /* Get the file's MIME type using libmagic */
+        magic.detectFile(dest_path, function(err, mimeType) {
           if (err) {
-            return next(err);
+            return next(new Error("Finding the MIME type of the image failed"));
           }
 
-          return res.withBody(transform(newDoc, req));
+          if (!/^image\//.test(mimeType)) {
+            return next(new Error(
+              "The uploaded image was of non-permitted type: " + mimeType
+            ));
+          }
+
+          image.mime_type = mimeType;
+
+          doc.set('images', images);
+          // mongoose has trouble working out if mixed object arrays have changed
+          // so make sure it knows otherwise the changes aren't saved
+          doc.markModified('images');
+
+          doc.save(function(err, newDoc) {
+            if (err) {
+              return next(err);
+            }
+
+            return res.withBody(transform(newDoc, req));
+          });
         });
       });
     }
