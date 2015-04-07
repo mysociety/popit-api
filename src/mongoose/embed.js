@@ -47,7 +47,7 @@ function populateMemberships(req, doc, path, callback) {
 function populateJoins(req, doc, opt, callback) {
   if (opt.newEmbedNames) {
     getDocs(opt.collection, doc).forEach(function(membership) {
-      membership.set(opt.to, membership.get(opt.from));
+      membership[opt.to] = membership[opt.from];
     });
   }
   doc.populate(opt, function(err, doc) {
@@ -56,8 +56,8 @@ function populateJoins(req, doc, opt, callback) {
     }
     // Make sure populated models have been transformed
     var modelsToTransform = getDocs(opt.path, doc);
-    modelsToTransform.forEach(function(model) {
-      transform(model, req);
+    modelsToTransform = modelsToTransform.map(function(model) {
+      return transform(model, req);
     });
     if (opt.populateMemberships) {
       populateMemberships(req, doc, opt.path, callback);

@@ -1,6 +1,5 @@
 "use strict";
 
-var eachSchema = require('../utils').eachSchema;
 var InvalidEmbedError = require('../mongoose/embed').InvalidEmbedError;
 var transform = require('../transform');
 
@@ -17,15 +16,9 @@ module.exports = function(app) {
         return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
       }
 
-      eachSchema(req.collection, function(schema) {
-        schema.options.toJSON.returnAllTranslations = true;
-      });
+      req.returnAllTranslations = true;
 
       res.withBody(transform(doc, req));
-
-      eachSchema(req.collection, function(schema) {
-        schema.options.toJSON.returnAllTranslations = false;
-      });
     });
   });
 

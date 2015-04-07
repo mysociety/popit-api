@@ -1,7 +1,6 @@
 "use strict";
 
 var zlib = require('zlib');
-var eachSchema = require('../utils').eachSchema;
 var exporter = require('../exporter');
 
 module.exports = function(app) {
@@ -11,13 +10,8 @@ module.exports = function(app) {
       if (err) {
         return next(err);
       }
-      eachSchema(req.collection, function(schema) {
-        schema.options.toJSON.returnAllTranslations = true;
-      });
+      req.returnAllTranslations = true;
       res.send(exportObject);
-      eachSchema(req.collection, function(schema) {
-        schema.options.toJSON.returnAllTranslations = false;
-      });
     });
   });
 
@@ -49,9 +43,7 @@ module.exports = function(app) {
       if (err) {
         return next(err);
       }
-      eachSchema(req.collection, function(schema) {
-        schema.options.toJSON.langs = [req.params.language];
-      });
+      req.langs = [req.params.language];
       res.send(exportObject);
     });
   });
@@ -62,9 +54,7 @@ module.exports = function(app) {
       if (err) {
         return next(err);
       }
-      eachSchema(req.collection, function(schema) {
-        schema.options.toJSON.langs = [req.params.language];
-      });
+      req.langs = [req.params.language];
       var filename;
       if (req.options.instanceName) {
         filename = req.options.instanceName + '-popolo-export-' + req.params.language + '.json.gz';

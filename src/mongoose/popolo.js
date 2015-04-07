@@ -2,7 +2,7 @@
 
 var mongoose = require('mongoose');
 var mongooseJsonSchema = require('./json-schema');
-var jsonTransform = require('./json-transform').jsonTransformPlugin;
+var jsonTransform = require('./json-transform');
 var search = require('./search');
 var elasticsearch = require('./elasticsearch');
 var embed = require('./embed');

@@ -2,7 +2,7 @@
 
 var models = require('./models');
 
-function eachSchema(mongoose, callback) {
+function eachSchema(callback) {
   for (var key in models) {
     callback(models[key].schema);
   }

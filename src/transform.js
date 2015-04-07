@@ -1,5 +1,7 @@
 "use strict";
 
+var i18n = require('./i18n');
+
 function addLinks(doc, options) {
   if (doc.constructor.collection) {
     if (options.apiBaseUrl) {
@@ -73,9 +75,67 @@ function setImage(doc, options) {
   return doc;
 }
 
+function filterDates(doc, options) {
+  if (!options.at) {
+    return doc;
+  }
+
+  function checkDates(field) {
+    if (!field.start_date && !field.end_date) {
+      return true;
+    }
+    var start = new Date(field.start_date);
+    var end = new Date(field.end_date);
+    var at = options.at;
+
+    return start < at && (!field.end_date || end > at);
+  }
+
+  if (doc.other_names) {
+    doc.other_names = doc.other_names.filter(checkDates);
+  }
+
+  if (doc.memberships) {
+    doc.memberships = doc.memberships.filter(checkDates);
+  }
+
+  return doc;
+}
+
+function translateDoc(doc, options) {
+  if (options.returnAllTranslations) {
+    return doc;
+  }
+  return i18n(doc.toJSON(), options.langs, options.defaultLanguage, options.includeTranslations);
+}
+
+function hiddenFields(doc, options) {
+  var fields = options.hiddenFields || {};
+  var newDoc = {};
+  for (var field in doc) {
+    // Skip any fields that have been hidden on this doc.
+    if (fields[doc.id]) {
+      var value = fields[doc.id][field];
+      if (value === false) {
+        continue;
+      }
+    }
+    // Skip any fields that have been hidden for all docs.
+    if (fields.all && fields.all[field] === false) {
+      continue;
+    }
+    // If we've made it this far then copy the field to the new doc.
+    newDoc[field] = doc[field];
+  }
+  return newDoc;
+}
+
 function transform(doc, options) {
   doc = addLinks(doc, options);
   doc = setImage(doc, options);
+  doc = filterDates(doc, options);
+  doc = translateDoc(doc, options);
+  doc = hiddenFields(doc, options);
   return doc;
 }
 

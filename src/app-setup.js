@@ -16,9 +16,6 @@ module.exports = function(app, options) {
   // Pretty print json in production as well as development
   app.set('json spaces', 2);
 
-  // Expose globally fieldSpec option in the app config.
-  app.set('fieldSpec', options.fieldSpec);
-
   // Clean up requests from tools like slumber that set the Content-Type but no body
   // eg https://github.com/dstufft/slumber/pull/32
   app.use( function (req, res, next) {
