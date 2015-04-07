@@ -777,6 +777,17 @@ describe("REST API v0.1", function () {
       });
     });
 
+    it("embeds organization and post if requested", function(done) {
+      request.get('/api/v0.1/persons/fred-bloggs?embed=membership.organization,membership.post')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships[0].organization_id.name, 'House of Commons');
+        assert.equal(res.body.result.memberships[0].post_id.label, 'MP for Avalon');
+        done();
+      });
+    });
+
   });
 
   describe("merging people", function() {
