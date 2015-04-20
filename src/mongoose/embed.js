@@ -79,106 +79,112 @@ function embedPlugin(schema) {
       newEmbedNames = false;
     }
     var doc = this;
-    var embed = req.query.embed;
+    var embeds = req.query.embed;
+
+    var allJoins = [];
 
     // Default to embedding one layer of memberships
-    if (!_.isString(embed)) {
-      embed = 'membership';
+    if (!_.isString(embeds)) {
+      embeds = 'membership';
     }
     // Run the callback async if there's no embed requested
-    if (embed === '') {
+    if (embeds === '') {
       return process.nextTick(callback);
     }
 
-    // Check if the final layer of memberships should be included
-    var originalEmbed = embed;
-    var parts = embed.split('.');
-    var skipLastEmbed = true;
-    if (parts[parts.length - 1] === 'membership') {
-      skipLastEmbed = false;
-      embed = parts.slice(0, -1).join('.');
-    }
+    embeds.split(',').forEach(function(embed) {
+      // Check if the final layer of memberships should be included
+      var originalEmbed = embed;
+      var parts = embed.split('.');
+      var skipLastEmbed = true;
+      if (parts[parts.length - 1] === 'membership') {
+        skipLastEmbed = false;
+        embed = parts.slice(0, -1).join('.');
+      }
 
-    var target_re = /((?:membership\.\w+)+)/g;
-    var targets = [];
-    var match;
-    while ( targets.length < 3 && ( match = target_re.exec(embed) ) ) {
-      targets.push(match[0]);
-    }
+      var target_re = /((?:membership\.\w+)+)/g;
+      var targets = [];
+      var match;
+      while ( targets.length < 3 && ( match = target_re.exec(embed) ) ) {
+        targets.push(match[0]);
+      }
 
-    var target_map;
-    if (newEmbedNames) {
-      target_map = {
-        'membership.person': {
-          path: 'memberships.person',
-          from: 'person_id',
-          to: 'person',
-          model: 'Person',
-        },
-        'membership.organization': {
-          path: 'memberships.organization',
-          from: 'organization_id',
-          to: 'organization',
-          model: 'Organization',
-        },
-        'membership.post': {
-          path: 'memberships.post',
-          from: 'post_id',
-          to: 'post',
-          model: 'Post',
-        },
-      };
-    } else {
-      target_map = {
-        'membership.person': {
-          path: 'memberships.person_id',
-          model: 'Person',
-        },
-        'membership.organization': {
-          path: 'memberships.organization_id',
-          model: 'Organization',
-        },
-        'membership.post': {
-          path: 'memberships.post_id',
-          model: 'Post',
-        },
-      };
-    }
+      var target_map;
+      if (newEmbedNames) {
+        target_map = {
+          'membership.person': {
+            path: 'memberships.person',
+            from: 'person_id',
+            to: 'person',
+            model: 'Person',
+          },
+          'membership.organization': {
+            path: 'memberships.organization',
+            from: 'organization_id',
+            to: 'organization',
+            model: 'Organization',
+          },
+          'membership.post': {
+            path: 'memberships.post',
+            from: 'post_id',
+            to: 'post',
+            model: 'Post',
+          },
+        };
+      } else {
+        target_map = {
+          'membership.person': {
+            path: 'memberships.person_id',
+            model: 'Person',
+          },
+          'membership.organization': {
+            path: 'memberships.organization_id',
+            model: 'Organization',
+          },
+          'membership.post': {
+            path: 'memberships.post_id',
+            model: 'Post',
+          },
+        };
+      }
 
-    var invalidTargets = !_.all(targets, function(target) { return target_map[target]; });
-    var missingTargets = targets.join('.') !== embed;
-    if (invalidTargets || missingTargets) {
-      var message = 'Invalid embed parameter ' + originalEmbed;
-      var explaination = 'embed must be one of ' + Object.keys(target_map).join(', ');
-      var error = new InvalidEmbedError(message, explaination);
-      return callback(error);
-    }
+      var invalidTargets = !_.all(targets, function(target) { return target_map[target]; });
+      var missingTargets = targets.join('.') !== embed;
+      if (invalidTargets || missingTargets) {
+        var message = 'Invalid embed parameter ' + originalEmbed;
+        var explaination = 'embed must be one of ' + Object.keys(target_map).join(', ');
+        var error = new InvalidEmbedError(message, explaination);
+        return callback(error);
+      }
 
-    var join_structure = [];
-    var path = [];
-    _.each(targets, function(target) {
-      var this_map = target_map[target];
-      path.push( this_map.path );
-      join_structure.push({
-        path: path.join('.'),
-        model: this_map.model,
-        populateMemberships: true,
-        collection: path.slice(0, -1).concat(['memberships']).join('.'),
-        from: this_map.from,
-        to: this_map.to,
+      var join_structure = [];
+      var path = [];
+      _.each(targets, function(target) {
+        var this_map = target_map[target];
+        path.push( this_map.path );
+        join_structure.push({
+          path: path.join('.'),
+          model: this_map.model,
+          populateMemberships: true,
+          collection: path.slice(0, -1).concat(['memberships']).join('.'),
+          from: this_map.from,
+          to: this_map.to,
+        });
       });
-    });
 
-    var last = join_structure[join_structure.length - 1];
-    if (skipLastEmbed && last) {
-      last.populateMemberships = false;
-    }
+      var last = join_structure[join_structure.length - 1];
+      if (skipLastEmbed && last) {
+        last.populateMemberships = false;
+      }
+
+      allJoins = allJoins.concat(join_structure);
+    });
 
     doc.populateMemberships(req, function(err) {
       if (err) {
         return callback(err);
       }
-      async.eachSeries(join_structure, function(structure, done) {
+      async.eachSeries(allJoins, function(structure, done) {
         structure.newEmbedNames = newEmbedNames;
         populateJoins(req, doc, structure, done);
       }, callback);

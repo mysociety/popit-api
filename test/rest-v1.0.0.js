@@ -521,6 +521,17 @@ describe("REST API v1.0.0-alpha", function () {
         done();
       });
     });
+
+    it("embeds organization and post if requested", function(done) {
+      request.get('/api/v1.0.0-alpha/persons/fred-bloggs?embed=membership.organization,membership.post')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships[0].organization.name, 'House of Commons');
+        assert.equal(res.body.result.memberships[0].post.label, 'MP for Avalon');
+        done();
+      });
+    });
   });
 
   describe("PUT", function() {
