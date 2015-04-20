@@ -6,7 +6,7 @@ var exporter = require('../exporter');
 module.exports = function(app) {
   // Export all languages - can potentially produce invalid popolo
   app.get('/export.json', function(req, res, next) {
-    exporter(req.db, function(err, exportObject) {
+    exporter(req.db, req, function(err, exportObject) {
       if (err) {
         return next(err);
       }
@@ -16,7 +16,7 @@ module.exports = function(app) {
   });
 
   app.get('/export.json.gz', function(req, res, next) {
-    exporter(req.db, function(err, exportObject) {
+    exporter(req.db, req, function(err, exportObject) {
       if (err) {
         return next(err);
       }
@@ -39,7 +39,7 @@ module.exports = function(app) {
 
   // Export an individual language, this should be valid popolo
   app.get('/export-:language.json', function(req, res, next) {
-    exporter(req.db, function(err, exportObject) {
+    exporter(req.db, req, function(err, exportObject) {
       if (err) {
         return next(err);
       }
@@ -50,7 +50,7 @@ module.exports = function(app) {
 
   // Export an individual language, this should be valid popolo
   app.get('/export-:language.json.gz', function(req, res, next) {
-    exporter(req.db, function(err, exportObject) {
+    exporter(req.db, req, function(err, exportObject) {
       if (err) {
         return next(err);
       }

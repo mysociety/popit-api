@@ -19,7 +19,7 @@ describe("exporting popolo json", function() {
   beforeEach(fixture.loadFixtures);
 
   it("includes all data", function(done) {
-    exporter(mongoose, function(err, data) {
+    exporter(mongoose, {}, function(err, data) {
       assert.ifError(err);
       assert.equal(data.persons.length, 2);
       assert.equal(data.organizations.length, 2);

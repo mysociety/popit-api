@@ -1,6 +1,7 @@
 "use strict";
 
 var async = require('async');
+var transform = require('./transform');
 require('./models');
 
 /**
@@ -10,10 +11,17 @@ require('./models');
  * @param {Connection} connection A mongoose connection object
  * @param {function} callback The function to call with the exported object
  */
-function exporter(connection, callback) {
+function exporter(connection, options, callback) {
   function exportCollection(name) {
     return function(done) {
-      connection.model(name).find({}, {memberships: 0}, done);
+      connection.model(name).find({}, {memberships: 0}, function(err, docs) {
+        if (err) {
+          return done(err);
+        }
+        async.map(docs, function(doc, next) {
+          next(null, transform(doc, options));
+        }, done);
+      });
     };
   }
 
