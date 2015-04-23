@@ -6,16 +6,18 @@ var exporter = require('../exporter');
 module.exports = function(app) {
   // Export all languages - can potentially produce invalid popolo
   app.get('/export.json', function(req, res, next) {
+    console.time('export.json');
     exporter(req.db, req, function(err, exportObject) {
       if (err) {
         return next(err);
       }
-      req.returnAllTranslations = true;
+      console.timeEnd('export.json');
       res.send(exportObject);
     });
   });
 
   app.get('/export.json.gz', function(req, res, next) {
+    console.time('export.json.gz');
     exporter(req.db, req, function(err, exportObject) {
       if (err) {
         return next(err);
@@ -27,11 +29,19 @@ module.exports = function(app) {
         filename = 'popolo-export.json.gz';
       }
       res.attachment(filename);
-      var buf = new Buffer(JSON.stringify(exportObject), 'utf8');
+      console.time('convert to JSON');
+      var json = JSON.stringify(exportObject);
+      console.timeEnd('convert to JSON');
+      console.time('convert to buffer');
+      var buf = new Buffer(json, 'utf8');
+      console.timeEnd('convert to buffer');
+      console.time('export gzip');
       zlib.gzip(buf, function(err, result) {
         if (err) {
           return next(err);
         }
+        console.timeEnd('export gzip');
+        console.timeEnd('export.json.gz');
         res.end(result);
       });
     });
