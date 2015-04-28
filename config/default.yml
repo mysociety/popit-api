@@ -1,0 +1,6 @@
+---
+# See http://docs.mongodb.org/manual/reference/connection-string/ for details.
+mongodb:
+  prefix: popitdev_
+  master: _master
+  connectionStringFormat: mongodb://localhost/%s
