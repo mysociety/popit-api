@@ -1,0 +1,6 @@
+# Example config using passenger
+<VirtualHost *:80>
+    ServerName popit-api.example.com
+    DocumentRoot /var/www/popit-api.example.com/public
+    PassengerNodejs /path/to/bin/node
+</VirtualHost>
