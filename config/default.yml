@@ -1,6 +1,9 @@
 ---
-# See http://docs.mongodb.org/manual/reference/connection-string/ for details.
+# These are default, suitable for development.
+# You can override these using a local.yml file.
+# https://github.com/lorenwest/node-config/wiki/Configuration-Files
 mongodb:
   prefix: popitdev_
   master: _master
+  # See http://docs.mongodb.org/manual/reference/connection-string/ for details.
   connectionStringFormat: mongodb://localhost/%s
