@@ -34,6 +34,7 @@
     "mmmagic": "^0.3.13",
     "mongodb": "=1.4.28",
     "mongoose": "~3.8.5",
+    "mongoose-unique-validator": "^0.4.1",
     "mpath": "~0.2.1",
     "multer": "^0.1.6",
     "underscore": "~1.4.4",

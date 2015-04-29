@@ -4,6 +4,7 @@ var mongoose = module.exports = require('mongoose');
 var config = require('config');
 var validator = require('validator');
 var format = require('util').format;
+var uniqueValidator = require('mongoose-unique-validator');
 
 var connectionStringFormat = config.get('mongodb.connectionStringFormat');
 var prefix = config.get('mongodb.prefix');
@@ -21,13 +22,17 @@ mongoose.connectionForInstance = connectionForInstance;
 
 // Need to account for popit_prefix length in maximum length of slug
 var maxSlugLength = 63 - config.get('mongodb.prefix').length;
+var slugLengthError = format(
+  'Instance slug must be between 4 and %s characters long',
+  maxSlugLength
+);
 
 var InstanceSchema = mongoose.Schema({
   slug: {
     type: String,
     lowercase: true,
     trim: true,
-    match: [new RegExp("^[a-z0-9][a-z0-9\-]{2," + (maxSlugLength-2) + "}[a-z0-9]$"), 'regexp'],
+    match: [new RegExp("^[a-z0-9][a-z0-9\-]{2," + (maxSlugLength-2) + "}[a-z0-9]$"), slugLengthError],
     required: true,
     unique: true,
   },
@@ -60,5 +65,7 @@ var InstanceSchema = mongoose.Schema({
   },
 
 });
+
+InstanceSchema.plugin(uniqueValidator);
 
 mongoose.model('Instance', InstanceSchema);
