@@ -33,8 +33,14 @@ var InstanceSchema = mongoose.Schema({
     lowercase: true,
     trim: true,
     match: [new RegExp("^[a-z0-9][a-z0-9\-]{2," + (maxSlugLength-2) + "}[a-z0-9]$"), slugLengthError],
-    required: true,
+    required: 'Instance slug is required.',
     unique: true,
+  },
+
+  email: {
+    type: String,
+    required: 'Email address is required.',
+    validate: [validator.isEmail, '`{VALUE}` is not a valid email address.'],
   },
 
   created_date: {
@@ -56,12 +62,6 @@ var InstanceSchema = mongoose.Schema({
       'suspended', // blocked for some reason
       'archived',  // has been archived due to lack of use
     ],
-  },
-
-  email: {
-    type: String,
-    required: true,
-    validate: [validator.isEmail, 'not_an_email']
   },
 
 });

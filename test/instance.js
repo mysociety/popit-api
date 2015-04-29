@@ -5,21 +5,21 @@ var master = require('../src/master');
 var Instance = master.model('Instance');
 
 describe("Instance model", function() {
+  var instance;
+
   beforeEach(function(done) {
     Instance.remove(done);
   });
 
+  beforeEach(function() {
+    instance = new Instance({slug: 'test-instance', email: 'bob@example.org'});
+  });
+
   describe("slug", function() {
-    var instance;
-
-    beforeEach(function() {
-      instance = new Instance({slug: 'test-instance', email: 'bob@example.org'});
-    });
-
     it("is required", function(done) {
       instance.slug = null;
       instance.save(function(err) {
-        assert.equal(err.errors.slug.message, 'Path `slug` is required.');
+        assert.equal(err.errors.slug.message, 'Instance slug is required.');
         done();
       });
     });
@@ -58,6 +58,26 @@ describe("Instance model", function() {
           assert.equal(err.errors.slug.message, 'Error, expected `slug` to be unique. Value: `test-instance`');
           done();
         });
+      });
+    });
+
+  });
+
+  describe("email", function() {
+
+    it("is required", function(done) {
+      instance.email = null;
+      instance.save(function(err) {
+        assert.equal(err.errors.email.message, 'Email address is required.');
+        done();
+      });
+    });
+
+    it("must be valid", function(done) {
+      instance.email = 'notanemail';
+      instance.save(function(err) {
+        assert.equal(err.errors.email.message, '`notanemail` is not a valid email address.');
+        done();
       });
     });
 
