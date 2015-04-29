@@ -1,3 +1,5 @@
+"use strict";
+
 var mongoose = module.exports = require('mongoose');
 var config = require('config');
 var validator = require('validator');

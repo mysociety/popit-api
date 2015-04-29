@@ -28,7 +28,7 @@ app.param('instanceSlug', function(req, res, next, slug) {
   });
 });
 
-app.get('/instances/:instanceSlug', function(req, res, next) {
+app.get('/instances/:instanceSlug', function(req, res) {
   res.send(req.instance);
 });
 
