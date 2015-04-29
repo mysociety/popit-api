@@ -6,15 +6,6 @@ var master = require('./src/master');
 
 var Instance = master.model('Instance');
 
-app.get('/instances', function(req, res, next) {
-  Instance.find(function(err, instances) {
-    if (err) {
-      return next(err);
-    }
-    res.send(instances);
-  });
-});
-
 app.param('instanceSlug', function(req, res, next, slug) {
   Instance.findOne({slug: slug}, function(err, instance) {
     if (err) {
@@ -26,10 +17,6 @@ app.param('instanceSlug', function(req, res, next, slug) {
     req.instance = instance;
     next();
   });
-});
-
-app.get('/instances/:instanceSlug', function(req, res) {
-  res.send(req.instance);
 });
 
 app.get('/instances/:instanceSlug/persons', function(req, res, next) {
