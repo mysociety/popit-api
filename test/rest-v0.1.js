@@ -19,15 +19,22 @@ require('../src/models');
 var request = supertest(serverApp);
 
 describe("REST API v0.1", function () {
+  var connection;
+  var Person;
+  var Organization;
+  var Membership;
 
   beforeEach(fixture.clearDatabase);
 
   before(function() {
-    mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+    connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
+    Person = connection.model('Person');
+    Organization = connection.model('Organization');
+    Membership = connection.model('Membership');
   });
 
   after(function(done) {
-    mongoose.connection.close(done);
+    connection.close(done);
   });
 
   describe("malformed requests", function () {
@@ -340,7 +347,7 @@ describe("REST API v0.1", function () {
 
       describe("when id and _id don't match for some reason", function() {
         beforeEach(function(done) {
-          mongoose.model('Membership').create({
+          Membership.create({
             _id: 'abc',
             id: '123',
           }, done);
@@ -424,7 +431,6 @@ describe("REST API v0.1", function () {
       });
 
       it("should allow specifying image ids in hex ObjectId format", function(done) {
-        var Person = mongoose.model('Person');
         request
         .put("/api/v0.1/persons/test")
         .send({id: 'test', name: 'Test', images: [{ id: '55119bc1a69347a221956989', url: 'http://example.com/image.png' }] })
@@ -479,7 +485,7 @@ describe("REST API v0.1", function () {
     beforeEach(dropElasticsearchIndex(defaults.databaseName.toLowerCase()));
 
     beforeEach(function(done) {
-      mongoose.model('Person').create({
+      Person.create({
         _id: 'bby',
         id: 'bby',
         name: 'Barnaby',
@@ -602,7 +608,6 @@ describe("REST API v0.1", function () {
   describe("pagination", function() {
 
     beforeEach(function(done) {
-      var Person = mongoose.model('Person');
       async.times(40, function(n, next) {
         Person.create({_id: n, name: "Person " + n}, next);
       }, done);
@@ -792,7 +797,6 @@ describe("REST API v0.1", function () {
 
   describe("merging people", function() {
     beforeEach(fixture.loadFixtures);
-    var Person = mongoose.model('Person');
     var person;
 
     beforeEach(function(done) {
@@ -959,9 +963,6 @@ describe("REST API v0.1", function () {
 
   describe("bulk delete", function() {
     beforeEach(fixture.loadFixtures);
-
-    var Person = mongoose.model('Person');
-    var Organization = mongoose.model('Organization');
 
     it("works on individual collections", function(done) {
       Person.count(function(err, count) {

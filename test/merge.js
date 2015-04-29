@@ -6,15 +6,18 @@ var defaults = require("./defaults");
 var fixture = require('./fixture');
 
 require('../src/models');
-var Person = mongoose.model('Person');
 
 describe("merging two people", function() {
+  var connection;
+  var Person;
+
   before(function() {
-    mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+    connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
+    Person = connection.model('Person');
   });
 
   after(function(done) {
-    mongoose.connection.close(done);
+    connection.close(done);
   });
 
   beforeEach(fixture.clearDatabase);

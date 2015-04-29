@@ -117,10 +117,11 @@ describe("internationalization", function() {
   describe("search", function() {
     this.timeout(5000);
     var Person;
+    var connection;
 
     before(function() {
-      mongoose.connect('mongodb://localhost/' + defaults.databaseName);
-      Person = mongoose.model('Person');
+      connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
+      Person = connection.model('Person');
     });
 
     before(function(done) {
@@ -128,7 +129,7 @@ describe("internationalization", function() {
     });
 
     after(function(done) {
-      mongoose.connection.close(done);
+      connection.close(done);
     });
 
     beforeEach(function(done) {

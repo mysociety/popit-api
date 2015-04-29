@@ -8,16 +8,20 @@ require('../src/models');
 
 describe("memberships", function() {
   var fixture = fixtures.connect(defaults.databaseName);
-  var Person = mongoose.model('Person');
-  var Organization = mongoose.model('Organization');
-  var Membership = mongoose.model('Membership');
+  var Person;
+  var Organization;
+  var Membership;
+  var connection;
 
   before(function() {
-    mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+    connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
+    Person = connection.model('Person');
+    Organization = connection.model('Organization');
+    Membership = connection.model('Membership');
   });
 
   after(function(done) {
-    mongoose.connection.close(done);
+    connection.close(done);
   });
 
   beforeEach(function(done) {

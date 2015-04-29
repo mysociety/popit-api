@@ -8,13 +8,14 @@ var defaults = require('./defaults');
 var importer = require('../src/importer');
 
 describe("importing popolo json", function() {
+  var connection;
 
   before(function() {
-    mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+    connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
   });
 
   after(function(done) {
-    mongoose.connection.close(done);
+    connection.close(done);
   });
 
   beforeEach(fixture.clearDatabase);
@@ -25,9 +26,9 @@ describe("importing popolo json", function() {
         { name: 'John Smith' },
       ],
     };
-    importer(mongoose, popoloObject, function(err) {
+    importer(connection, popoloObject, function(err) {
       assert.ifError(err);
-      var Person = mongoose.model('Person');
+      var Person = connection.model('Person');
       Person.count(function(err, count) {
         assert.ifError(err);
         assert.equal(1, count);

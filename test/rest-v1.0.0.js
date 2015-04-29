@@ -13,15 +13,18 @@ var request = supertest(serverApp);
 require('../src/models');
 
 describe("REST API v1.0.0-alpha", function () {
+  var connection;
+  var Person;
 
   beforeEach(fixture.clearDatabase);
 
   before(function() {
-    mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+    connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
+    Person = connection.model('Person');
   });
 
   after(function(done) {
-    mongoose.connection.close(done);
+    connection.close(done);
   });
 
   describe("inline memberships", function() {
@@ -537,7 +540,6 @@ describe("REST API v1.0.0-alpha", function () {
   describe("PUT", function() {
 
     it("should allow specifying image ids in hex ObjectId format", function(done) {
-      var Person = mongoose.model('Person');
       request
         .put("/api/v1.0.0-alpha/persons/test")
         .send({id: 'test', name: 'Test', images: [{ id: '55119bc1a69347a221956989', url: 'http://example.com/image.png' }] })

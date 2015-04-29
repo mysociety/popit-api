@@ -10,11 +10,12 @@ require('../src/models');
 
 describe("Search", function() {
   this.timeout(5000);
+  var connection;
   var Person;
 
   before(function() {
-    mongoose.connect('mongodb://localhost/' + defaults.databaseName);
-    Person = mongoose.model('Person');
+    connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
+    Person = connection.model('Person');
   });
 
   before(function(done) {
@@ -24,7 +25,7 @@ describe("Search", function() {
   beforeEach(fixture.clearDatabase);
 
   after(function(done) {
-    mongoose.connection.close(done);
+    connection.close(done);
   });
 
   it("indexes documents after saving", function(done) {

@@ -8,18 +8,19 @@ var defaults = require('./defaults');
 var exporter = require('../src/exporter');
 
 describe("exporting popolo json", function() {
+  var connection;
   before(function() {
-    mongoose.connect('mongodb://localhost/' + defaults.databaseName);
+    connection = mongoose.createConnection('mongodb://localhost/' + defaults.databaseName);
   });
 
   after(function(done) {
-    mongoose.connection.close(done);
+    connection.close(done);
   });
 
   beforeEach(fixture.loadFixtures);
 
   it("includes all data", function(done) {
-    exporter(mongoose, {}, function(err, data) {
+    exporter(connection, {}, function(err, data) {
       assert.ifError(err);
       assert.equal(data.persons.length, 2);
       assert.equal(data.organizations.length, 2);
