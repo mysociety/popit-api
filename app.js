@@ -2,9 +2,9 @@
 
 var express = require('express');
 var app = express();
-var db = require('./db');
+var master = require('./src/master');
 
-var Instance = db.model('Instance');
+var Instance = master.model('Instance');
 
 app.get('/instances', function(req, res, next) {
   Instance.find(function(err, instances) {
@@ -33,7 +33,7 @@ app.get('/instances/:instanceSlug', function(req, res) {
 });
 
 app.get('/instances/:instanceSlug/persons', function(req, res, next) {
-  var connection = db.connectionForInstance(req.instance);
+  var connection = master.connectionForInstance(req.instance);
   var Person = connection.model('Person');
   Person.find(function(err, people) {
     if (err) {
