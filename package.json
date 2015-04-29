@@ -46,7 +46,7 @@
     "mocha": "^2.2.4",
     "mocha-jshint": "^2.2.2",
     "pow-mongodb-fixtures": "~0.10.0",
-    "supertest": "~0.14.0"
+    "supertest": "^0.15.0"
   },
   "bin": {
     "popit-api-worker": "./bin/worker"
