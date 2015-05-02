@@ -14,7 +14,7 @@
     "API"
   ],
   "author": "",
-  "license": "AGPL",
+  "license": "AGPL-3.0",
   "readmeFilename": "README.md",
   "dependencies": {
     "JSV": "~4.0.2",
