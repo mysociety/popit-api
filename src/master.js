@@ -13,6 +13,7 @@ mongoose.connect(format(connectionStringFormat, prefix + master));
 
 mongoose.model('Instance', require('./schemas/instance'));
 mongoose.model('Account', require('./schemas/account'));
+mongoose.model('Permission', require('./schemas/permission'));
 
 function connectionForInstance(instance) {
   var dbName = instance.dbName || prefix + instance.slug;
