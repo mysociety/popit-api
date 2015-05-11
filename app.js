@@ -1,7 +1,7 @@
 "use strict";
 
 var express = require('express');
-var app = express();
+var app = module.exports = express();
 var master = require('./src/master');
 
 var Instance = master.model('Instance');
@@ -30,7 +30,9 @@ app.get('/instances/:instanceSlug/persons', function(req, res, next) {
   });
 });
 
-var port = process.env.PORT || 3000;
-app.listen(port, function() {
-  console.log("PopIt API listening on http://0.0.0.0:" + port);
-});
+if (!module.parent) {
+  var port = process.env.PORT || 3000;
+  app.listen(port, function() {
+    console.log("PopIt API listening on http://0.0.0.0:" + port);
+  });
+}
