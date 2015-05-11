@@ -24,7 +24,7 @@
     "cors": ">=2.5.2",
     "doublemetaphone": "~0.1.2",
     "elasticsearch": "~1.5.1",
-    "express": "~3.20.2",
+    "express": "^4.12.3",
     "fs-extra": "~ 0.10.0",
     "http-accept": "~0.1.6",
     "js-yaml": "^3.3.0",

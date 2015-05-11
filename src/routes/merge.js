@@ -15,10 +15,10 @@ module.exports = function(app) {
     var id = req.params.id;
     var otherId = req.params.otherId;
     if (req.params.collection !== 'persons') {
-      return res.jsonp(400, {errors: ["The merge method currently only works with people"]});
+      return res.status(400).jsonp({errors: ["The merge method currently only works with people"]});
     }
     if (id === otherId) {
-      return res.jsonp(400, {errors: ["Can't merge a person into themselves"]});
+      return res.status(400).jsonp({errors: ["Can't merge a person into themselves"]});
     }
     async.map([id, otherId], req.collection.findById.bind(req.collection), function(err, results) {
       if (err) {
@@ -27,15 +27,15 @@ module.exports = function(app) {
       var person = results[0];
       var otherPerson = results[1];
       if (!person) {
-        return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
+        return res.status(404).jsonp({errors: ["id '" + id + "' not found"]});
       }
       if (!otherPerson) {
-        return res.jsonp(404, {errors: ["id '" + otherId + "' not found"]});
+        return res.status(404).jsonp({errors: ["id '" + otherId + "' not found"]});
       }
       person.merge(otherPerson, function(err) {
         if (err) {
           if (err instanceof MergeConflictError) {
-            return res.send(400, {errors: [err.message].concat(err.conflicts)});
+            return res.status(400).send({errors: [err.message].concat(err.conflicts)});
           }
           return next(err);
         }

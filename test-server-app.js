@@ -6,19 +6,7 @@ var express  = require('express'),
 
 var app = module.exports = express();
 
-// Make dev easier
-app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-app.use(express.favicon());
-
 // Use vhost to route to the correct app
 app.use('/api', apiApp({
   databaseName: defaults.databaseName,
 }));
-
-// Handle everything else as a 404
-app.use(function (req, res) {
-  res.send(
-    'page not found - try <a href="/api">/api</a>',
-    404
-  );
-});

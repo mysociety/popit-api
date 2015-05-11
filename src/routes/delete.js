@@ -11,7 +11,7 @@ function bulkDelete(req, res, next) {
       if (err) {
         return next(err);
       }
-      res.send(204);
+      res.sendStatus(204);
     });
   });
 }
@@ -35,7 +35,7 @@ function bulkDeleteAll(req, res, next) {
     if (err) {
       return next(err);
     }
-    res.send(204);
+    res.sendStatus(204);
   });
 }
 

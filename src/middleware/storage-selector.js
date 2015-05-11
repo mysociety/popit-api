@@ -44,7 +44,7 @@ var storageSelectors = {
   hostName: function() {
     return {
       selector: function (req, res, next) {
-        var host = req.host.replace(/\./g, '-');
+        var host = req.hostname.replace(/\./g, '-');
         var databaseName = slugToDb('popit-api-' + slugify(host));
         req.db = connection(databaseName);
         next();

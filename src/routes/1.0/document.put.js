@@ -70,9 +70,9 @@ module.exports = function(app) {
           if (err) {
             tidyUpInlineMembershipError(req, null, req.created_memberships, req.updated_memberships, function(innerErr) {
               if ( innerErr ) {
-                return res.send(400, {errors: [innerErr]});
+                return res.status(400).send({errors: [innerErr]});
               }
-              return res.send(400, {errors: [err]});
+              return res.status(400).send({errors: [err]});
             });
             return;
           }
@@ -86,9 +86,9 @@ module.exports = function(app) {
               if (err) {
                 tidyUpInlineMembershipError(req, null, req.created_memberships, req.updated_memberships, function(innerErr) {
                   if ( innerErr ) {
-                    return res.send(400, {errors: [innerErr]});
+                    return res.status(400).send({errors: [innerErr]});
                   }
-                  return res.send(400, {errors: [err]});
+                  return res.status(400).send({errors: [err]});
                 });
                 return;
               }

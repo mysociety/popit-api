@@ -10,13 +10,13 @@ module.exports = function(app) {
         return next(err);
       }
       if (!doc) {
-        return res.send(204);
+        return res.sendStatus(204);
       }
       doc.remove(function(err) {
         if (err) {
           return next(err);
         }
-        res.send(204);
+        res.sendStatus(204);
       });
     });
   });

@@ -13,9 +13,9 @@ function withBodyMiddleware(req, res, next) {
       status = 200;
     }
     if (req.query.include_root === 'false') {
-      res.jsonp(status, body);
+      res.status(status).jsonp(body);
     } else {
-      res.jsonp(status, {result: body});
+      res.status(status).jsonp({result: body});
     }
   };
   next();

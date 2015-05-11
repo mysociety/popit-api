@@ -12,7 +12,7 @@
 function authCheck(apiKey) {
   return function(req, res, next) {
     req.isAdmin = false;
-    if (req.param('apiKey') === apiKey) {
+    if (req.query.apiKey === apiKey) {
       req.isAdmin = true;
     }
     next();

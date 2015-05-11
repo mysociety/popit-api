@@ -35,15 +35,15 @@ module.exports = function(app) {
           if (err) {
             tidyUpInlineMembershipError(req, doc, req.created_memberships, null, function(innerErr) {
               if ( innerErr ) {
-                return res.send(400, {errors: [innerErr]});
+                return res.status(400).send({errors: [innerErr]});
               }
-              return res.send(400, {errors: [err]});
+              return res.status(400).send({errors: [err]});
             });
           } else {
             doc.populateMemberships(req, function (err) {
               if (err) {
                 tidyUpInlineMembershipError(req, doc, req.created_memberships, null, function(err) {
-                  return res.send(400, {errors: [err]});
+                  return res.status(400).send({errors: [err]});
                 });
               } else {
                 res.withBody(transform(doc, req));

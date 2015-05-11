@@ -31,7 +31,7 @@ module.exports = function(app) {
         return next(err);
       }
       if (!doc) {
-        return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
+        return res.status(404).jsonp({errors: ["id '" + id + "' not found"]});
       }
 
       doc.embedDocuments(req, function(err) {

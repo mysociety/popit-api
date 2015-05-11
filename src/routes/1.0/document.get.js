@@ -14,7 +14,7 @@ module.exports = function(app) {
         return next(err);
       }
       if (!doc) {
-        return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
+        return res.status(404).jsonp({errors: ["id '" + id + "' not found"]});
       }
 
       eachSchema(req.collection, function(schema) {
@@ -38,13 +38,13 @@ module.exports = function(app) {
         return next(err);
       }
       if (!doc) {
-        return res.jsonp(404, {errors: ["id '" + id + "' not found"]});
+        return res.status(404).jsonp({errors: ["id '" + id + "' not found"]});
       }
 
       doc.embedDocuments(req, true, function(err) {
         if (err instanceof InvalidEmbedError) {
           // Send a 400 error to indicate the client needs to alter their request
-          return res.send(400, {errors: [err.message, err.explaination]});
+          return res.status(400).send({errors: [err.message, err.explaination]});
         }
         if (err) {
           return next(err);

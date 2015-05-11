@@ -4,7 +4,6 @@ var express       = require('express'),
     testServerApp = require('./test-server-app');
 
 var server = express();
-server.use(express.logger('dev'));
 server.use('/', testServerApp);
 
 
