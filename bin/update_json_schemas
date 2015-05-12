@@ -1,16 +1,37 @@
-#!/bin/bash
-#
-# Updates all the popolo JSON schemas in schemas/popolo.
+#!/usr/bin/env node
 
-set -e
+var https = require('https');
+var url = require('url');
+var fs = require('fs');
 
-# Make sure we're in the popit-api directory
-cd "$(dirname $0)/../"
+function downloadSchema(schema) {
+  var options = url.parse(schema.download_url);
+  options.headers = {
+    'User-Agent': 'PopIt https://popit.mysociety.org',
+  };
+  https.get(options, function(res) {
+    res.pipe(fs.createWriteStream(__dirname + '/../schemas/popolo/' + schema.name));
+  });
+}
 
-schemadir="schemas/popolo"
+function main() {
+  var schemasUrl = 'https://api.github.com/repos/popolo-project/popolo-spec/contents/schemas';
+  var options = url.parse(schemasUrl);
+  options.headers = {
+    'User-Agent': 'https://popit.mysociety.org',
+  };
+  https.get(options, function(res) {
+    var body = '';
+    res.on('data', function(chunk) {
+      body += chunk;
+    });
+    res.on('end', function() {
+      var schemas = JSON.parse(body);
+      schemas.forEach(function(schema) {
+        downloadSchema(schema);
+      });
+    });
+  });
+}
 
-for schema in $(ls "$schemadir"); do
-  schemaurl="http://www.popoloproject.com/schemas/$schema"
-  echo "Downloading $schemaurl"
-  curl -fsSLo "$schemadir/$schema" "$schemaurl"
-done
+main();
