@@ -17,6 +17,7 @@ var popoloSchemas = {
   "other_name":                 require('./popolo/other_name.json'),
   "person":                     require('./popolo/person.json'),
   "post":                       require('./popolo/post.json'),
+  "event":                      require('./popolo/event.json'),
 };
 
 var mySocietySchemas = {

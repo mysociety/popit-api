@@ -28,6 +28,14 @@ OrganizationSchema.plugin(membershipFinder, {field: 'organization_id'});
 var Organization = mongoose.model('Organization', OrganizationSchema);
 
 /**
+ * Event
+ */
+var EventSchema = new mongoose.Schema({_id: String}, {collection: 'events', strict: false});
+EventSchema.plugin(popolo, {popoloSchemaUrl: 'http://www.popoloproject.com/schemas/event.json#'});
+EventSchema.plugin(membershipFinder, {field: 'event_id'});
+var Event = mongoose.model('Event', EventSchema);
+
+/**
  * Post
  */
 var PostSchema = new mongoose.Schema({_id: String}, {collection: 'posts', strict: false});
@@ -120,7 +128,8 @@ module.exports = {
   'persons': Person,
   'organizations': Organization,
   'posts': Post,
-  'memberships': Membership
+  'memberships': Membership,
+  'events': Event,
 };
 
 /**
