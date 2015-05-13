@@ -215,7 +215,7 @@ describe("REST API v0.1", function () {
           .expect(400)
           .expect("Content-Type", "application/json; charset=utf-8")
           .expect({
-            errors: [ "Error 'Instance is not a required type' with 'http://popoloproject.com/schemas/person.json#/properties/name'." ]
+            errors: [ "Error 'Instance is not a required type' with 'http://www.popoloproject.com/schemas/person.json#/properties/name'." ]
           })
           .end(done);
       });
@@ -227,7 +227,7 @@ describe("REST API v0.1", function () {
           .expect(400)
           .expect("Content-Type", "application/json; charset=utf-8")
           .expect({
-            errors: [ "Error 'Property is required' with 'http://popoloproject.com/schemas/person.json#/properties/name'." ]
+            errors: [ "Error 'Property is required' with 'http://www.popoloproject.com/schemas/person.json#/properties/name'." ]
           })
           .end(done);
       });

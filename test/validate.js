@@ -110,7 +110,7 @@ describe("Validation", function () {
 
     it("correctly formed objects", function (done) {
       validate(
-        'http://popoloproject.com/schemas/other_name.json#',
+        'http://www.popoloproject.com/schemas/other_name.json#',
         { name: 'joey' },
         errorCount(0, done)
       );
@@ -118,7 +118,7 @@ describe("Validation", function () {
 
     it("must have names", function (done) {
       validate(
-        'http://popoloproject.com/schemas/other_name.json#',
+        'http://www.popoloproject.com/schemas/other_name.json#',
         { foo: 'bar' },
         errorCount(1, done)
       );
@@ -126,7 +126,7 @@ describe("Validation", function () {
     
     it("must have names which are strings", function (done) {
       validate(
-        'http://popoloproject.com/schemas/other_name.json#',
+        'http://www.popoloproject.com/schemas/other_name.json#',
         { name: 123 },
         errorCount(1, done)
       );
