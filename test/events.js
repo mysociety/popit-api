@@ -65,6 +65,17 @@ describe("Events API", function() {
           });
         });
 
+        it("allows updating them", function(done) {
+          request.put('/' + version + '/events/parliament-41')
+          .send({location: "The House of Commons"})
+          .expect(200)
+          .end(function(err, res) {
+            assert.ifError(err);
+            assert.equal(res.body.result.location, "The House of Commons");
+            done();
+          });
+        });
+
       });
 
     });
