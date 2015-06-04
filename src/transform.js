@@ -97,6 +97,13 @@ function filterDates(doc, options) {
 
   if (doc.memberships) {
     doc.memberships = doc.memberships.filter(checkDates);
+    doc.memberships = doc.memberships.filter(function(membership) {
+      if (membership.legislature) {
+        return checkDates(membership.legislature);
+      } else {
+        return true;
+      }
+    });
   }
 
   return doc;

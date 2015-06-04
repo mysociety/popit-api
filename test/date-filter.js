@@ -41,6 +41,20 @@ describe("Filter by date", function() {
           organization_id: 'bar',
           person_id: 'fred-bloggs',
           start_date: '2010-10-11'
+        },
+        {
+          _id: 'fred-in-parliament',
+          organization_id: 'foo',
+          person_id: 'fred-bloggs',
+          legislative_period: 'parliament-55'
+        }
+      ],
+      events: [
+        {
+          _id: 'parliament-55',
+          name: '55th Parliament of the United Kingdom',
+          start_date: '2010-05-25',
+          end_date: '2015-03-26'
         }
       ]
     }, done);
@@ -65,9 +79,46 @@ describe("Filter by date", function() {
           links: [],
           contact_details: [],
           images: []
+        },
+        { id: 'fred-in-parliament',
+          contact_details: [],
+          links: [],
+          images: [],
+          legislative_period: 'parliament-55',
+          person_id: 'fred-bloggs',
+          organization_id: 'foo'
         }
       ]);
       done();
     });
+  });
+
+  describe("v1.0.0", function() {
+    it("removes memberships with legislatures that don't span the ?at parameter", function(done) {
+      request.get('/api/v1.0.0-alpha/persons/fred-bloggs?embed=membership.legislature&at=2010-02-03')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.deepEqual(res.body.result.other_names, [
+          {name: 'Fred'},
+          {name: 'Alfred Bloggs', start_date: '2009-10-12'}
+        ]);
+        assert.deepEqual(res.body.result.memberships, [
+          {
+            id: 'fred-at-foo',
+            organization_id: 'foo',
+            person_id: 'fred-bloggs',
+            legislature: null,
+            start_date: '2009-10-10',
+            end_date: '2010-10-10',
+            links: [],
+            contact_details: [],
+            images: []
+          }
+        ]);
+        done();
+      });
+    });
+
   });
 });
