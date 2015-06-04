@@ -130,6 +130,12 @@ function embedPlugin(schema) {
             to: 'post',
             model: 'Post',
           },
+          'membership.legislature': {
+            path: 'memberships.legislature',
+            from: 'legislative_period',
+            to: 'legislature',
+            model: 'Event',
+          },
         };
       } else {
         target_map = {

@@ -532,6 +532,16 @@ describe("REST API v1.0.0-alpha", function () {
         done();
       });
     });
+
+    it("embeds legislature if requested", function(done) {
+      request.get('/api/v1.0.0-alpha/persons/fred-bloggs?embed=membership.legislature')
+      .expect(200)
+      .end(function(err, res) {
+        assert.ifError(err);
+        assert.equal(res.body.result.memberships[0].legislature.name, '55th Parliament');
+        done();
+      });
+    });
   });
 
   describe("PUT", function() {
