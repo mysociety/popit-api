@@ -69,7 +69,7 @@ collections.memberships = {
     id: "oldMP",
     post_id: "avalon",
     organization_id: "commons",
-    legislative_period: 'parliament-55',
+    legislative_period_id: 'parliament-55',
     role: "Member of Parliament",
     member: {
       '@type': 'Person',
@@ -82,7 +82,7 @@ collections.memberships = {
     id: "backAsMP",
     post_id: "avalon",
     organization_id: "commons",
-    legislative_period: 'parliament-55',
+    legislative_period_id: 'parliament-55',
     role: "Member of Parliament",
     member: {
       '@type': 'Person',

@@ -98,8 +98,8 @@ function filterDates(doc, options) {
   if (doc.memberships) {
     doc.memberships = doc.memberships.filter(checkDates);
     doc.memberships = doc.memberships.filter(function(membership) {
-      if (membership.legislature) {
-        return checkDates(membership.legislature);
+      if (membership.legislative_period) {
+        return checkDates(membership.legislative_period);
       } else {
         return true;
       }

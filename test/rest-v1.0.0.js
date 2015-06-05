@@ -534,11 +534,11 @@ describe("REST API v1.0.0-alpha", function () {
     });
 
     it("embeds legislature if requested", function(done) {
-      request.get('/api/v1.0.0-alpha/persons/fred-bloggs?embed=membership.legislature')
+      request.get('/api/v1.0.0-alpha/persons/fred-bloggs?embed=membership.legislative_period')
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
-        assert.equal(res.body.result.memberships[0].legislature.name, '55th Parliament');
+        assert.equal(res.body.result.memberships[0].legislative_period.name, '55th Parliament');
         done();
       });
     });

@@ -130,10 +130,10 @@ function embedPlugin(schema) {
             to: 'post',
             model: 'Post',
           },
-          'membership.legislature': {
-            path: 'memberships.legislature',
-            from: 'legislative_period',
-            to: 'legislature',
+          'membership.legislative_period': {
+            path: 'memberships.legislative_period',
+            from: 'legislative_period_id',
+            to: 'legislative_period',
             model: 'Event',
           },
         };

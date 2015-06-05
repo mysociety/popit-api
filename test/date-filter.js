@@ -46,7 +46,7 @@ describe("Filter by date", function() {
           _id: 'fred-in-parliament',
           organization_id: 'foo',
           person_id: 'fred-bloggs',
-          legislative_period: 'parliament-55'
+          legislative_period_id: 'parliament-55'
         }
       ],
       events: [
@@ -84,7 +84,7 @@ describe("Filter by date", function() {
           contact_details: [],
           links: [],
           images: [],
-          legislative_period: 'parliament-55',
+          legislative_period_id: 'parliament-55',
           person_id: 'fred-bloggs',
           organization_id: 'foo'
         }
@@ -95,7 +95,7 @@ describe("Filter by date", function() {
 
   describe("v1.0.0", function() {
     it("removes memberships with legislatures that don't span the ?at parameter", function(done) {
-      request.get('/api/v1.0.0-alpha/persons/fred-bloggs?embed=membership.legislature&at=2010-02-03')
+      request.get('/api/v1.0.0-alpha/persons/fred-bloggs?embed=membership.legislative_period&at=2010-02-03')
       .expect(200)
       .end(function(err, res) {
         assert.ifError(err);
@@ -108,7 +108,7 @@ describe("Filter by date", function() {
             id: 'fred-at-foo',
             organization_id: 'foo',
             person_id: 'fred-bloggs',
-            legislature: null,
+            legislative_period: null,
             start_date: '2009-10-10',
             end_date: '2010-10-10',
             links: [],
