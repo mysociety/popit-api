@@ -74,6 +74,7 @@ describe("Apps", function () {
               organizations_api_url: '/organizations',
               memberships_api_url: '/memberships',
               posts_api_url: '/posts',
+              events_api_url: '/events',
               export_url: '/export.json',
               image_proxy_url: ''
             },

@@ -17,6 +17,7 @@ module.exports = function(app, options) {
         organizations_api_url: baseUrl + '/organizations',
         memberships_api_url: baseUrl + '/memberships',
         posts_api_url: baseUrl + '/posts',
+        events_api_url: baseUrl + '/events',
         export_url: baseUrl + '/export.json',
         image_proxy_url: proxyBaseUrl
       },

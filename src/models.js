@@ -14,7 +14,7 @@ mongoose.set('debug', !!process.env.MONGOOSE_DEBUG);
  * Person
  */
 var PersonSchema = new mongoose.Schema({_id: String}, {collection: 'persons', strict: false});
-PersonSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/person.json#'});
+PersonSchema.plugin(popolo, {popoloSchemaUrl: 'http://www.popoloproject.com/schemas/person.json#'});
 PersonSchema.plugin(membershipFinder, {field: 'person_id'});
 PersonSchema.plugin(merge);
 var Person = mongoose.model('Person', PersonSchema);
@@ -23,15 +23,23 @@ var Person = mongoose.model('Person', PersonSchema);
  * Organization
  */
 var OrganizationSchema = new mongoose.Schema({_id: String}, {collection: 'organizations', strict: false});
-OrganizationSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/organization.json#'});
+OrganizationSchema.plugin(popolo, {popoloSchemaUrl: 'http://www.popoloproject.com/schemas/organization.json#'});
 OrganizationSchema.plugin(membershipFinder, {field: 'organization_id'});
 var Organization = mongoose.model('Organization', OrganizationSchema);
+
+/**
+ * Event
+ */
+var EventSchema = new mongoose.Schema({_id: String}, {collection: 'events', strict: false});
+EventSchema.plugin(popolo, {popoloSchemaUrl: 'http://www.popoloproject.com/schemas/event.json#'});
+EventSchema.plugin(membershipFinder, {field: 'event_id'});
+var Event = mongoose.model('Event', EventSchema);
 
 /**
  * Post
  */
 var PostSchema = new mongoose.Schema({_id: String}, {collection: 'posts', strict: false});
-PostSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/post.json#'});
+PostSchema.plugin(popolo, {popoloSchemaUrl: 'http://www.popoloproject.com/schemas/post.json#'});
 PostSchema.plugin(membershipFinder, {field: 'post_id'});
 var Post = mongoose.model('Post', PostSchema);
 
@@ -39,7 +47,7 @@ var Post = mongoose.model('Post', PostSchema);
  * Membership
  */
 var MembershipSchema = new mongoose.Schema({_id: String}, {collection: 'memberships', strict: false});
-MembershipSchema.plugin(popolo, {popoloSchemaUrl: 'http://popoloproject.com/schemas/membership.json#'});
+MembershipSchema.plugin(popolo, {popoloSchemaUrl: 'http://www.popoloproject.com/schemas/membership.json#'});
 
 var originalToElasticsearch = MembershipSchema.methods.toElasticsearch;
 
@@ -120,7 +128,8 @@ module.exports = {
   'persons': Person,
   'organizations': Organization,
   'posts': Post,
-  'memberships': Membership
+  'memberships': Membership,
+  'events': Event,
 };
 
 /**

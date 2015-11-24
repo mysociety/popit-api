@@ -17,6 +17,7 @@ var popoloSchemas = {
   "other_name":                 require('./popolo/other_name.json'),
   "person":                     require('./popolo/person.json'),
   "post":                       require('./popolo/post.json'),
+  "event":                      require('./popolo/event.json'),
 };
 
 var mySocietySchemas = {
@@ -32,10 +33,10 @@ var mySocietySchemas = {
 
 // Schemas for which it is okay to substitute in the workaround below
 var leafSchemas = [
-  "http://popoloproject.com/schemas/contact_detail.json#",
-  "http://popoloproject.com/schemas/identifier.json#",
-  "http://popoloproject.com/schemas/link.json#",
-  "http://popoloproject.com/schemas/other_name.json#",
+  "http://www.popoloproject.com/schemas/contact_detail.json#",
+  "http://www.popoloproject.com/schemas/identifier.json#",
+  "http://www.popoloproject.com/schemas/link.json#",
+  "http://www.popoloproject.com/schemas/other_name.json#",
 ];
 
 var allSchemas = _.extend({}, draftSchemas, popoloSchemas, mySocietySchemas);

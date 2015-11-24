@@ -59,6 +59,7 @@ describe("REST API v0.1", function () {
             organizations_api_url: '/organizations',
             memberships_api_url: '/memberships',
             posts_api_url: '/posts',
+            events_api_url: '/events',
             export_url: '/export.json',
             image_proxy_url: ''
           },
@@ -130,9 +131,9 @@ describe("REST API v0.1", function () {
               per_page: 30,
               has_more: false,
               result: [
-                { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
+                { id: 'oldMP', post_id: 'avalon', organization_id: 'commons', legislative_period_id: 'parliament-55', role: 'Member of Parliament',
                   member: {'@type': 'Person', id: 'fred-bloggs'}, start_date: '2000', end_date: '2004', links: [], contact_details: [], images: [] },
-                { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', role: 'Member of Parliament',
+                { id: 'backAsMP', post_id: 'avalon', organization_id: 'commons', legislative_period_id: 'parliament-55', role: 'Member of Parliament',
                   member: {'@type': 'Person', id: 'fred-bloggs'}, start_date: '2011', links: [], contact_details: [], images: [] },
               ],
             })
@@ -215,7 +216,7 @@ describe("REST API v0.1", function () {
           .expect(400)
           .expect("Content-Type", "application/json; charset=utf-8")
           .expect({
-            errors: [ "Error 'Instance is not a required type' with 'http://popoloproject.com/schemas/person.json#/properties/name'." ]
+            errors: [ "Error 'Instance is not a required type' with 'http://www.popoloproject.com/schemas/person.json#/properties/name'." ]
           })
           .end(done);
       });
@@ -227,7 +228,7 @@ describe("REST API v0.1", function () {
           .expect(400)
           .expect("Content-Type", "application/json; charset=utf-8")
           .expect({
-            errors: [ "Error 'Property is required' with 'http://popoloproject.com/schemas/person.json#/properties/name'." ]
+            errors: [ "Error 'Property is required' with 'http://www.popoloproject.com/schemas/person.json#/properties/name'." ]
           })
           .end(done);
       });

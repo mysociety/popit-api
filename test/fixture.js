@@ -69,6 +69,7 @@ collections.memberships = {
     id: "oldMP",
     post_id: "avalon",
     organization_id: "commons",
+    legislative_period_id: 'parliament-55',
     role: "Member of Parliament",
     member: {
       '@type': 'Person',
@@ -81,12 +82,21 @@ collections.memberships = {
     id: "backAsMP",
     post_id: "avalon",
     organization_id: "commons",
+    legislative_period_id: 'parliament-55',
     role: "Member of Parliament",
     member: {
       '@type': 'Person',
       id: "fred-bloggs",
     },
     start_date: "2011",
+  },
+};
+
+collections.events = {
+  ukParliament: {
+    id: 'parliament-55',
+    name: '55th Parliament',
+    start_date: '2015-05-27',
   },
 };
 

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://popoloproject.com/schemas/membership.json#",
+  "id": "http://www.popoloproject.com/schemas/membership.json#",
   "title": "Membership",
   "description": "A relationship between a person and an organization",
   "type": "object",
@@ -37,7 +37,7 @@
     },
     "person": {
       "description": "The person who is a party to the relationship",
-      "$ref": "http://popoloproject.com/schemas/person.json#"
+      "$ref": "http://www.popoloproject.com/schemas/person.json#"
     },
     "organization_id": {
       "description": "The ID of the organization that is a party to the relationship",
@@ -45,7 +45,7 @@
     },
     "organization": {
       "description": "The organization that is a party to the relationship",
-      "$ref": "http://popoloproject.com/schemas/organization.json#"
+      "$ref": "http://www.popoloproject.com/schemas/organization.json#"
     },
     "post_id": {
       "description": "The ID of the post held by the person in the organization through this membership",
@@ -53,7 +53,7 @@
     },
     "post": {
       "description": "The post held by the person in the organization through this membership",
-      "$ref": "http://popoloproject.com/schemas/post.json#"
+      "$ref": "http://www.popoloproject.com/schemas/post.json#"
     },
     "area": {
       "description": "The optional area with which this membership is associated",
@@ -92,14 +92,14 @@
       "description": "Means of contacting the person who is a party to the relationship",
       "type": "array",
       "items": {
-        "$ref": "http://popoloproject.com/schemas/contact_detail.json#"
+        "$ref": "http://www.popoloproject.com/schemas/contact_detail.json#"
       }
     },
     "links": {
       "description": "URLs to documents about the membership",
       "type": "array",
       "items": {
-        "$ref": "http://popoloproject.com/schemas/link.json#"
+        "$ref": "http://www.popoloproject.com/schemas/link.json#"
       }
     }
   }
